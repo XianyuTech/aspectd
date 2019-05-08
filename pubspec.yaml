@@ -1,0 +1,31 @@
+name: aspectd
+description: A new Flutter package project.
+version: 0.0.1
+author: KyleWong<kang.wang1988@gmail.com>
+homepage: https://github.com/alibaba-flutter/aspectd
+
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
+dev_dependencies:
+  kernel: any
+  front_end: any
+
+dependency_overrides:
+  kernel:
+    git:
+      url: https://github.com/dart-lang/sdk.git
+      ref: f9ebf2129732fd2b606286fdf58e500384b8a0bc
+      path: pkg/kernel
+  front_end:
+    git:
+      url: https://github.com/dart-lang/sdk.git
+      ref: f9ebf2129732fd2b606286fdf58e500384b8a0bc
+      path: pkg/front_end
+
+
+# For information on the generic Dart part of this file, see the
+# following page: https://www.dartlang.org/tools/pub/pubspec
+
+# The following section is specific to Flutter.
+
