@@ -10,6 +10,7 @@ environment:
 dev_dependencies:
   kernel: any
   front_end: any
+  args: any
 
 dependency_overrides:
   kernel:

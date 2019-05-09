@@ -2,7 +2,7 @@
 # See https://www.dartlang.org/tools/pub/glossary#lockfile
 packages:
   args:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: args
       url: "https://pub.dartlang.org"

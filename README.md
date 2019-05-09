@@ -8,17 +8,17 @@ AspectD is an AOP(aspect oriented programming) framework for dart. Like other tr
 
 ![Aspectd Diagram](https://gw.alicdn.com/bao/uploaded/TB1RjKyRAzoK1RjSZFlXXai4VXa-720-150.png)
 
-Suppose you have a flutter project called hello_flutter located in hf_dir.
+Suppose you have a flutter project named example located in hf_dir.
 
 # Installation
 
-## 1. Create a dart package named aop in hf_dir/hello_flutter
+## 1. Create a dart package named aop in hf_dir/example
 
 ```dart
 flutter create --template=package aop
 ```
 
-## 2. Add aspectd&hello_flutter dependency to aop package
+## 2. Add aspectd&example dependency to aop package
 ```dart
 dependencies:
   flutter:
@@ -27,7 +27,7 @@ dependencies:
     git:
       url: git@github.com:alibaba-flutter/aspectd.git
       ref: master
-  hello_flutter:
+  example:
     path: ../
 ```
 Fetch package dependency in aop package
@@ -39,7 +39,7 @@ flutter packages get
 
 aop.dart(entrypoint)
 ```dart
-import 'package:hello_flutter/main.dart' as app;
+import 'package:example/main.dart' as app;
 import 'aop_impl.dart';
 
 void main()=> app.main();
@@ -54,7 +54,7 @@ class ExecuteDemo {
   @pragma("vm:entry-point")
   ExecuteDemo();
 
-  @Execute("package:hello_flutter/main.dart", "_MyHomePageState", "-_incrementCounter")
+  @Execute("package:example/main.dart", "_MyHomePageState", "-_incrementCounter")
   @pragma("vm:entry-point")
   void _incrementCounter(PointCut pointcut) {
     pointcut.proceed();
@@ -123,7 +123,7 @@ flutter packages get
 ```
 ### c. Compile aspectd.dart.snapshot
 ```shell
-flutter/bin/cache/dart-sdk/bin/dart --snapshot=snapshot/aspectd.dart.snapshot bin/starter.dart
+flutter/bin/cache/dart-sdk/bin/dart --snapshot=snapshot/aspectd.dart.snapshot tool/starter.dart
 ```
 
 ## 5. Patch flutter_tools to apply aspectd.dart.snapshot
@@ -132,7 +132,7 @@ cd path-for-flutter-git-repo
 git apply path-for-aspectd-package/0001-aspectd.patch
 rm bin/cache/flutter_tools.stamp
 ```
-Notice that, if you want to customize the aop package, edit aopPackageRelPath(aop package relative path to the hello_flutter's pubspec.yaml) and aopPackageName(aop package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
+Notice that, if you want to customize the aop package, edit aopPackageRelPath(aop package relative path to the example's pubspec.yaml) and aopPackageName(aop package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
 ```dart
 const String aopPackageRelPath = '.';
 const String aopPackageName = 'aop';
@@ -140,7 +140,7 @@ const String aopPackageName = 'aop';
 
 Step 1~3 are expected to run each time you want to add aop to a flutter(dart) package. 4&5 is expected to run only once unless the dart-sdk changes. For example, If you upgrade flutter, you need to check if to rerun 4&5.
 
-If you're using hello_flutter with an aop package not generated locally, remember to run `flutter packages get` in aop package to get aspectd and check 4&5.
+If you're using example with an aop package not generated locally, remember to run `flutter packages get` in aop package to get aspectd and check 4&5.
 
 
 # Tutorial
