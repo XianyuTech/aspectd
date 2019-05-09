@@ -91,8 +91,8 @@ If the sha-refs don't match the 'dart_revision', modify it to be the dart_revisi
 
 ```dart
 name: aspectd
-description: A new Flutter package project.
-version: 0.0.1
+description: AOP for Flutter.
+version: 0.9.1
 author:
 homepage:
 

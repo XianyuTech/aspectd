@@ -1,6 +1,6 @@
 name: aspectd
-description: A new Flutter package project.
-version: 0.9.0
+description: AOP for Flutter. AspectD is an AOP(aspect oriented programming) framework for dart. Like other traditional aop framework,   AspectD provides call&execute grammar. Besides, as we can't use dart:mirrors in flutter, AspectD also provides a  way named inject enhancing the dart code manipulation.
+version: 0.9.1
 author: KyleWong<kang.wang1988@gmail.com>
 homepage: https://github.com/alibaba-flutter/aspectd
 
