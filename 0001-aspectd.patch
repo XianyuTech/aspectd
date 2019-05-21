@@ -1,21 +1,21 @@
-From 88b2e878cbee0be96b8c5b3e298d4f79547dc611 Mon Sep 17 00:00:00 2001
+From f6d0fce9818e70bf2223000948bb390ec44d71e8 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Sat, 4 May 2019 23:56:08 +0800
+Date: Wed, 22 May 2019 02:27:19 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 205 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 288 ++++++++++++++++++
  .../lib/src/commands/build_aot.dart           |   6 +
  .../lib/src/commands/build_bundle.dart        |   4 +
- 3 files changed, 215 insertions(+)
+ 3 files changed, 298 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..16a920b71
+index 0000000000..ff22b37c19
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,205 @@
+@@ -0,0 +1,288 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -26,10 +26,13 @@ index 000000000..16a920b71
 +import 'base/build.dart';
 +import 'base/common.dart';
 +import 'base/file_system.dart';
++import 'base/process.dart';
 +import 'base/process_manager.dart';
 +import 'build_info.dart';
 +import 'bundle.dart';
++import 'cache.dart';
 +import 'dart/package_map.dart';
++import 'dart/sdk.dart';
 +import 'globals.dart';
 +import 'runner/flutter_command.dart';
 +
@@ -50,19 +53,99 @@ index 000000000..16a920b71
 +    if (packageMap.map != null) {
 +      final String aspectdLibPath = packageMap.map['aspectd']?.toFilePath();
 +      if (aspectdLibPath != null) {
-+        final String expectedTransformerSnapshot = fs.path.join(fs.directory(aspectdLibPath).parent.path, 'snapshot', 'aspectd.dart.snapshot');
-+        if (fs.file(expectedTransformerSnapshot).existsSync()) {
++        final String expectedTransformerSnapshotPath = fs.path.join(fs.directory(aspectdLibPath).parent.path, 'snapshot', 'aspectd.dart.snapshot');
++        final File expectedTransformerSnapshot = fs.file(expectedTransformerSnapshotPath);
++        final String expectedDartSha = await getExpectedDartSha();
++        final String aspectdPubspecPath = fs.path.join(fs.directory(aspectdLibPath).parent.path, 'pubspec.yaml');
++        final String defaultDartSha = getDartShaFromPubspec(aspectdPubspecPath);
++        if (defaultDartSha == null || expectedDartSha == null)
++          return;
++        if (defaultDartSha != expectedDartSha) {
++          if (expectedTransformerSnapshot.existsSync()) {
++            expectedTransformerSnapshot.deleteSync();
++          }
++          final File aspectdPubspecFile = fs.file(aspectdPubspecPath);
++          final String aspectdPubspecContent = aspectdPubspecFile.readAsStringSync().replaceAll(defaultDartSha, expectedDartSha);
++          aspectdPubspecFile.writeAsStringSync(aspectdPubspecContent, flush: true);
++        }
++        if (!expectedTransformerSnapshot.existsSync()) {
++          await generateAspectdSnapshot(expectedTransformerSnapshotPath);
++        }
++        if (expectedTransformerSnapshot.existsSync()) {
 +            final List<String> command = <String>[
 +              artifacts.getArtifactPath(Artifact.engineDartBinary),
-+              expectedTransformerSnapshot,
++              expectedTransformerSnapshotPath,
 +            ];
 +            final ProcessResult result = await processManager.run(command);
 +            final String outputStr = result.stderr.toString().trim();
 +            if (outputStr == unmatchDartKernelBinaryErrMsg)
 +              return;
-+            aspectdTransformerSnapshot = expectedTransformerSnapshot;
++            aspectdTransformerSnapshot = expectedTransformerSnapshotPath;
 +        }
 +      }
++    }
++  }
++
++  static Future<String> getExpectedDartSha() async{
++    final File engineVersionFile = fs.file(fs.path.join(Cache.flutterRoot, 'bin', 'internal', 'engine.version'));
++    final String engineVersion = engineVersionFile.readAsStringSync().trim();
++
++    final Uri url = Uri.parse('http://raw.githubusercontent.com/flutter/engine/$engineVersion/DEPS');
++    final HttpClient httpClient = HttpClient();
++    HttpClientRequest request;
++    try {
++       request = await httpClient.getUrl(url);
++    } on HandshakeException catch (error) {
++      printTrace(error.toString());
++      return null;
++    } on SocketException catch (error) {
++      printTrace('Fetch engine.version DEPS error: $error');
++      return null;
++    }
++    final HttpClientResponse response = await request.close();
++    if (response.statusCode != 200) {
++      printTrace('Fetch engine.version DEPS error: ${response.statusCode} ${response.reasonPhrase}');
++      return null;
++    }
++    try {
++      final BytesBuilder responseBody = BytesBuilder(copy: false);
++      await response.forEach(responseBody.add);
++      final String depsContent = String.fromCharCodes(responseBody.takeBytes());
++      final RegExp dartRevisionReg = RegExp(r"'dart_revision'\:\s'[a-z0-9]+'");
++      final Match matches= dartRevisionReg.firstMatch(depsContent);
++      if (matches == null)
++        return null;
++      String dartSha = matches.group(0).split(':')[1].trim();
++      dartSha = dartSha.substring(1, dartSha.length-1);
++      return Future<String>.sync(()=>dartSha);
++    } on IOException catch (error) {
++      printTrace('Fetch engine.version DEPS error: $error');
++      return null;
++    }
++  }
++
++  static String getDartShaFromPubspec(String pubspecFilePath) {
++    final File pubspecFile = fs.file(pubspecFilePath);
++    final String pubspecContent = pubspecFile.readAsStringSync();
++    final RegExp kernelItemReg = RegExp(r'\s+kernel\:\s*git\:\s*[^\:].*\s*[^\:].*\s*[^\:].*');
++    final Match matches = kernelItemReg.firstMatch(pubspecContent);
++    if (matches == null)
++      return null;
++    final String matchItem = matches.group(0);
++    final RegExp kernelRefReg = RegExp(r'\s*ref\:\s*[0-9a-z]+');
++    return kernelRefReg.firstMatch(matchItem).group(0).split(':')[1].trim();
++  }
++
++  static Future<void> generateAspectdSnapshot(String aspectdSnapshotPath) async{
++    final Directory snapshotDir = fs.file(aspectdSnapshotPath).parent;
++    if (!snapshotDir.existsSync())
++      fs.directory(snapshotDir).createSync(recursive: false);
++    final File pubspecLockFile = fs.file(fs.path.join(snapshotDir.parent.path, 'pubspec.lock'));
++    if (pubspecLockFile.existsSync())
++      pubspecLockFile.deleteSync();
++    await runCommandAndStreamOutput(<String>[sdkBinaryName('pub'), 'get'], workingDirectory: snapshotDir.parent.path, environment: <String, String>{'FLUTTER_ROOT':Cache.flutterRoot});
++    if (pubspecLockFile.existsSync()) {
++      await runCommandAndStreamOutput(<String>[sdkBinaryName('dart'), '--snapshot=snapshot/aspectd.dart.snapshot', 'tool/starter.dart'], workingDirectory: snapshotDir.parent.path);
 +    }
 +  }
 +
@@ -223,7 +306,7 @@ index 000000000..16a920b71
 +}
 \ No newline at end of file
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index d7ad96e16..aab51ae65 100644
+index ea32069960..c43941728e 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
 @@ -4,6 +4,7 @@
@@ -234,7 +317,7 @@ index d7ad96e16..aab51ae65 100644
  import '../base/build.dart';
  import '../base/common.dart';
  import '../base/file_system.dart';
-@@ -94,6 +95,11 @@ class BuildAotCommand extends BuildSubCommand {
+@@ -98,6 +99,11 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
@@ -247,7 +330,7 @@ index d7ad96e16..aab51ae65 100644
        if (platform == TargetPlatform.ios) {
          // Determine which iOS architectures to build for.
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index edb6d9fec..833a04aff 100644
+index 40a027947a..c646cac358 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -258,7 +341,7 @@ index edb6d9fec..833a04aff 100644
  import '../base/common.dart';
  import '../build_info.dart';
  import '../bundle.dart';
-@@ -104,6 +105,9 @@ class BuildBundleCommand extends BuildSubCommand {
+@@ -92,6 +93,9 @@ class BuildBundleCommand extends BuildSubCommand {
        fileSystemScheme: argResults['filesystem-scheme'],
        fileSystemRoots: argResults['filesystem-root'],
      );

@@ -62,71 +62,7 @@ class ExecuteDemo {
   }
 }
 ```
-
-## 4. Compile transformer snapshot for aspectd
-
-As the flutter(dart) environment may vary for different developers, the aspectd transformer snapshot might need to be recompiled by developers manually.
-
-### a. Get the right dart-sdk version(sha commit)
-
-Get engine version:(**7375a0f414** in this case)
-```dart
-flutter doctor -v
-[✓] Flutter (Channel unknown, v1.0.0, on Mac OS X 10.14.5 18F118d, locale en-CN)
-    • Flutter version 1.0.0 at ~/Codes/Flutter/official/flutter
-    • Framework revision 5391447fae (5 months ago), 2018-11-29 19:41:26 -0800
-    • Engine revision 7375a0f414
-    • Dart version 2.1.0 (build 2.1.0-dev.9.4 f9ebf21297)
-```
-
-Get corresponding dart sdk sha:(https://github.com/flutter/engine/blob/7375a0f414/DEPS)
-
-```dart
-'dart_revision': 'f9ebf2129732fd2b606286fdf58e500384b8a0bc',
-```
-
-If the kernel&front_end's sha-ref specified in package:aspectd/pubspec.yaml matches the 'dart_revision' above, you can skip 4.a~4.c as snapshot/aspectd.dart.snapshot located in aspectd repo is the expected one. 
-
-If the sha-refs don't match the 'dart_revision', modify it to be the dart_revision above to match your flutter(dart) sdk:
-
-```dart
-name: aspectd
-description: AOP for Flutter.
-version: 0.9.1
-author:
-homepage:
-
-environment:
-  sdk: ">=2.0.0-dev.68.0 <3.0.0"
-
-dependencies:
-  kernel: any
-  front_end: any
-
-dependency_overrides:
-  kernel:
-    git:
-      url: https://github.com/dart-lang/sdk.git
-      ref: dart-revision-you-got-above
-      path: pkg/kernel
-  front_end:
-    git:
-      url: https://github.com/dart-lang/sdk.git
-      ref: dart-revision-you-got-above
-      path: pkg/front_end
-```
-### b. Fetch dependencies for aspectd
-
-```shell
-cd path-for-aspectd-package #Typically located in ~/.pub-cache/git/aspectd-xxx
-flutter packages get
-```
-### c. Compile aspectd.dart.snapshot
-```shell
-flutter/bin/cache/dart-sdk/bin/dart --snapshot=snapshot/aspectd.dart.snapshot tool/starter.dart
-```
-
-## 5. Patch flutter_tools to apply aspectd.dart.snapshot
+## 4. Patch flutter_tools to apply aspectd.dart.snapshot
 ```shell
 cd path-for-flutter-git-repo
 git apply path-for-aspectd-package/0001-aspectd.patch
@@ -138,9 +74,9 @@ const String aopPackageRelPath = '.';
 const String aopPackageName = 'aop';
 ```
 
-Step 1~3 are expected to run each time you want to add aop to a flutter(dart) package. 4&5 is expected to run only once unless the dart-sdk changes. For example, If you upgrade flutter, you need to check if to rerun 4&5.
+Step 1~3 are expected to run each time you want to add aop to a flutter(dart) package. 4 is expected to run only once unless the dart-sdk changes. For example, If you upgrade flutter, you need to check if to rerun 4.
 
-If you're using example with an aop package not generated locally, remember to run `flutter packages get` in aop package to get aspectd and check 4&5.
+If you're using example with an aop package not generated locally, remember to run `flutter packages get` in aop package to get aspectd and check 4.
 
 
 # Tutorial
