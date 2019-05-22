@@ -1,6 +1,6 @@
-From f6d0fce9818e70bf2223000948bb390ec44d71e8 Mon Sep 17 00:00:00 2001
+From 5dfe0e3acccea3496dff4f6529ae9f78c4035c37 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Wed, 22 May 2019 02:27:19 +0800
+Date: Wed, 22 May 2019 10:48:05 +0800
 Subject: [PATCH] aspectd
 
 ---
@@ -12,7 +12,7 @@ Subject: [PATCH] aspectd
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..ff22b37c19
+index 0000000000..a5a5f03831
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
 @@ -0,0 +1,288 @@
@@ -127,23 +127,23 @@ index 0000000000..ff22b37c19
 +  static String getDartShaFromPubspec(String pubspecFilePath) {
 +    final File pubspecFile = fs.file(pubspecFilePath);
 +    final String pubspecContent = pubspecFile.readAsStringSync();
-+    final RegExp kernelItemReg = RegExp(r'\s+kernel\:\s*git\:\s*[^\:].*\s*[^\:].*\s*[^\:].*');
++    final RegExp kernelItemReg = RegExp(r'(\s+kernel\s*\:)(\s+git\s*\:)(\s+[a-z]+\s*\:.*)(\s+[a-z]+\s*\:.*)(\s+[a-z]+\s*\:.*)');
 +    final Match matches = kernelItemReg.firstMatch(pubspecContent);
 +    if (matches == null)
 +      return null;
 +    final String matchItem = matches.group(0);
-+    final RegExp kernelRefReg = RegExp(r'\s*ref\:\s*[0-9a-z]+');
++    final RegExp kernelRefReg = RegExp(r'ref\s*\:\s*[0-9a-z]+');
 +    return kernelRefReg.firstMatch(matchItem).group(0).split(':')[1].trim();
 +  }
 +
 +  static Future<void> generateAspectdSnapshot(String aspectdSnapshotPath) async{
 +    final Directory snapshotDir = fs.file(aspectdSnapshotPath).parent;
 +    if (!snapshotDir.existsSync())
-+      fs.directory(snapshotDir).createSync(recursive: false);
++      fs.directory(snapshotDir).createSync(recursive: true);
 +    final File pubspecLockFile = fs.file(fs.path.join(snapshotDir.parent.path, 'pubspec.lock'));
 +    if (pubspecLockFile.existsSync())
 +      pubspecLockFile.deleteSync();
-+    await runCommandAndStreamOutput(<String>[sdkBinaryName('pub'), 'get'], workingDirectory: snapshotDir.parent.path, environment: <String, String>{'FLUTTER_ROOT':Cache.flutterRoot});
++    await runCommandAndStreamOutput(<String>[sdkBinaryName('pub'), 'get', '--verbosity=warning'], workingDirectory: snapshotDir.parent.path, environment: <String, String>{'FLUTTER_ROOT':Cache.flutterRoot});
 +    if (pubspecLockFile.existsSync()) {
 +      await runCommandAndStreamOutput(<String>[sdkBinaryName('dart'), '--snapshot=snapshot/aspectd.dart.snapshot', 'tool/starter.dart'], workingDirectory: snapshotDir.parent.path);
 +    }

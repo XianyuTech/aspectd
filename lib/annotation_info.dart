@@ -6,5 +6,6 @@ class AnnotationInfo {
   final int lineNum; //Line Number to insert at(Before), 1 based.
 
   @pragma('vm:entry-point')
-  const AnnotationInfo({this.importUri,this.clsName,this.methodName,this.lineNum});
+  const AnnotationInfo(
+      {this.importUri, this.clsName, this.methodName, this.lineNum});
 }

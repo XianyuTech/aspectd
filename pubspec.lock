@@ -22,45 +22,24 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.14.11"
-  convert:
-    dependency: transitive
-    description:
-      name: convert
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.1"
-  crypto:
-    dependency: transitive
-    description:
-      name: crypto
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.6"
   front_end:
     dependency: "direct dev"
     description:
       path: "pkg/front_end"
-      ref: f9ebf2129732fd2b606286fdf58e500384b8a0bc
-      resolved-ref: f9ebf2129732fd2b606286fdf58e500384b8a0bc
+      ref: a1668566e563aef64025d0af88a099cbbe847b7e
+      resolved-ref: a1668566e563aef64025d0af88a099cbbe847b7e
       url: "https://github.com/dart-lang/sdk.git"
     source: git
-    version: "0.1.6"
+    version: "0.1.15"
   kernel:
     dependency: "direct dev"
     description:
       path: "pkg/kernel"
-      ref: f9ebf2129732fd2b606286fdf58e500384b8a0bc
-      resolved-ref: f9ebf2129732fd2b606286fdf58e500384b8a0bc
+      ref: a1668566e563aef64025d0af88a099cbbe847b7e
+      resolved-ref: a1668566e563aef64025d0af88a099cbbe847b7e
       url: "https://github.com/dart-lang/sdk.git"
     source: git
-    version: "0.3.6"
-  logging:
-    dependency: transitive
-    description:
-      name: logging
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.11.3+2"
+    version: "0.3.15"
   meta:
     dependency: transitive
     description:
@@ -103,13 +82,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
-  typed_data:
-    dependency: transitive
-    description:
-      name: typed_data
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.6"
   yaml:
     dependency: transitive
     description:

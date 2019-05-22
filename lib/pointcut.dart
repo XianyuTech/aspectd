@@ -8,10 +8,11 @@ class PointCut {
   final Map<dynamic, dynamic> namedParams;
 
   @pragma('vm:entry-point')
-  PointCut(this.sourceInfos, this.target, this.function, this.stubId,this.positionalParams, this.namedParams);
+  PointCut(this.sourceInfos, this.target, this.function, this.stubId,
+      this.positionalParams, this.namedParams);
 
   @pragma('vm:entry-point')
-  Object proceed(){
+  Object proceed() {
     return null;
   }
 }
