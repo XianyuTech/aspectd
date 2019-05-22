@@ -65,10 +65,10 @@ class ExecuteDemo {
 ## 4. Patch flutter_tools to apply aspectd.dart.snapshot
 ```shell
 cd path-for-flutter-git-repo
-git apply path-for-aspectd-package/0001-aspectd.patch
+git apply --3way path-for-aspectd-package/0001-aspectd.patch
 rm bin/cache/flutter_tools.stamp
 ```
-Notice that, if you want to customize the aop package, edit aopPackageRelPath(aop package relative path to the example's pubspec.yaml) and aopPackageName(aop package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
+Notice that, if any problem occurs when applying the patch, you need to resovle the conflict first. It would be simple as AspectD only adds two hooks when building dill. If you want to customize the aop package, edit aopPackageRelPath(aop package relative path to the example's pubspec.yaml) and aopPackageName(aop package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
 ```dart
 const String aopPackageRelPath = '.';
 const String aopPackageName = 'aop';
