@@ -1,21 +1,21 @@
-From 5dfe0e3acccea3496dff4f6529ae9f78c4035c37 Mon Sep 17 00:00:00 2001
+From aeffb143c01bb50c0f7b49fcd6c7b5f73527703d Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Wed, 22 May 2019 10:48:05 +0800
+Date: Wed, 22 May 2019 12:04:09 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 288 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 297 ++++++++++++++++++
  .../lib/src/commands/build_aot.dart           |   6 +
  .../lib/src/commands/build_bundle.dart        |   4 +
- 3 files changed, 298 insertions(+)
+ 3 files changed, 307 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..a5a5f03831
+index 0000000000..7bb5530f53
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,288 @@
+@@ -0,0 +1,297 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -43,13 +43,12 @@ index 0000000000..a5a5f03831
 +class AspectdHook {
 +  static bool _isAspectdEnabled;
 +  static String aspectdTransformerSnapshot;
-+  static Directory get getAopDirectory{
-+    final Directory cwd = fs.currentDirectory;
-+    return fs.directory(fs.path.join(cwd.path, aopPackageRelPath, aopPackageName));
++  static Directory getAopDirectory(Directory rootProjectDir) {
++    return fs.directory(fs.path.normalize(fs.path.join(rootProjectDir.path, aopPackageRelPath, aopPackageName)));
 +  }
 +
-+  static Future<void> checkAspectdTransformerSnapshot() async{
-+    final PackageMap packageMap = PackageMap(fs.path.join(getAopDirectory.path,PackageMap.globalPackagesPath));
++  static Future<void> checkAspectdTransformerSnapshot() async {
++    final PackageMap packageMap = PackageMap(fs.path.join(getAopDirectory(fs.currentDirectory).path,PackageMap.globalPackagesPath));
 +    if (packageMap.map != null) {
 +      final String aspectdLibPath = packageMap.map['aspectd']?.toFilePath();
 +      if (aspectdLibPath != null) {
@@ -58,8 +57,9 @@ index 0000000000..a5a5f03831
 +        final String expectedDartSha = await getExpectedDartSha();
 +        final String aspectdPubspecPath = fs.path.join(fs.directory(aspectdLibPath).parent.path, 'pubspec.yaml');
 +        final String defaultDartSha = getDartShaFromPubspec(aspectdPubspecPath);
-+        if (defaultDartSha == null || expectedDartSha == null)
++        if (defaultDartSha == null || expectedDartSha == null) {
 +          return;
++        }
 +        if (defaultDartSha != expectedDartSha) {
 +          if (expectedTransformerSnapshot.existsSync()) {
 +            expectedTransformerSnapshot.deleteSync();
@@ -78,8 +78,9 @@ index 0000000000..a5a5f03831
 +            ];
 +            final ProcessResult result = await processManager.run(command);
 +            final String outputStr = result.stderr.toString().trim();
-+            if (outputStr == unmatchDartKernelBinaryErrMsg)
++            if (outputStr == unmatchDartKernelBinaryErrMsg) {
 +              return;
++            }
 +            aspectdTransformerSnapshot = expectedTransformerSnapshotPath;
 +        }
 +      }
@@ -113,8 +114,9 @@ index 0000000000..a5a5f03831
 +      final String depsContent = String.fromCharCodes(responseBody.takeBytes());
 +      final RegExp dartRevisionReg = RegExp(r"'dart_revision'\:\s'[a-z0-9]+'");
 +      final Match matches= dartRevisionReg.firstMatch(depsContent);
-+      if (matches == null)
++      if (matches == null) {
 +        return null;
++      }
 +      String dartSha = matches.group(0).split(':')[1].trim();
 +      dartSha = dartSha.substring(1, dartSha.length-1);
 +      return Future<String>.sync(()=>dartSha);
@@ -129,8 +131,9 @@ index 0000000000..a5a5f03831
 +    final String pubspecContent = pubspecFile.readAsStringSync();
 +    final RegExp kernelItemReg = RegExp(r'(\s+kernel\s*\:)(\s+git\s*\:)(\s+[a-z]+\s*\:.*)(\s+[a-z]+\s*\:.*)(\s+[a-z]+\s*\:.*)');
 +    final Match matches = kernelItemReg.firstMatch(pubspecContent);
-+    if (matches == null)
++    if (matches == null) {
 +      return null;
++    }
 +    final String matchItem = matches.group(0);
 +    final RegExp kernelRefReg = RegExp(r'ref\s*\:\s*[0-9a-z]+');
 +    return kernelRefReg.firstMatch(matchItem).group(0).split(':')[1].trim();
@@ -138,11 +141,13 @@ index 0000000000..a5a5f03831
 +
 +  static Future<void> generateAspectdSnapshot(String aspectdSnapshotPath) async{
 +    final Directory snapshotDir = fs.file(aspectdSnapshotPath).parent;
-+    if (!snapshotDir.existsSync())
++    if (!snapshotDir.existsSync()) {
 +      fs.directory(snapshotDir).createSync(recursive: true);
++    }
 +    final File pubspecLockFile = fs.file(fs.path.join(snapshotDir.parent.path, 'pubspec.lock'));
-+    if (pubspecLockFile.existsSync())
++    if (pubspecLockFile.existsSync()) {
 +      pubspecLockFile.deleteSync();
++    }
 +    await runCommandAndStreamOutput(<String>[sdkBinaryName('pub'), 'get', '--verbosity=warning'], workingDirectory: snapshotDir.parent.path, environment: <String, String>{'FLUTTER_ROOT':Cache.flutterRoot});
 +    if (pubspecLockFile.existsSync()) {
 +      await runCommandAndStreamOutput(<String>[sdkBinaryName('dart'), '--snapshot=snapshot/aspectd.dart.snapshot', 'tool/starter.dart'], workingDirectory: snapshotDir.parent.path);
@@ -153,10 +158,11 @@ index 0000000000..a5a5f03831
 +    if (_isAspectdEnabled != null) {
 +      return _isAspectdEnabled;
 +    }
-+    if(!(getAopDirectory.existsSync()
-+          &&fs.file(fs.path.join(getAopDirectory.path,'pubspec.yaml')).existsSync()
-+          &&fs.file(fs.path.join(getAopDirectory.path,PackageMap.globalPackagesPath)).existsSync()
-+          &&fs.file(fs.path.join(getAopDirectory.path,'lib',aopPackageName+'.dart')).existsSync())) {
++    final Directory aopDirectory = getAopDirectory(fs.currentDirectory);
++    if(!(aopDirectory.existsSync()
++          &&fs.file(fs.path.join(aopDirectory.path,'pubspec.yaml')).existsSync()
++          &&fs.file(fs.path.join(aopDirectory.path,PackageMap.globalPackagesPath)).existsSync()
++          &&fs.file(fs.path.join(aopDirectory.path,'lib',aopPackageName+'.dart')).existsSync())) {
 +        _isAspectdEnabled = false;
 +        return _isAspectdEnabled;
 +    }
@@ -173,18 +179,19 @@ index 0000000000..a5a5f03831
 +    final ArgResults argResults = flutterCommand.argResults;
 +    final String targetPlatform = argResults['target-platform'];
 +    final TargetPlatform platform = getTargetPlatformForName(targetPlatform);
-+    if (platform == null)
++    if (platform == null) {
 +      throwToolExit('Unknown platform: $targetPlatform');
++    }
 +
 +    final BuildMode buildMode = flutterCommand.getBuildMode();
-+
 +    final Directory mainDirectory = fs.currentDirectory;
++    final Directory aopDirectory = getAopDirectory(fs.currentDirectory);
 +    final String defaultKernelFilePath = fs.path.join(mainDirectory.path,getDefaultApplicationKernelPath(trackWidgetCreation: false));
-+    final String aopKernelFilePath = fs.path.join(getAopDirectory.path,'build','app.dill');
-+    final String aspectdKernelFilePath = fs.path.join(getAopDirectory.path,'build','app.aspectd.dill');
-+    final String asssetsDir = argResults['asset-dir'].replaceAll(mainDirectory.path, getAopDirectory.path);
-+    final String mainPath = fs.path.join(getAopDirectory.path,'lib',aopPackageName+'.dart');
-+    fs.currentDirectory = getAopDirectory;
++    final String aopKernelFilePath = fs.path.join(aopDirectory.path,'build','app.dill');
++    final String aspectdKernelFilePath = fs.path.join(aopDirectory.path,'build','app.aspectd.dill');
++    final String asssetsDir = argResults['asset-dir'].replaceAll(mainDirectory.path, aopDirectory.path);
++    final String mainPath = fs.path.join(aopDirectory.path,'lib',aopPackageName+'.dart');
++    fs.currentDirectory = aopDirectory;
 +    await build(
 +        platform: platform,
 +        buildMode: buildMode,
@@ -245,15 +252,17 @@ index 0000000000..a5a5f03831
 +    final ArgResults argResults = flutterCommand.argResults;
 +    final String targetPlatform = argResults['target-platform'];
 +    final TargetPlatform platform = getTargetPlatformForName(targetPlatform);
-+    if (platform == null)
++    if (platform == null) {
 +      throwToolExit('Unknown platform: $targetPlatform');
++    }
 +
 +    final BuildMode buildMode = flutterCommand.getBuildMode();
 +    final Directory mainDirectory = fs.currentDirectory;
-+    String mainPath = fs.path.join(getAopDirectory.path,'lib',aopPackageName+'.dart');
-+    fs.currentDirectory = getAopDirectory;
++    final Directory aopDirectory = getAopDirectory(mainDirectory);
++    String mainPath = fs.path.join(aopDirectory.path,'lib',aopPackageName+'.dart');
++    fs.currentDirectory = aopDirectory;
 +    final AOTSnapshotter snapshotter = AOTSnapshotter();
-+    final String outputPath = (argResults['output-dir'] ?? getAotBuildDirectory()).replaceAll(mainDirectory.path,getAopDirectory.path);
++    final String outputPath = (argResults['output-dir'] ?? getAotBuildDirectory()).replaceAll(mainDirectory.path,aopDirectory.path);
 +
 +    // Compile to kernel.
 +    mainPath = await snapshotter.compileKernel(
@@ -277,7 +286,7 @@ index 0000000000..a5a5f03831
 +    }
 +
 +    final String aspectdKernelFilePath = mainPath+'.aspectd.dill';
-+    final String defaultKernelFilePath = mainPath.replaceAll(getAopDirectory.path,mainDirectory.path);
++    final String defaultKernelFilePath = mainPath.replaceAll(aopDirectory.path, mainDirectory.path);
 +
 +    final List<String> command = <String>[
 +      artifacts.getArtifactPath(Artifact.engineDartBinary),
@@ -306,7 +315,7 @@ index 0000000000..a5a5f03831
 +}
 \ No newline at end of file
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index ea32069960..c43941728e 100644
+index d7ad96e163..aab51ae658 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
 @@ -4,6 +4,7 @@
@@ -317,7 +326,7 @@ index ea32069960..c43941728e 100644
  import '../base/build.dart';
  import '../base/common.dart';
  import '../base/file_system.dart';
-@@ -98,6 +99,11 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+@@ -94,6 +95,11 @@ class BuildAotCommand extends BuildSubCommand {
          return null;
        }
  
@@ -330,7 +339,7 @@ index ea32069960..c43941728e 100644
        if (platform == TargetPlatform.ios) {
          // Determine which iOS architectures to build for.
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index 40a027947a..c646cac358 100644
+index edb6d9fec0..833a04aff9 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -341,7 +350,7 @@ index 40a027947a..c646cac358 100644
  import '../base/common.dart';
  import '../build_info.dart';
  import '../bundle.dart';
-@@ -92,6 +93,9 @@ class BuildBundleCommand extends BuildSubCommand {
+@@ -104,6 +105,9 @@ class BuildBundleCommand extends BuildSubCommand {
        fileSystemScheme: argResults['filesystem-scheme'],
        fileSystemRoots: argResults['filesystem-root'],
      );
