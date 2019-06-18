@@ -10,3 +10,7 @@
 ## [0.9.2]
 
 * Make the aop process more easy by generating aspectd.dart.snapshot automatically.
+
+## [0.9.3]
+
+* Capatible with flutter v1.7.4 and above as the BundleBuilder api changed.
