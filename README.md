@@ -1,6 +1,6 @@
 假装是个招聘贴
 
-##Flutter合集-史上最全的Flutter学习资料合集（持续更新）
+Flutter合集-史上最全的Flutter学习资料合集（持续更新）
 >
 本项目是针对Flutter的学习资料合集，阿里巴巴-闲鱼技术团队官方出品。
 
@@ -14,7 +14,7 @@
 
 <img src="https://user-images.githubusercontent.com/817851/60878736-e85ea900-a272-11e9-92c7-400792ebe5f5.png" alt="drawing" width="200" height="200"/>
 
-[for English](https://twitter.com/xianyutech"for English")
+[for English](https://twitter.com/xianyutech)
 
 # AspectD
 
