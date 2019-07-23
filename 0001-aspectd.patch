@@ -1,18 +1,18 @@
-From 4c76fa56f5fff49f7e6a7828ae80be49d409bd2f Mon Sep 17 00:00:00 2001
-From: "kylewong.wk" <kylewong.wk@alibaba-inc.com>
-Date: Tue, 18 Jun 2019 07:57:19 +0800
-Subject: [PATCH] aspectd
+From b8cd6e307af22b1bfc24ee0f0f697cf63a1fee64 Mon Sep 17 00:00:00 2001
+From: KyleWong <kang.wang1988@gmail.com>
+Date: Tue, 23 Jul 2019 15:51:15 +0800
+Subject: [PATCH] Aspectd support
 
 ---
  packages/flutter_tools/lib/src/aspectd.dart   | 347 ++++++++++++++++++
- .../lib/src/commands/build_aot.dart           |   6 +
+ .../lib/src/commands/build_aot.dart           | 114 ++++--
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 359 insertions(+)
+ 3 files changed, 430 insertions(+), 37 deletions(-)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..f621f9ea2d
+index 000000000..f621f9ea2
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
 @@ -0,0 +1,347 @@
@@ -364,22 +364,131 @@ index 0000000000..f621f9ea2d
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index 246ab6abd8..4ca6b8e582 100644
+index e22d70d39..def8e845d 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
-@@ -4,6 +4,7 @@
- 
+@@ -5,6 +5,7 @@
  import 'dart:async';
  
+ import '../artifacts.dart';
 +import '../aspectd.dart';
  import '../base/build.dart';
  import '../base/common.dart';
- import '../base/file_system.dart';
-@@ -104,6 +105,11 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+ import '../base/context.dart';
+@@ -20,46 +21,56 @@ import '../resident_runner.dart';
+ import '../runner/flutter_command.dart';
+ import 'build.dart';
+ 
+-class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmentArtifacts {
++class BuildAotCommand extends BuildSubCommand
++    with TargetPlatformBasedDevelopmentArtifacts {
+   BuildAotCommand() {
+     usesTargetOption();
+     addBuildModeFlags();
+     usesPubOption();
+     argParser
+       ..addOption('output-dir', defaultsTo: getAotBuildDirectory())
+-      ..addOption('target-platform',
++      ..addOption(
++        'target-platform',
+         defaultsTo: 'android-arm',
+         allowed: <String>['android-arm', 'android-arm64', 'ios'],
+       )
+       ..addFlag('quiet', defaultsTo: false)
+-      ..addFlag('report-timings',
++      ..addFlag(
++        'report-timings',
+         negatable: false,
+         defaultsTo: false,
+-        help: 'Report timing information about build steps in machine readable form,',
++        help:
++            'Report timing information about build steps in machine readable form,',
+       )
+       // track-widget-creation is exposed as a flag here but ignored to deal with build
+       // invalidation issues - there are no plans to support it for AOT mode.
+-      ..addFlag('track-widget-creation',
++      ..addFlag(
++        'track-widget-creation',
+         defaultsTo: false,
+         hide: true,
+       )
+-      ..addMultiOption('ios-arch',
++      ..addMultiOption(
++        'ios-arch',
+         splitCommas: true,
+         defaultsTo: defaultIOSArchs.map<String>(getNameForIOSArch),
+         allowed: IOSArch.values.map<String>(getNameForIOSArch),
+         help: 'iOS architectures to build.',
+       )
+-      ..addMultiOption(FlutterOptions.kExtraFrontEndOptions,
++      ..addMultiOption(
++        FlutterOptions.kExtraFrontEndOptions,
+         splitCommas: true,
+         hide: true,
+       )
+-      ..addMultiOption(FlutterOptions.kExtraGenSnapshotOptions,
++      ..addMultiOption(
++        FlutterOptions.kExtraGenSnapshotOptions,
+         splitCommas: true,
+         hide: true,
+       )
+-      ..addFlag('bitcode',
++      ..addFlag(
++        'bitcode',
+         defaultsTo: false,
+-        help: 'Build the AOT bundle with bitcode. Requires a compatible bitcode engine.',
++        help:
++            'Build the AOT bundle with bitcode. Requires a compatible bitcode engine.',
+         hide: true,
+       );
+   }
+@@ -68,21 +79,22 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+   final String name = 'aot';
+ 
+   @override
+-  final String description = "Build an ahead-of-time compiled snapshot of your app's Dart code.";
++  final String description =
++      "Build an ahead-of-time compiled snapshot of your app's Dart code.";
+ 
+   @override
+   Future<FlutterCommandResult> runCommand() async {
+     final String targetPlatform = argResults['target-platform'];
+     final TargetPlatform platform = getTargetPlatformForName(targetPlatform);
+-    if (platform == null)
+-      throwToolExit('Unknown platform: $targetPlatform');
++    if (platform == null) throwToolExit('Unknown platform: $targetPlatform');
+ 
+     final bool bitcode = argResults['bitcode'];
+     final BuildMode buildMode = getBuildMode();
+ 
+     if (bitcode) {
+       if (platform != TargetPlatform.ios) {
+-        throwToolExit('Bitcode is only supported on iOS (TargetPlatform is $targetPlatform).');
++        throwToolExit(
++            'Bitcode is only supported on iOS (TargetPlatform is $targetPlatform).');
+       }
+       await validateBitcode();
+     }
+@@ -95,11 +107,13 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+         timeout: timeoutConfiguration.slowOperation,
+       );
+     }
+-    final String outputPath = argResults['output-dir'] ?? getAotBuildDirectory();
++    final String outputPath =
++        argResults['output-dir'] ?? getAotBuildDirectory();
+     final bool reportTimings = argResults['report-timings'];
+     try {
+       String mainPath = findMainDartFile(targetFile);
+-      final AOTSnapshotter snapshotter = AOTSnapshotter(reportTimings: reportTimings);
++      final AOTSnapshotter snapshotter =
++          AOTSnapshotter(reportTimings: reportTimings);
+ 
+       // Compile to kernel.
+       mainPath = await snapshotter.compileKernel(
+@@ -116,10 +130,15 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
-+
 +      if (await AspectdHook.isAspectdEnabled()) {
 +        await AspectdHook().runBuildAOTDillCommand(this);
 +      }
@@ -387,8 +496,142 @@ index 246ab6abd8..4ca6b8e582 100644
        // Build AOT snapshot.
        if (platform == TargetPlatform.ios) {
          // Determine which iOS architectures to build for.
+-        final Iterable<IOSArch> buildArchs = argResults['ios-arch'].map<IOSArch>(getIOSArchForName);
++        final Iterable<IOSArch> buildArchs =
++            argResults['ios-arch'].map<IOSArch>(getIOSArchForName);
+         final Map<IOSArch, String> iosBuilds = <IOSArch, String>{};
+         for (IOSArch arch in buildArchs)
+           iosBuilds[arch] = fs.path.join(outputPath, getNameForIOSArch(arch));
+@@ -127,43 +146,59 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+         // Generate AOT snapshot and compile to arch-specific App.framework.
+         final Map<IOSArch, Future<int>> exitCodes = <IOSArch, Future<int>>{};
+         iosBuilds.forEach((IOSArch iosArch, String outputPath) {
+-          exitCodes[iosArch] = snapshotter.build(
++          exitCodes[iosArch] = snapshotter
++              .build(
+             platform: platform,
+             iosArch: iosArch,
+             buildMode: buildMode,
+             mainPath: mainPath,
+             packagesPath: PackageMap.globalPackagesPath,
+             outputPath: outputPath,
+-            extraGenSnapshotOptions: argResults[FlutterOptions.kExtraGenSnapshotOptions],
++            extraGenSnapshotOptions:
++                argResults[FlutterOptions.kExtraGenSnapshotOptions],
+             bitcode: bitcode,
+-          ).then<int>((int buildExitCode) {
++          )
++              .then<int>((int buildExitCode) {
+             return buildExitCode;
+           });
+         });
+ 
+         // Merge arch-specific App.frameworks into a multi-arch App.framework.
+-        if ((await Future.wait<int>(exitCodes.values)).every((int buildExitCode) => buildExitCode == 0)) {
+-          final Iterable<String> dylibs = iosBuilds.values.map<String>((String outputDir) => fs.path.join(outputDir, 'App.framework', 'App'));
++        if ((await Future.wait<int>(exitCodes.values))
++            .every((int buildExitCode) => buildExitCode == 0)) {
++          final Iterable<String> dylibs = iosBuilds.values.map<String>(
++              (String outputDir) =>
++                  fs.path.join(outputDir, 'App.framework', 'App'));
+           fs.directory(fs.path.join(outputPath, 'App.framework'))..createSync();
+           await runCheckedAsync(<String>[
+             'lipo',
+             ...dylibs,
+             '-create',
+-            '-output', fs.path.join(outputPath, 'App.framework', 'App'),
++            '-output',
++            fs.path.join(outputPath, 'App.framework', 'App'),
+           ]);
+-          final Iterable<String> dSYMs = iosBuilds.values.map<String>((String outputDir) => fs.path.join(outputDir, 'App.framework.dSYM'));
+-          fs.directory(fs.path.join(outputPath, 'App.framework.dSYM', 'Contents', 'Resources', 'DWARF'))..createSync(recursive: true);
++          final Iterable<String> dSYMs = iosBuilds.values.map<String>(
++              (String outputDir) =>
++                  fs.path.join(outputDir, 'App.framework.dSYM'));
++          fs.directory(fs.path.join(outputPath, 'App.framework.dSYM',
++              'Contents', 'Resources', 'DWARF'))
++            ..createSync(recursive: true);
+           await runCheckedAsync(<String>[
+             'lipo',
+             '-create',
+-            '-output', fs.path.join(outputPath, 'App.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'App'),
+-            ...dSYMs.map((String path) => fs.path.join(path, 'Contents', 'Resources', 'DWARF', 'App'))
++            '-output',
++            fs.path.join(outputPath, 'App.framework.dSYM', 'Contents',
++                'Resources', 'DWARF', 'App'),
++            ...dSYMs.map((String path) =>
++                fs.path.join(path, 'Contents', 'Resources', 'DWARF', 'App'))
+           ]);
+         } else {
+           status?.cancel();
+-          exitCodes.forEach((IOSArch iosArch, Future<int> exitCodeFuture) async {
++          exitCodes
++              .forEach((IOSArch iosArch, Future<int> exitCodeFuture) async {
+             final int buildExitCode = await exitCodeFuture;
+-            printError('Snapshotting ($iosArch) exited with non-zero exit code: $buildExitCode');
++            printError(
++                'Snapshotting ($iosArch) exited with non-zero exit code: $buildExitCode');
+           });
+         }
+       } else {
+@@ -174,12 +209,14 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+           mainPath: mainPath,
+           packagesPath: PackageMap.globalPackagesPath,
+           outputPath: outputPath,
+-          extraGenSnapshotOptions: argResults[FlutterOptions.kExtraGenSnapshotOptions],
++          extraGenSnapshotOptions:
++              argResults[FlutterOptions.kExtraGenSnapshotOptions],
+           bitcode: false,
+         );
+         if (snapshotExitCode != 0) {
+           status?.cancel();
+-          throwToolExit('Snapshotting exited with non-zero exit code: $snapshotExitCode');
++          throwToolExit(
++              'Snapshotting exited with non-zero exit code: $snapshotExitCode');
+         }
+       }
+     } on String catch (error) {
+@@ -190,8 +227,7 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+     }
+     status?.stop();
+ 
+-    if (outputPath == null)
+-      throwToolExit(null);
++    if (outputPath == null) throwToolExit(null);
+ 
+     final String builtMessage = 'Built to $outputPath${fs.path.separator}.';
+     if (argResults['quiet']) {
+@@ -206,9 +242,11 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+ Future<void> validateBitcode() async {
+   final Artifacts artifacts = Artifacts.instance;
+   if (artifacts is! LocalEngineArtifacts) {
+-    throwToolExit('Bitcode is only supported with a local engine built with --bitcode.');
++    throwToolExit(
++        'Bitcode is only supported with a local engine built with --bitcode.');
+   }
+-  final String flutterFrameworkPath = artifacts.getArtifactPath(Artifact.flutterFramework);
++  final String flutterFrameworkPath =
++      artifacts.getArtifactPath(Artifact.flutterFramework);
+   if (!fs.isDirectorySync(flutterFrameworkPath)) {
+     throwToolExit('Flutter.framework not found at $flutterFrameworkPath');
+   }
+@@ -216,10 +254,12 @@ Future<void> validateBitcode() async {
+ 
+   // Check for bitcode in Flutter binary.
+   final RunResult otoolResult = await xcode.otool(<String>[
+-    '-l', fs.path.join(flutterFrameworkPath, 'Flutter'),
++    '-l',
++    fs.path.join(flutterFrameworkPath, 'Flutter'),
+   ]);
+   if (!otoolResult.stdout.contains('__LLVM')) {
+-    throwToolExit('The Flutter.framework at $flutterFrameworkPath does not contain bitcode.');
++    throwToolExit(
++        'The Flutter.framework at $flutterFrameworkPath does not contain bitcode.');
+   }
+   final RunResult clangResult = await xcode.clang(<String>['--version']);
+   final String clangVersion = clangResult.stdout.split('\n').first;
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index f134c8c56e..62c3ae4acd 100644
+index d15cfa49a..24be4ee5e 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -399,7 +642,7 @@ index f134c8c56e..62c3ae4acd 100644
  import '../base/common.dart';
  import '../base/file_system.dart';
  import '../build_info.dart';
-@@ -131,6 +132,11 @@ class BuildBundleCommand extends BuildSubCommand {
+@@ -137,6 +138,11 @@ class BuildBundleCommand extends BuildSubCommand {
        fileSystemScheme: argResults['filesystem-scheme'],
        fileSystemRoots: argResults['filesystem-root'],
      );
