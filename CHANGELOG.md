@@ -14,3 +14,8 @@
 ## [0.9.3]
 
 * Capatible with flutter v1.7.4 and above as the BundleBuilder api changed.
+
+## [0.9.4]
+
+* Remove the aspectd.dart.snapshot as it will be generated automatically.
+* Better design diagram.
