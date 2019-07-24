@@ -19,3 +19,7 @@
 
 * Remove the aspectd.dart.snapshot as it will be generated automatically.
 * Better design diagram.
+
+## [0.9.5]
+
+* Design diagram in https.
