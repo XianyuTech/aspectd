@@ -1,21 +1,21 @@
-From b48bb442cb2f82b3d408b357491385f85c7e0281 Mon Sep 17 00:00:00 2001
+From 66d76a8b83f46798880c3caa56c67fad6dc55eb1 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Wed, 31 Jul 2019 19:15:19 +0800
+Date: Fri, 23 Aug 2019 13:30:15 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 347 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 312 ++++++++++++++++++
  .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 358 insertions(+)
+ 3 files changed, 323 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..f621f9ea2
+index 000000000..d434c9585
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,347 @@
+@@ -0,0 +1,312 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -103,44 +103,9 @@ index 000000000..f621f9ea2
 +
 +  static Future<String> getExpectedDartSha() async {
 +    final File engineVersionFile = fs.file(
-+        fs.path.join(Cache.flutterRoot, 'bin', 'internal', 'engine.version'));
++        fs.path.join(Cache.flutterRoot, 'bin', 'cache', 'dart-sdk', 'revision'));
 +    final String engineVersion = engineVersionFile.readAsStringSync().trim();
-+
-+    final Uri url = Uri.parse(
-+        'http://raw.githubusercontent.com/flutter/engine/$engineVersion/DEPS');
-+    final HttpClient httpClient = HttpClient();
-+    HttpClientRequest request;
-+    try {
-+      request = await httpClient.getUrl(url);
-+    } on HandshakeException catch (error) {
-+      printTrace(error.toString());
-+      return null;
-+    } on SocketException catch (error) {
-+      printTrace('Fetch engine.version DEPS error: $error');
-+      return null;
-+    }
-+    final HttpClientResponse response = await request.close();
-+    if (response.statusCode != 200) {
-+      printTrace(
-+          'Fetch engine.version DEPS error: ${response.statusCode} ${response.reasonPhrase}');
-+      return null;
-+    }
-+    try {
-+      final BytesBuilder responseBody = BytesBuilder(copy: false);
-+      await response.forEach(responseBody.add);
-+      final String depsContent = String.fromCharCodes(responseBody.takeBytes());
-+      final RegExp dartRevisionReg = RegExp(r"'dart_revision'\:\s'[a-z0-9]+'");
-+      final Match matches = dartRevisionReg.firstMatch(depsContent);
-+      if (matches == null) {
-+        return null;
-+      }
-+      String dartSha = matches.group(0).split(':')[1].trim();
-+      dartSha = dartSha.substring(1, dartSha.length - 1);
-+      return Future<String>.sync(() => dartSha);
-+    } on IOException catch (error) {
-+      printTrace('Fetch engine.version DEPS error: $error');
-+      return null;
-+    }
++    return engineVersion;
 +  }
 +
 +  static String getDartShaFromPubspec(String pubspecFilePath) {
@@ -364,7 +329,7 @@ index 000000000..f621f9ea2
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index 6a1ac13b9..1de821e82 100644
+index bbb03f2b1..43f51a222 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
 @@ -5,6 +5,7 @@
@@ -375,7 +340,7 @@ index 6a1ac13b9..1de821e82 100644
  import '../base/build.dart';
  import '../base/common.dart';
  import '../base/context.dart';
-@@ -114,6 +115,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+@@ -115,6 +116,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
@@ -411,5 +376,5 @@ index 92b4474d9..54d491563 100644
    }
  }
 -- 
-2.21.0 (Apple Git-120)
+2.21.0 (Apple Git-122)
 
