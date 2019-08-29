@@ -11,9 +11,11 @@ dependencies:
   flutter:
     sdk: flutter
   aspectd:
-    git:
-      url: git@github.com:alibaba-flutter/aspectd.git
-      ref: master
+#    git:
+#      url: git@github.com:alibaba-flutter/aspectd.git
+#      ref: master
+    path: ../../
+
   example:
     path: ../
 
