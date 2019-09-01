@@ -168,7 +168,8 @@ class AspectdUtils {
     return null;
   }
 
-  static void concatArgumentsForAspectdMethod(Map<String, String> sourceInfo,Arguments redirectArguments,AspectdItemInfo aspectdItemInfo, Expression targetExpression, Procedure procedure,Arguments invocationArguments) {
+  static void concatArgumentsForAspectdMethod(Map<String, String> sourceInfo,Arguments redirectArguments,AspectdItemInfo aspectdItemInfo,
+      Expression targetExpression, Procedure procedure,Arguments invocationArguments) {
     String stubMethodName = '${AspectdUtils.kAspectdStubMethodPrefix}${AspectdUtils.kPrimaryKeyAspectdMethod}';
     //重定向到AOP的函数体中去
     Arguments pointCutConstructorArguments = Arguments.empty();
@@ -191,6 +192,7 @@ class AspectdUtils {
     redirectArguments.positional.add(pointCutConstructorInvocation);
   }
 
+  /// 从PointCut中的positionalParams和namedParams属性中获取参数
   static Arguments concatArguments4PointcutStubCall(Procedure procedure) {
     Arguments arguments = Arguments.empty();
     int i=0;
@@ -220,7 +222,8 @@ class AspectdUtils {
     String methodName = procedure.name.name;
     MethodInvocation methodInvocation = MethodInvocation(ThisExpression(), Name(methodName), Arguments.empty());
     List<Statement> statements = block.statements;
-    statements.insert(statements.length-1,IfStatement(MethodInvocation(PropertyGet(ThisExpression(), Name('stubId')), Name('=='), Arguments([StringLiteral(methodName)])),
+    statements.insert(statements.length-1,IfStatement(
+        MethodInvocation(PropertyGet(ThisExpression(), Name('stubId')), Name('=='), Arguments([StringLiteral(methodName)])),
         Block(<Statement>[(shouldReturn?ReturnStatement(methodInvocation):ExpressionStatement(methodInvocation))]),
         null));
   }

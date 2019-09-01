@@ -2,6 +2,7 @@ import 'package:kernel/ast.dart';
 import 'aspectd_callimpl_transformer.dart';
 import 'aspectd_executeimpl_transformer.dart';
 import 'aspectd_injectimpl_transformer.dart';
+import 'register/auto_register.dart';
 import 'utils.dart';
 
 class AspectdWrapperTransformer {
@@ -19,11 +20,11 @@ class AspectdWrapperTransformer {
 
     _resolveAspectdProcedures(libraries);
 
-    for (Library library in libraries) {
-      if (library.isExternal) {
-        continue;
-      }
-    }
+//    for (Library library in libraries) {
+//      if (library.isExternal) {
+//        continue;
+//      }
+//    }
 
     Procedure pointCutProceedProcedure = null;
     Procedure listGetProcedure = null;
@@ -116,6 +117,9 @@ class AspectdWrapperTransformer {
           concatUriToSource
       )..aspectdTransform();
     }
+
+    // auto register transformer
+    AutoRegisterTransformer()..initRegisterInfo(program.mainMethodName)..aspectdTransform(libraries);
   }
 
   void _resolveAspectdProcedures(Iterable<Library> libraries) {
