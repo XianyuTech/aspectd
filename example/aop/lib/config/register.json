@@ -1,0 +1,17 @@
+[
+  {
+    "interfaceLibrary": "package:example/register/component/component.dart",
+    "interfaceName": "CCComponent",
+    "initLibrary": "package:example/register/component/component.dart",
+    "initClassName": "ComponentManager",
+    "initMethodName": "init",
+    "registerToMethodName": "registerComponent"
+  },
+  {
+    "interfaceLibrary": "package:example/register/router/router.dart",
+    "interfaceName": "CCRouter",
+    "initMethodName": "init",
+    "registerToMethodName": "registerRouter"
+  }
+  
+]
