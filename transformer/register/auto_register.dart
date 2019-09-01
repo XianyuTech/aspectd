@@ -1,7 +1,14 @@
 
+import 'dart:convert';
+import 'dart:io';
+import 'package:path/path.dart' as path;
+
 import 'package:kernel/ast.dart';
 import 'package:front_end/src/fasta/kernel/kernel_ast_api.dart';
 import '../utils.dart';
+
+/// register.json file' path is lib/config/register.json
+const String REGISTER_INFO_FILE_NAME = "config/register.json";
 
 /// 注册信息
 class RegisterInfo {
@@ -43,26 +50,16 @@ class AutoRegisterTransformer extends Transformer {
 
   AutoRegisterTransformer();
 
-  void initRegisterInfo(String registerFilePath) {
-    _registerInfoList = List<RegisterInfo>();
-
-    _registerInfoList.add(RegisterInfo(
-        interfaceLibrary: 'package:example/register/component/component.dart',
-        interfaceName: 'CCComponent',
-        initLibrary: 'package:example/register/component/component.dart',
-        initClassName: 'ComponentManager',
-        initMethodName: 'init',
-        registerToMethodName: 'registerComponent'));
-
-    _registerInfoList.add(RegisterInfo(
-        interfaceLibrary: 'package:example/register/router/router.dart',
-        interfaceName: 'CCRouter',
-        initMethodName: 'init',
-        registerToMethodName: 'registerRouter'));
+  void initRegisterInfo(Reference mainMethodNameRef) {
+    _registerInfoList = _parseRegisterInfo(mainMethodNameRef);
   }
 
   void aspectdTransform(List<Library> libraries) {
     if(libraries == null || libraries.isEmpty) {
+      return;
+    }
+
+    if(_registerInfoList == null || _registerInfoList.isEmpty) {
       return;
     }
 
@@ -198,5 +195,44 @@ class AutoRegisterTransformer extends Transformer {
         }
       }
     }
+  }
+
+  /// date: 2019-09-01 15:03
+  /// author: bruce.zhang
+  /// description: get the path of file register.json
+  static File _getRegisterInfoFile(Reference mainMethodNameRef) {
+    var node = mainMethodNameRef.node;
+    while(node is! Library) {
+      node = node.parent;
+    }
+    String aopFilePath = (node as Library).fileUri.path;
+    FileSystemEntity libDir = new File(aopFilePath);
+    while(path.basename(libDir.path) != 'lib') {
+      libDir = libDir.parent;
+    }
+    return File(path.join(libDir.path, REGISTER_INFO_FILE_NAME));
+  }
+
+  /// 解析regsiter.json文件
+  static List<RegisterInfo> _parseRegisterInfo(Reference mainMethodNameRef) {
+    File registerInfoFile = _getRegisterInfoFile(mainMethodNameRef);
+
+    String registerContent = registerInfoFile.readAsStringSync();
+    List<RegisterInfo> list = <RegisterInfo>[];
+
+    var jsonData = json.decode(registerContent);
+    if(jsonData is List) {
+      for (var map in jsonData) {
+        list.add(RegisterInfo(
+            interfaceLibrary: map['interfaceLibrary'],
+            interfaceName: map['interfaceName'],
+            initLibrary: map['initLibrary'],
+            initClassName: map['initClassName'],
+            initMethodName: map['initMethodName'],
+            registerToMethodName: map['registerToMethodName']));
+      }
+    }
+
+    return list;
   }
 }
