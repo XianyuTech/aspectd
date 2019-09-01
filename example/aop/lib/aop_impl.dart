@@ -27,7 +27,7 @@ class ExecuteDemo {
     print('KWLM called-call!');
   }
 
-  @Inject("package:example/main.dart", "_MyHomePageState", "-_incrementCounter_inject", lineNum: 71)
+  @Inject("package:example/main.dart", "_MyHomePageState", "-_incrementCounter_inject", lineNum: 88)
   @pragma("vm:entry-point")
   static void _incrementCounter_Inject(PointCut pointcut) {
     print('KWLM called-inject!');

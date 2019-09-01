@@ -1,8 +1,5 @@
 import '../tool/starter.dart' as starter;
 
-/// 1. 读取platform_strong.dill中的library
-/// 2. 读取aop/build/app.dill中的library
-/// 3.
 void main() {
   List<String> args = [
     '--input',

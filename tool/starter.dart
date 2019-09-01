@@ -26,13 +26,11 @@ int main(List<String> args) {
     // /flutter/bin/cache/artifacts/engine/common/flutter_patched_sdk/platform_strong.dill
     platformStrongComponent = dillOps.readComponentFromDill(sdkRoot+'platform_strong.dill');
     for(Library library in platformStrongComponent.libraries){
-      print('platform.library: ${library.name} = ${library.reference.node}');
       libraryAbbrMap.putIfAbsent(library.name, ()=>library.reference.node);
     }
   }
 
   for(CanonicalName canonicalName in component.root.children){
-    print('app.dill: ${canonicalName.name}');
     Library library = libraryAbbrMap[canonicalName.name];
     library ??= libraryAbbrMap[canonicalName.name.replaceAll(':', '.')];
     if(canonicalName.reference == null) {

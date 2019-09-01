@@ -1,4 +1,14 @@
 
+
+/// date: 2019-09-01 16:28
+/// author: bruce.zhang
+/// description: 自动注册组件
+/// 多业务场景，涉及到路由、组件统一注册时，往往需要手动在初始化是统一注册，这对各业务开发耦合度比较高，
+/// 该功能就是解决这种耦合场景
+///
+/// modification history:
+
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
@@ -217,22 +227,26 @@ class AutoRegisterTransformer extends Transformer {
   static List<RegisterInfo> _parseRegisterInfo(Reference mainMethodNameRef) {
     File registerInfoFile = _getRegisterInfoFile(mainMethodNameRef);
 
-    String registerContent = registerInfoFile.readAsStringSync();
-    List<RegisterInfo> list = <RegisterInfo>[];
+    if(registerInfoFile.existsSync() == true) {
+      String registerContent = registerInfoFile.readAsStringSync();
+      List<RegisterInfo> list = <RegisterInfo>[];
 
-    var jsonData = json.decode(registerContent);
-    if(jsonData is List) {
-      for (var map in jsonData) {
-        list.add(RegisterInfo(
-            interfaceLibrary: map['interfaceLibrary'],
-            interfaceName: map['interfaceName'],
-            initLibrary: map['initLibrary'],
-            initClassName: map['initClassName'],
-            initMethodName: map['initMethodName'],
-            registerToMethodName: map['registerToMethodName']));
+      var jsonData = json.decode(registerContent);
+      if (jsonData is List) {
+        for (var map in jsonData) {
+          list.add(RegisterInfo(
+              interfaceLibrary: map['interfaceLibrary'],
+              interfaceName: map['interfaceName'],
+              initLibrary: map['initLibrary'],
+              initClassName: map['initClassName'],
+              initMethodName: map['initMethodName'],
+              registerToMethodName: map['registerToMethodName']));
+        }
       }
-    }
 
-    return list;
+      return list;
+    } else {
+      return null;
+    }
   }
 }
