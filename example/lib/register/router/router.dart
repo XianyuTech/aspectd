@@ -28,8 +28,15 @@ void init() {
 
 class RouterManager {
 
-  static void printRouter() {
+  RouterManager._internal() {
     init();
+  }
+
+  static RouterManager _singleton = new RouterManager._internal();
+
+  factory RouterManager()=> _singleton;
+
+  void printRouter() {
     _Routers.forEach((it){print('router: $it');});
   }
 

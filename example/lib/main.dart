@@ -62,8 +62,10 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
 
+    // auto register demo
     ComponentManager().printComponent();
-    RouterManager.printRouter();
+    RouterManager().printRouter();
+
     _incrementCounter_call();
     _incrementCounter_execute(1);
     _incrementCounter_execute_2(2);

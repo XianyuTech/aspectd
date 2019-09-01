@@ -91,7 +91,7 @@ class AutoRegisterTransformer extends Transformer {
       // 2. 注册实现类方法调用，如注册组件registerComponent(new ComponentA());
       // 3. 将上述调用注入到到init方法中
       if(registerInfo.initClassName?.isNotEmpty == true) {
-        // 实例方法中注入代码
+        // insert code to instance method
         for(var cls in library.classes) {
           if(cls.name == registerInfo.initClassName) {
             Procedure registerToMethodProcedure;
@@ -143,7 +143,7 @@ class AutoRegisterTransformer extends Transformer {
           }
         }
       } else {
-        // 顶级方法中注入代码
+        // insert code to top level method
         Procedure registerToMethodProcedure;
         Procedure initMethodProcedure;
         for(Procedure procedure in library.procedures) {
