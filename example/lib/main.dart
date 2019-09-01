@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'register/component/component.dart';
+
+/// debug模式下必须在某个地方引用，不然没法打入包
+import 'register/router/impl/router_a.dart';
+import 'register/router/router.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -55,9 +61,32 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+
+    ComponentManager().printComponent();
+    RouterManager.printRouter();
+    _incrementCounter_call();
+    _incrementCounter_execute(1);
+    _incrementCounter_execute_2(2);
+    _incrementCounter_inject();
   }
 
-  @override
+  void _incrementCounter_call() {
+
+  }
+
+  void _incrementCounter_execute(int a) {
+
+  }
+
+  void _incrementCounter_execute_2(int a) {
+
+  }
+
+  void _incrementCounter_inject() {
+
+  }
+
+    @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
