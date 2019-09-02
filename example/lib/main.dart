@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'register/component/component.dart';
 
-/// debug模式下必须在某个地方引用，不然没法打入包
-import 'register/router/impl/router_a.dart';
 import 'register/router/router.dart';
 
 void main() => runApp(MyApp());
@@ -68,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _incrementCounter_call();
     _incrementCounter_execute(1);
-    _incrementCounter_execute_2(2);
     _incrementCounter_inject();
   }
 
@@ -77,10 +74,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _incrementCounter_execute(int a) {
-
-  }
-
-  void _incrementCounter_execute_2(int a) {
 
   }
 

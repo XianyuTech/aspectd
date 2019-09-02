@@ -1,3 +1,5 @@
+/// debug模式下必须在某个地方引用，不然没法打入包
+import 'impl/router_a.dart';
 
 
 
