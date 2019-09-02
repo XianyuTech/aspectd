@@ -1,6 +1,6 @@
-From 0accf34081861c7bf79b9abf0a3e945416ca53e8 Mon Sep 17 00:00:00 2001
+From 4c9565ba2c5fc0c0d35d1be302f4ef7fe38d39e3 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Mon, 2 Sep 2019 12:21:13 +0800
+Date: Tue, 3 Sep 2019 00:11:18 +0800
 Subject: [PATCH] aspectd
 
 ---
@@ -12,7 +12,7 @@ Subject: [PATCH] aspectd
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..16c184093
+index 000000000..ef1b37608
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
 @@ -0,0 +1,305 @@
@@ -40,20 +40,20 @@ index 000000000..16c184093
 +
 +const String unmatchDartKernelBinaryErrMsg =
 +    "Can't load Kernel binary: Invalid kernel binary format version.";
-+const String aopPackageRelPath = '.';
-+const String aopPackageName = 'aop';
++const String aspectdImplPackageRelPath = '.';
++const String aspectdImplPackageName = 'aspectd_impl';
 +
 +class AspectdHook {
 +  static bool _isAspectdEnabled;
 +  static String aspectdTransformerSnapshot;
-+  static Directory getAopDirectory(Directory rootProjectDir) {
++  static Directory getAspectdDirectory(Directory rootProjectDir) {
 +    return fs.directory(fs.path.normalize(
-+        fs.path.join(rootProjectDir.path, aopPackageRelPath, aopPackageName)));
++        fs.path.join(rootProjectDir.path, aspectdImplPackageRelPath, aspectdImplPackageName)));
 +  }
 +
 +  static Future<void> checkAspectdTransformerSnapshot() async {
 +    final PackageMap packageMap = PackageMap(fs.path.join(
-+        getAopDirectory(fs.currentDirectory).path,
++        getAspectdDirectory(fs.currentDirectory).path,
 +        PackageMap.globalPackagesPath));
 +    if (packageMap.map != null) {
 +      final String aspectdLibPath = packageMap.map['aspectd']?.toFilePath();
@@ -150,12 +150,12 @@ index 000000000..16c184093
 +    if (_isAspectdEnabled != null) {
 +      return _isAspectdEnabled;
 +    }
-+    final Directory aopDirectory = getAopDirectory(fs.currentDirectory);
-+    if (!(aopDirectory.existsSync() &&
-+        fs.file(fs.path.join(aopDirectory.path, 'pubspec.yaml')).existsSync() &&
-+        fs.file(fs.path.join(aopDirectory.path, PackageMap.globalPackagesPath))
++    final Directory aspectdDirectory = getAspectdDirectory(fs.currentDirectory);
++    if (!(aspectdDirectory.existsSync() &&
++        fs.file(fs.path.join(aspectdDirectory.path, 'pubspec.yaml')).existsSync() &&
++        fs.file(fs.path.join(aspectdDirectory.path, PackageMap.globalPackagesPath))
 +            .existsSync() &&
-+        fs.file(fs.path.join(aopDirectory.path, 'lib', aopPackageName + '.dart'))
++        fs.file(fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart'))
 +            .existsSync())) {
 +      _isAspectdEnabled = false;
 +      return _isAspectdEnabled;
@@ -181,18 +181,18 @@ index 000000000..16c184093
 +
 +    final BuildMode buildMode = flutterCommand.getBuildMode();
 +    final Directory mainDirectory = fs.currentDirectory;
-+    final Directory aopDirectory = getAopDirectory(fs.currentDirectory);
++    final Directory aspectdDirectory = getAspectdDirectory(fs.currentDirectory);
 +    final String defaultKernelFilePath = fs.path.join(mainDirectory.path,
 +        getDefaultApplicationKernelPath(trackWidgetCreation: false));
-+    final String aopKernelFilePath =
-+        fs.path.join(aopDirectory.path, 'build', 'app.dill');
 +    final String aspectdKernelFilePath =
-+        fs.path.join(aopDirectory.path, 'build', 'app.aspectd.dill');
++        fs.path.join(aspectdDirectory.path, 'build', 'app.dill');
++    final String aspectdTransformedKernelFilePath =
++        fs.path.join(aspectdDirectory.path, 'build', 'app.aspectd.dill');
 +    final String asssetsDir = argResults['asset-dir']
-+        .replaceAll(mainDirectory.path, aopDirectory.path);
++        .replaceAll(mainDirectory.path, aspectdDirectory.path);
 +    final String mainPath =
-+        fs.path.join(aopDirectory.path, 'lib', aopPackageName + '.dart');
-+    fs.currentDirectory = aopDirectory;
++        fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart');
++    fs.currentDirectory = aspectdDirectory;
 +    await BundleBuilder().build(
 +        platform: platform,
 +        buildMode: buildMode,
@@ -209,9 +209,9 @@ index 000000000..16c184093
 +            argResults[FlutterOptions.kExtraGenSnapshotOptions],
 +        fileSystemScheme: argResults['filesystem-scheme'],
 +        fileSystemRoots: argResults['filesystem-root'],
-+        applicationKernelFilePath: aopKernelFilePath);
++        applicationKernelFilePath: aspectdKernelFilePath);
 +
-+    if (!fs.file(aopKernelFilePath).existsSync()) {
++    if (!fs.file(aspectdKernelFilePath).existsSync()) {
 +      fs.currentDirectory = mainDirectory;
 +      return null;
 +    }
@@ -220,12 +220,12 @@ index 000000000..16c184093
 +      artifacts.getArtifactPath(Artifact.engineDartBinary),
 +      aspectdTransformerSnapshot,
 +      '--input',
-+      aopKernelFilePath,
++      aspectdKernelFilePath,
 +      '--sdk-root',
 +      fs.file(artifacts.getArtifactPath(Artifact.platformKernelDill)).parent
 +          .path + fs.path.separator,
 +      '--output',
-+      aspectdKernelFilePath
++      aspectdTransformedKernelFilePath
 +    ];
 +
 +    final ProcessResult result = await processManager.run(command);
@@ -240,7 +240,7 @@ index 000000000..16c184093
 +      defaultKernelFile.deleteSync();
 +    }
 +
-+    fs.file(aspectdKernelFilePath).renameSync(defaultKernelFilePath);
++    fs.file(aspectdTransformedKernelFilePath).renameSync(defaultKernelFilePath);
 +    final File assetsBlob =
 +        fs.file(fs.path.join(argResults['asset-dir'], 'kernel_blob.bin'));
 +    if (assetsBlob.existsSync()) {
@@ -262,14 +262,14 @@ index 000000000..16c184093
 +
 +    final BuildMode buildMode = flutterCommand.getBuildMode();
 +    final Directory mainDirectory = fs.currentDirectory;
-+    final Directory aopDirectory = getAopDirectory(mainDirectory);
++    final Directory aspectdDirectory = getAspectdDirectory(mainDirectory);
 +    String mainPath =
-+        fs.path.join(aopDirectory.path, 'lib', aopPackageName + '.dart');
-+    fs.currentDirectory = aopDirectory;
++        fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart');
++    fs.currentDirectory = aspectdDirectory;
 +    final AOTSnapshotter snapshotter = AOTSnapshotter();
 +    final String outputPath =
 +        (argResults['output-dir'] ?? getAotBuildDirectory())
-+            .replaceAll(mainDirectory.path, aopDirectory.path);
++            .replaceAll(mainDirectory.path, aspectdDirectory.path);
 +
 +    // Compile to kernel.
 +    mainPath = await snapshotter.compileKernel(
@@ -292,9 +292,9 @@ index 000000000..16c184093
 +      mainPath = fs.path.join(fs.currentDirectory.path, mainPath);
 +    }
 +
-+    final String aspectdKernelFilePath = mainPath + '.aspectd.dill';
++    final String aspectdTransformedKernelFilePath = mainPath + '.aspectd.dill';
 +    final String defaultKernelFilePath =
-+        mainPath.replaceAll(aopDirectory.path, mainDirectory.path);
++        mainPath.replaceAll(aspectdDirectory.path, mainDirectory.path);
 +
 +    final List<String> command = <String>[
 +      artifacts.getArtifactPath(Artifact.engineDartBinary),
@@ -302,7 +302,7 @@ index 000000000..16c184093
 +      '--input',
 +      mainPath,
 +      '--output',
-+      aspectdKernelFilePath
++      aspectdTransformedKernelFilePath
 +    ];
 +
 +    final ProcessResult result = await processManager.run(command);
@@ -316,7 +316,7 @@ index 000000000..16c184093
 +    if (defaultKernelFile.existsSync()) {
 +      defaultKernelFile.deleteSync();
 +    }
-+    fs.file(aspectdKernelFilePath).renameSync(defaultKernelFilePath);
++    fs.file(aspectdTransformedKernelFilePath).renameSync(defaultKernelFilePath);
 +    fs.currentDirectory = mainDirectory;
 +    return null;
 +  }

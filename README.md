@@ -17,13 +17,13 @@ Suppose you have a flutter project named example located in hf_dir.
 
 # Installation
 
-## 1. Create a dart package named aop in hf_dir/example
+## 1. Create a dart package named aspectd_impl in hf_dir/example
 
 ```dart
-flutter create --template=package aop
+flutter create --template=package aspectd_impl
 ```
 
-## 2. Add aspectd&example dependency to aop package
+## 2. Add aspectd&example dependency to aspectd_impl package
 ```dart
 dependencies:
   flutter:
@@ -35,14 +35,14 @@ dependencies:
   example:
     path: ../
 ```
-Fetch package dependency in aop package
+Fetch package dependency in aspectd_impl package
 
 ```dart
 flutter packages get
 ```
-## 3. Modify aop package
+## 3. Modify aspectd_impl package
 
-aop.dart(entrypoint)
+aspectd_impl.dart(entrypoint)
 ```dart
 import 'package:example/main.dart' as app;
 import 'aop_impl.dart';
@@ -75,26 +75,26 @@ rm bin/cache/flutter_tools.stamp
 ```
 As flutter_tools doesn't support hooks now, the aspectd.patch is necessary currently. As flutter is evolving, this patch might fail sometimes. However, It would be simple to resolve the conflicts as AspectD only adds two hooks when building dill.  See https://github.com/alibaba-flutter/aspectd/issues/5 for more.
 
-If you want to customize the aop package, edit aopPackageRelPath(aop package relative path to the example's pubspec.yaml) and aopPackageName(aop package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
+If you want to customize the aspectd_impl package, edit aspectdImplPackageRelPath(aspectd_impl package relative path to the example's pubspec.yaml) and aspectdImplPackageName(aspectd_impl package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
 
 ```dart
-const String aopPackageRelPath = '.';
-const String aopPackageName = 'aop';
+const String aspectdImplPackageRelPath = '.';
+const String aspectdImplPackageName = 'aspectd_impl';
 ```
 
-Step 1~3 are expected to run each time you want to add aop to a flutter(dart) package. 4 is expected to run only once unless the dart-sdk changes. For example, If you upgrade flutter, you need to check if to rerun 4.
+Step 1~3 are expected to run each time you want to add aspectd_impl to a flutter(dart) package. 4 is expected to run only once unless the dart-sdk changes. For example, If you upgrade flutter, you need to check if to re-run 4.
 
-If you're using example with an aop package not generated locally, remember to run `flutter packages get` in aop package to get aspectd and check 4.
+If you're using example with an aspectd_impl package not generated locally, remember to run `flutter packages get` in aspectd_impl package to get aspectd and check 4.
 
 ## 5. Implement your own transform if needed
 As said above, Aspectd is not only an AOP framework , it also provides a dill transformer container. You can implement your own transformer (say pluginDemo) over Aspectd following steps below:
 a. Declare pluginDemo in the plugins section of config.yaml. 
 b. Run `dart bin/generate_plugins_entry.dart` to generate a unified folder structure located in lib/src/plugins/pluginDemo.
-c. Write your annotations to export in pluginDemo.dart.
-d. Write your transformer in PluginDemoWrapperTransformer.transform  located in pluginDemo_transformer_wrapper.dart.
+c. Write your annotations to export in pluginDemo.dart if needed.
+d. Write your transformer implementation in PluginDemoWrapperTransformer.transform  located in pluginDemo_transformer_wrapper.dart.
 There are two points you need to pay attention to:
-a. If you want to implement your own transformers, you'd better import Aspectd by path instead of git dependency. Otherwise, your modifications could be overwritten mistakenly.
-b. Eachtime you edit the transformers, you should delete snapshot/aspectd.dart.snapshot to make your changes effective.
+a. If you want to implement your own transformers, you'd better import Aspectd by path ref instead of git dependency. Otherwise, your modifications might be overwritten mistakenly.
+b. Each time you change the dill transformer implementation, you should delete snapshot/aspectd.dart.snapshot to make your changes take effect.
 
 # Tutorial
 Now AspectD provides three ways to do AOP programming.
@@ -269,11 +269,11 @@ Flutter 1.0 and above.
 
 # Notice
 Because of the dart compilation implementation, there are several points to pay attention to:
-1. package:aop/aop.dart should contains the main entry for aop package and contains a app.main call.
-2. Every aop implementation file should be imported by aop.dart so that it will work in debug mode.
+1. package:aspectd_impl/aspectd_impl.dart should contains the main entry for aspectd_impl package and contains a app.main call.
+2. Every aop implementation file should be imported by aspectd_impl.dart so that it will work in debug mode.
 3. @pragma("vm:entry-point") is needed to mark class/function to avoid been trimmed by tree-shaking.
 4. inject might fail in some cases while call&execute are expected to be more stable.
-5. If you want to disable AOP, remove the aspectd.dart.snapshot located in aspectd or change the name of aop package, or remove the @Aspect() annotation. Anyone will be fine.
+5. If you want to disable AOP, remove the aspectd.dart.snapshot located in aspectd or change the name of aspectd_impl package, or remove the @Aspect() annotation. Anyone will be fine.
 
 # Contact
 
