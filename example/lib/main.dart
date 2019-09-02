@@ -46,6 +46,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  void onPluginDemo() {
+    print('[KWLM]:onPluginDemo Called!');
+  }
+
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -98,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
+            GestureDetector(child: Text('onPluginDemo'), onTap: onPluginDemo)
           ],
         ),
       ),

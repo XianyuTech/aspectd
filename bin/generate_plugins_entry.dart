@@ -53,17 +53,18 @@ int main(List<String> args) {
       transformerWrapperImport =
       '${transformerWrapperImport}import \'package:aspectd/src/plugins/${pluginItem}/${pluginItem}_transformer_wrapper.dart\';\n';
       transformerWrapperCallTransform =
-      '${transformerWrapperCallTransform}${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = new ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n    ';
+      '${transformerWrapperCallTransform}${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = new ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n\n    ';
     }
     String transformerWrapperContent = '''
 import 'package:kernel/ast.dart';
 ${transformerWrapperImport}
 class TransformerWrapper{
   Component platformStrongComponent;
+  
   TransformerWrapper(this.platformStrongComponent);
+  
   bool transform(Component component){
-    ${transformerWrapperCallTransform}
-    return true;
+    ${transformerWrapperCallTransform}return true;
   }
 }''';
     final File aspectdFile = File(p.join(Directory(pluginsFolder).parent.parent.path, 'aspectd.dart'));

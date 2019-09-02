@@ -7,6 +7,7 @@
 Salute to AspectJ.
 
 AspectD is an AOP(aspect oriented programming) framework for dart. Like other traditional aop framework,   AspectD provides call&execute grammar. Besides, as we can't use dart:mirrors in flutter, AspectD also provides a  way named inject enhancing the dart code manipulation.
+Besides, AspectD provides a dill transformer container above which developers can implement their own transformers like hook, json, mirrors, etc.
 
 # Design
 
@@ -85,6 +86,15 @@ Step 1~3 are expected to run each time you want to add aop to a flutter(dart) pa
 
 If you're using example with an aop package not generated locally, remember to run `flutter packages get` in aop package to get aspectd and check 4.
 
+## 5. Implement your own transform if needed
+As said above, Aspectd is not only an AOP framework , it also provides a dill transformer container. You can implement your own transformer (say pluginDemo) over Aspectd following steps below:
+a. Declare pluginDemo in the plugins section of config.yaml. 
+b. Run `dart bin/generate_plugins_entry.dart` to generate a unified folder structure located in lib/src/plugins/pluginDemo.
+c. Write your annotations to export in pluginDemo.dart.
+d. Write your transformer in PluginDemoWrapperTransformer.transform  located in pluginDemo_transformer_wrapper.dart.
+There are two points you need to pay attention to:
+a. If you want to implement your own transformers, you'd better import Aspectd by path instead of git dependency. Otherwise, your modifications could be overwritten mistakenly.
+b. Eachtime you edit the transformers, you should delete snapshot/aspectd.dart.snapshot to make your changes effective.
 
 # Tutorial
 Now AspectD provides three ways to do AOP programming.
