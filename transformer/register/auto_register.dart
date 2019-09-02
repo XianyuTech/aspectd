@@ -89,7 +89,7 @@ class AutoRegisterTransformer extends Transformer {
       // 查找所有接口的实现类
       findInterfaceImpls(library, _registerInfoList, interfaceImplMapList);
     }
-    print('===registerInfo: $interfaceImplMapList');
+    print('===registerInfo: ${interfaceImplMapList?.length} : $interfaceImplMapList');
 
     interfaceImplMapList?.forEach((registerInfo, interfaceImplClsList) {
       Library library = libraryMap[registerInfo.initLibrary];
@@ -134,7 +134,6 @@ class AutoRegisterTransformer extends Transformer {
               break;
             }
 
-
             for (var implCls in interfaceImplClsList) {
               if(!identical(library, implCls.parent)) {
                 AspectdUtils.insertLibraryDependency(library, implCls.parent);
@@ -152,6 +151,8 @@ class AutoRegisterTransformer extends Transformer {
                 Block block = initMethodProcedure.function.body as Block;
                 List<Statement> statements = block.statements;
                 statements.add(ExpressionStatement(callExpression));
+
+                print('===insert ConstructorInvocation: ${implCls.canonicalName.name}');
               }
             }
 
@@ -187,6 +188,8 @@ class AutoRegisterTransformer extends Transformer {
             Block block = initMethodProcedure.function.body as Block;
             List<Statement> statements = block.statements;
             statements.add(ExpressionStatement(callExpression));
+
+            print('===insert ConstructorInvocation: ${implCls.canonicalName.name}');
           }
         }
       }
@@ -199,17 +202,19 @@ class AutoRegisterTransformer extends Transformer {
       Map<RegisterInfo, List<Class>> interfaceImplMapList) {
     for (var registerInfo in registerInfoList) {
       for (Class cls in library.classes) {
-        // 接口的包名和class名比较
-        for(var superType in cls.implementedTypes) {
-          if(superType.className.canonicalName.parent.reference.asLibrary.importUri.toString() == registerInfo.interfaceLibrary
-            && superType.className.canonicalName.name == registerInfo.interfaceName) {
-            List<Class> list = interfaceImplMapList[registerInfo];
-            if(list == null) {
-              list = List<Class>();
-              interfaceImplMapList[registerInfo] = list;
+        if(!cls.isAbstract) {
+          // 接口的包名和class名比较
+          for(var superType in cls.implementedTypes) {
+            if(superType.className.canonicalName.parent.reference.asLibrary.importUri.toString() == registerInfo.interfaceLibrary
+              && superType.className.canonicalName.name == registerInfo.interfaceName) {
+              List<Class> list = interfaceImplMapList[registerInfo];
+              if(list == null) {
+                list = List<Class>();
+                interfaceImplMapList[registerInfo] = list;
+              }
+              list.add(cls);
+              break;
             }
-            list.add(cls);
-            break;
           }
         }
       }
