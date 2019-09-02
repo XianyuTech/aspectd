@@ -6,6 +6,8 @@ import '../component.dart';
 class ComponentA implements CCComponent {
 
   @pragma("vm:entry-point")
+  ComponentA();
+
   @override
   String getName() {
     return "ComponentA";

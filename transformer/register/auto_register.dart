@@ -125,28 +125,34 @@ class AutoRegisterTransformer extends Transformer {
               }
             }
 
-            assert(registerToMethodProcedure != null && initMethodProcedure != null,
-              'registerToMethodProcedure or initMethodProcedure is null');
+            if(registerToMethodProcedure == null || initMethodProcedure == null) {
+              break;
+            }
 
-            assert(initMethodProcedure.isStatic && registerToMethodProcedure.isStatic || !initMethodProcedure.isStatic,
-              'registerToMethodProcedure and registerToMethodProcedure static flag error');
+            // if initMethod is static, registerToMethod must be static
+            if(initMethodProcedure.isStatic && !registerToMethodProcedure.isStatic) {
+              break;
+            }
+
 
             for (var implCls in interfaceImplClsList) {
               if(!identical(library, implCls.parent)) {
                 AspectdUtils.insertLibraryDependency(library, implCls.parent);
               }
 
-              ConstructorInvocation constructorInvocation = ConstructorInvocation.byReference(implCls.constructors.first.reference, Arguments([]));
-              Arguments arguments = Arguments([constructorInvocation]);
-              Expression callExpression = null;
-              if(registerToMethodProcedure.isStatic) {
-                callExpression = StaticInvocation(registerToMethodProcedure, arguments);
-              } else {
-                callExpression = MethodInvocation(ThisExpression(), registerToMethodProcedure.name, arguments);
+              if(implCls.constructors.isNotEmpty) {
+                ConstructorInvocation constructorInvocation = ConstructorInvocation.byReference(implCls.constructors.first.reference, Arguments([]));
+                Arguments arguments = Arguments([constructorInvocation]);
+                Expression callExpression = null;
+                if(registerToMethodProcedure.isStatic) {
+                  callExpression = StaticInvocation(registerToMethodProcedure, arguments);
+                } else {
+                  callExpression = MethodInvocation(ThisExpression(), registerToMethodProcedure.name, arguments);
+                }
+                Block block = initMethodProcedure.function.body as Block;
+                List<Statement> statements = block.statements;
+                statements.add(ExpressionStatement(callExpression));
               }
-              Block block = initMethodProcedure.function.body as Block;
-              List<Statement> statements = block.statements;
-              statements.add(ExpressionStatement(callExpression));
             }
 
             break;
@@ -165,20 +171,23 @@ class AutoRegisterTransformer extends Transformer {
           }
         }
 
-        assert(registerToMethodProcedure != null && initMethodProcedure != null,
-        'registerToMethodProcedure or initMethodProcedure is null');
+        if(registerToMethodProcedure == null || initMethodProcedure == null) {
+          return;
+        }
 
         for (var implCls in interfaceImplClsList) {
           if(!identical(library, implCls.parent)) {
             AspectdUtils.insertLibraryDependency(library, implCls.parent);
           }
 
-          ConstructorInvocation constructorInvocation = ConstructorInvocation.byReference(implCls.constructors.first.reference, Arguments([]));
-          Arguments arguments = Arguments([constructorInvocation]);
-          Expression callExpression = StaticInvocation(registerToMethodProcedure, arguments);
-          Block block = initMethodProcedure.function.body as Block;
-          List<Statement> statements = block.statements;
-          statements.add(ExpressionStatement(callExpression));
+          if(implCls.constructors.isNotEmpty) {
+            ConstructorInvocation constructorInvocation = ConstructorInvocation.byReference(implCls.constructors.first.reference, Arguments([]));
+            Arguments arguments = Arguments([constructorInvocation]);
+            Expression callExpression = StaticInvocation(registerToMethodProcedure, arguments);
+            Block block = initMethodProcedure.function.body as Block;
+            List<Statement> statements = block.statements;
+            statements.add(ExpressionStatement(callExpression));
+          }
         }
       }
     });

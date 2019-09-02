@@ -14,7 +14,7 @@ abstract class CCRouter {
 
 final List<CCRouter> _Routers = <CCRouter>[];
 
-
+@pragma("vm:entry-point")
 void registerRouter(CCRouter router) {
   if (router != null) {
     if(!_Routers.contains(router)) {

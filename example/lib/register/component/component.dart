@@ -24,11 +24,13 @@ class ComponentManager {
   static final Map<String, CCComponent> _components = <String, CCComponent>{};
 
   /// 初始化所有全局拦截器
+  @pragma("vm:entry-point")
   void init() {
     //registerComponent(new ComponentA());
     //registerComponent(new ComponentAA());
   }
 
+  @pragma("vm:entry-point")
   void registerComponent(CCComponent component) {
     if (component != null) {
       if(_components[component.getName()] == null) {
