@@ -1,21 +1,21 @@
-From 66d76a8b83f46798880c3caa56c67fad6dc55eb1 Mon Sep 17 00:00:00 2001
+From 0accf34081861c7bf79b9abf0a3e945416ca53e8 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Fri, 23 Aug 2019 13:30:15 +0800
+Date: Mon, 2 Sep 2019 12:21:13 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 312 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 305 ++++++++++++++++++
  .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 323 insertions(+)
+ 3 files changed, 316 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..d434c9585
+index 000000000..16c184093
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,312 @@
+@@ -0,0 +1,305 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -141,7 +141,7 @@ index 000000000..d434c9585
 +      await runCommandAndStreamOutput(<String>[
 +        sdkBinaryName('dart'),
 +        '--snapshot=snapshot/aspectd.dart.snapshot',
-+        'tool/starter.dart'
++        'bin/starter.dart'
 +      ], workingDirectory: snapshotDir.parent.path);
 +    }
 +  }
@@ -153,13 +153,9 @@ index 000000000..d434c9585
 +    final Directory aopDirectory = getAopDirectory(fs.currentDirectory);
 +    if (!(aopDirectory.existsSync() &&
 +        fs.file(fs.path.join(aopDirectory.path, 'pubspec.yaml')).existsSync() &&
-+        fs
-+            .file(
-+                fs.path.join(aopDirectory.path, PackageMap.globalPackagesPath))
++        fs.file(fs.path.join(aopDirectory.path, PackageMap.globalPackagesPath))
 +            .existsSync() &&
-+        fs
-+            .file(fs.path
-+                .join(aopDirectory.path, 'lib', aopPackageName + '.dart'))
++        fs.file(fs.path.join(aopDirectory.path, 'lib', aopPackageName + '.dart'))
 +            .existsSync())) {
 +      _isAspectdEnabled = false;
 +      return _isAspectdEnabled;
@@ -226,11 +222,8 @@ index 000000000..d434c9585
 +      '--input',
 +      aopKernelFilePath,
 +      '--sdk-root',
-+      fs
-+              .file(artifacts.getArtifactPath(Artifact.platformKernelDill))
-+              .parent
-+              .path +
-+          fs.path.separator,
++      fs.file(artifacts.getArtifactPath(Artifact.platformKernelDill)).parent
++          .path + fs.path.separator,
 +      '--output',
 +      aspectdKernelFilePath
 +    ];
@@ -329,7 +322,7 @@ index 000000000..d434c9585
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index bbb03f2b1..43f51a222 100644
+index 763a8b934..9dda2650a 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
 @@ -5,6 +5,7 @@

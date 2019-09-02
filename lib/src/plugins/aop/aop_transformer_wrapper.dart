@@ -1,14 +1,14 @@
 import 'package:kernel/ast.dart';
-import 'aspectd_callimpl_transformer.dart';
-import 'aspectd_executeimpl_transformer.dart';
-import 'aspectd_injectimpl_transformer.dart';
-import 'utils.dart';
+import 'transformer/aop_callimpl_transformer.dart';
+import 'transformer/aop_executeimpl_transformer.dart';
+import 'transformer/aop_injectimpl_transformer.dart';
+import 'transformer/utils.dart';
 
-class AspectdWrapperTransformer {
-  Map<String,AspectdItemInfo> aspectdInfoMap = Map<String, AspectdItemInfo>();
+class AopWrapperTransformer {
+  Map<String,AopItemInfo> aopInfoMap = Map<String, AopItemInfo>();
   Component platformStrongComponent;
 
-  AspectdWrapperTransformer({this.platformStrongComponent});
+  AopWrapperTransformer({this.platformStrongComponent});
 
   void transform(Component program) {
     final List<Library> libraries = program.libraries;
@@ -17,7 +17,7 @@ class AspectdWrapperTransformer {
       return;
     }
 
-    _resolveAspectdProcedures(libraries);
+    _resolveAopProcedures(libraries);
 
     for (Library library in libraries) {
       if (library.isExternal) {
@@ -47,9 +47,9 @@ class AspectdWrapperTransformer {
       Uri importUri = library.importUri;
       for(Class cls in library.classes) {
         String clsName = cls.name;
-        if(clsName == AspectdUtils.kAspectdAnnotationClassPointCut && importUri.toString() == AspectdUtils.kImportUriPointCut){
+        if(clsName == AopUtils.kAopAnnotationClassPointCut && importUri.toString() == AopUtils.kImportUriPointCut){
           for(Procedure procedure in cls.procedures){
-            if(procedure.name.name == AspectdUtils.kAspectdPointcutProcessName)
+            if(procedure.name.name == AopUtils.kAopPointcutProcessName)
               pointCutProceedProcedure = procedure;
           }
         }
@@ -67,28 +67,28 @@ class AspectdWrapperTransformer {
         }
       }
     }
-    Map<String,AspectdItemInfo> callInfoMap = Map<String, AspectdItemInfo>();
-    Map<String,AspectdItemInfo> executeInfoMap = Map<String, AspectdItemInfo>();
-    Map<String,AspectdItemInfo> injectInfoMap = Map<String, AspectdItemInfo>();
-    aspectdInfoMap.forEach((String key, AspectdItemInfo aspectdItemInfo){
-      if(aspectdItemInfo.mode == AspectdMode.Call) {
-        callInfoMap.putIfAbsent(key, ()=>aspectdItemInfo);
-      } else if(aspectdItemInfo.mode == AspectdMode.Execute) {
-        executeInfoMap.putIfAbsent(key, ()=>aspectdItemInfo);
-      } else if(aspectdItemInfo.mode == AspectdMode.Inject) {
-        injectInfoMap.putIfAbsent(key, ()=>aspectdItemInfo);
+    Map<String,AopItemInfo> callInfoMap = Map<String, AopItemInfo>();
+    Map<String,AopItemInfo> executeInfoMap = Map<String, AopItemInfo>();
+    Map<String,AopItemInfo> injectInfoMap = Map<String, AopItemInfo>();
+    aopInfoMap.forEach((String key, AopItemInfo aopItemInfo){
+      if(aopItemInfo.mode == AopMode.Call) {
+        callInfoMap.putIfAbsent(key, ()=>aopItemInfo);
+      } else if(aopItemInfo.mode == AopMode.Execute) {
+        executeInfoMap.putIfAbsent(key, ()=>aopItemInfo);
+      } else if(aopItemInfo.mode == AopMode.Inject) {
+        injectInfoMap.putIfAbsent(key, ()=>aopItemInfo);
       }
     });
 
-    AspectdUtils.pointCutProceedProcedure = pointCutProceedProcedure;
-    AspectdUtils.listGetProcedure = listGetProcedure;
-    AspectdUtils.mapGetProcedure = mapGetProcedure;
-    AspectdUtils.platformStrongComponent = platformStrongComponent;
+    AopUtils.pointCutProceedProcedure = pointCutProceedProcedure;
+    AopUtils.listGetProcedure = listGetProcedure;
+    AopUtils.mapGetProcedure = mapGetProcedure;
+    AopUtils.platformStrongComponent = platformStrongComponent;
 
-    // Aspectd call transformer
+    // Aop call transformer
     if(callInfoMap.keys.length>0) {
-      final AspectdCallImplTransformer aspectdCallImplTransformer =
-      AspectdCallImplTransformer(
+      final AopCallImplTransformer aopCallImplTransformer =
+      AopCallImplTransformer(
         callInfoMap,
         libraryMap,
         concatUriToSource,
@@ -98,47 +98,47 @@ class AspectdWrapperTransformer {
         if (library.isExternal) {
           continue;
         }
-        aspectdCallImplTransformer.visitLibrary(library);
+        aopCallImplTransformer.visitLibrary(library);
       }
     }
-    // Aspectd execute transformer
+    // Aop execute transformer
     if(executeInfoMap.keys.length>0) {
-      AspectdExecuteImplTransformer(
+      AopExecuteImplTransformer(
           executeInfoMap,
           libraryMap
-      )..aspectdTransform();
+      )..aopTransform();
     }
-    // Aspectd inject transformer
+    // Aop inject transformer
     if(injectInfoMap.keys.length>0) {
-      AspectdInjectImplTransformer(
+      AopInjectImplTransformer(
           injectInfoMap,
           libraryMap,
           concatUriToSource
-      )..aspectdTransform();
+      )..aopTransform();
     }
   }
 
-  void _resolveAspectdProcedures(Iterable<Library> libraries) {
+  void _resolveAopProcedures(Iterable<Library> libraries) {
     for (Library library in libraries) {
       List<Class> classes = library.classes;
       for(Class cls in classes){
-        final bool aspectdEnabled = AspectdUtils.checkIfClassEnableAspectd(cls.annotations);
+        final bool aspectdEnabled = AopUtils.checkIfClassEnableAspectd(cls.annotations);
         if(!aspectdEnabled)
           continue;
         for(Member member in cls.members){
           if(!(member is Procedure))
             continue;
-          AspectdItemInfo aspectdItemInfo =  _processAspectdProcedure(member as Procedure);
-          if(aspectdItemInfo != null) {
-            String uniqueKeyForMethod = AspectdItemInfo.uniqueKeyForMethod(aspectdItemInfo.importUri, aspectdItemInfo.clsName, aspectdItemInfo.methodName, aspectdItemInfo.isStatic, aspectdItemInfo.lineNum);
-            aspectdInfoMap.putIfAbsent(uniqueKeyForMethod,()=>aspectdItemInfo);
+          AopItemInfo aopItemInfo =  _processAopProcedure(member as Procedure);
+          if(aopItemInfo != null) {
+            String uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(aopItemInfo.importUri, aopItemInfo.clsName, aopItemInfo.methodName, aopItemInfo.isStatic, aopItemInfo.lineNum);
+            aopInfoMap.putIfAbsent(uniqueKeyForMethod,()=>aopItemInfo);
           }
         }
       }
     }
   }
 
-  AspectdItemInfo _processAspectdProcedure(Procedure procedure){
+  AopItemInfo _processAopProcedure(Procedure procedure){
     for(Expression annotation in procedure.annotations){
       //Release mode
       if(annotation is ConstantExpression){
@@ -147,8 +147,8 @@ class AspectdWrapperTransformer {
         if(constant is InstanceConstant){
           InstanceConstant instanceConstant = constant;
           CanonicalName canonicalName =  instanceConstant.classReference.canonicalName;
-          AspectdMode aspectdMode = AspectdUtils.getAspectdModeByNameAndImportUri(canonicalName.name,canonicalName?.parent?.name);
-          if(aspectdMode == null)
+          AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(canonicalName.name,canonicalName?.parent?.name);
+          if(aopMode == null)
             continue;
           String importUri;
           String clsName;
@@ -157,54 +157,54 @@ class AspectdWrapperTransformer {
           instanceConstant.fieldValues.forEach((Reference reference,Constant constant){
             if(constant is StringConstant){
               String value = constant.value;
-              if(reference?.canonicalName?.name == AspectdUtils.kAspectdAnnotationImportUri) {
+              if(reference?.canonicalName?.name == AopUtils.kAopAnnotationImportUri) {
                 importUri = value;
-              } else if(reference?.canonicalName?.name == AspectdUtils.kAspectdAnnotationClsName) {
+              } else if(reference?.canonicalName?.name == AopUtils.kAopAnnotationClsName) {
                 clsName = value;
-              } else if(reference?.canonicalName?.name == AspectdUtils.kAspectdAnnotationMethodName) {
+              } else if(reference?.canonicalName?.name == AopUtils.kAopAnnotationMethodName) {
                 methodName = value;
               }
             }
             if(constant is IntConstant){
               int value = constant.value;
-              if(reference?.canonicalName?.name == AspectdUtils.kAspectdAnnotationLineNum) {
+              if(reference?.canonicalName?.name == AopUtils.kAopAnnotationLineNum) {
                 lineNum = value-1;
               }
             }
           });
           bool isStatic = false;
-          if(methodName.startsWith(AspectdUtils.kAspectdAnnotationInstanceMethodPrefix)){
-            methodName = methodName.substring(AspectdUtils.kAspectdAnnotationInstanceMethodPrefix.length);
-          } else if(methodName.startsWith(AspectdUtils.kAspectdAnnotationStaticMethodPrefix)){
-            methodName = methodName.substring(AspectdUtils.kAspectdAnnotationStaticMethodPrefix.length);
+          if(methodName.startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)){
+            methodName = methodName.substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
+          } else if(methodName.startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)){
+            methodName = methodName.substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
             isStatic = true;
           }
-          return AspectdItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic,aspectdProcedure: procedure,mode: aspectdMode, lineNum: lineNum);
+          return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic,aopProcedure: procedure,mode: aopMode, lineNum: lineNum);
         }
       }
       //Debug Mode
       else if(annotation is ConstructorInvocation){
         ConstructorInvocation constructorInvocation = annotation;
         Class cls = constructorInvocation?.targetReference?.node?.parent as Class;
-        AspectdMode aspectdMode = AspectdUtils.getAspectdModeByNameAndImportUri(cls.name,(cls?.parent as Library).importUri.toString());
-        if(aspectdMode == null)
+        AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(cls.name,(cls?.parent as Library).importUri.toString());
+        if(aopMode == null)
           continue;
         String importUri = (constructorInvocation.arguments.positional[0] as StringLiteral).value;
         String clsName = (constructorInvocation.arguments.positional[1] as StringLiteral).value;
         String methodName = (constructorInvocation.arguments.positional[2] as StringLiteral).value;
         int lineNum;
         constructorInvocation.arguments.named.forEach((namedExpression) {
-          if(namedExpression.name == AspectdUtils.kAspectdAnnotationLineNum)
+          if(namedExpression.name == AopUtils.kAopAnnotationLineNum)
             lineNum = (namedExpression.value as IntLiteral).value-1;
         });
         bool isStatic = false;
-        if(methodName.startsWith(AspectdUtils.kAspectdAnnotationInstanceMethodPrefix)){
-          methodName = methodName.substring(AspectdUtils.kAspectdAnnotationInstanceMethodPrefix.length);
-        } else if(methodName.startsWith(AspectdUtils.kAspectdAnnotationStaticMethodPrefix)){
-          methodName = methodName.substring(AspectdUtils.kAspectdAnnotationStaticMethodPrefix.length);
+        if(methodName.startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)){
+          methodName = methodName.substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
+        } else if(methodName.startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)){
+          methodName = methodName.substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
           isStatic = true;
         }
-        return AspectdItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic,aspectdProcedure: procedure,mode: aspectdMode, lineNum: lineNum);
+        return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic, aopProcedure: procedure,mode: aopMode, lineNum: lineNum);
       }
     }
     return null;

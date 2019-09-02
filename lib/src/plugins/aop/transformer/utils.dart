@@ -1,45 +1,45 @@
 import 'package:kernel/ast.dart';
 
-enum AspectdMode{
+enum AopMode{
   Call,
   Execute,
   Inject
 }
 
-class AspectdUtils {
-  static String kAspectdAnnotationClassCall = 'Call';
-  static String kAspectdAnnotationClassExecute = 'Execute';
-  static String kAspectdAnnotationClassInject = 'Inject';
-  static String kImportUriAspectdCall = 'package:aspectd/call.dart';
-  static String kImportUriAspectdExecute = 'package:aspectd/execute.dart';
-  static String kImportUriAspectdInject = 'package:aspectd/inject.dart';
-  static String kAspectdUniqueKeySeperator = '#';
-  static String kImportUriAspectdAspect = 'package:aspectd/aspect.dart';
-  static String kAspectdAnnotationClassAspect = 'Aspect';
-  static String kImportUriPointCut = 'package:aspectd/pointcut.dart';
-  static String kAspectdAnnotationImportUri = 'importUri';
-  static String kAspectdAnnotationClsName = 'clsName';
-  static String kAspectdAnnotationMethodName = 'methodName';
-  static String kAspectdAnnotationLineNum = 'lineNum';
-  static String kAspectdAnnotationClassPointCut = 'PointCut';
-  static String kAspectdAnnotationInstanceMethodPrefix = '-';
-  static String kAspectdAnnotationStaticMethodPrefix = '+';
-  static int kPrimaryKeyAspectdMethod = 0;
-  static String kAspectdStubMethodPrefix = 'aspectd_stub_';
-  static String kAspectdPointcutProcessName = 'proceed';
-  static String kAspectdPointcutIgnoreVariableDeclaration = '//Aspectd Ignore';
+class AopUtils {
+  static String kAopAnnotationClassCall = 'Call';
+  static String kAopAnnotationClassExecute = 'Execute';
+  static String kAopAnnotationClassInject = 'Inject';
+  static String kImportUriAopAspect = 'package:aspectd/src/plugins/aop/annotation/aspect.dart';
+  static String kImportUriAopCall = 'package:aspectd/src/plugins/aop/annotation/call.dart';
+  static String kImportUriAopExecute = 'package:aspectd/src/plugins/aop/annotation/execute.dart';
+  static String kImportUriAopInject = 'package:aspectd/src/plugins/aop/annotation/inject.dart';
+  static String kImportUriPointCut = 'package:aspectd/src/plugins/aop/annotation/pointcut.dart';
+  static String kAopUniqueKeySeperator = '#';
+  static String kAopAnnotationClassAspect = 'Aspect';
+  static String kAopAnnotationImportUri = 'importUri';
+  static String kAopAnnotationClsName = 'clsName';
+  static String kAopAnnotationMethodName = 'methodName';
+  static String kAopAnnotationLineNum = 'lineNum';
+  static String kAopAnnotationClassPointCut = 'PointCut';
+  static String kAopAnnotationInstanceMethodPrefix = '-';
+  static String kAopAnnotationStaticMethodPrefix = '+';
+  static int kPrimaryKeyAopMethod = 0;
+  static String kAopStubMethodPrefix = 'aop_stub_';
+  static String kAopPointcutProcessName = 'proceed';
+  static String kAopPointcutIgnoreVariableDeclaration = '//Aspectd Ignore';
   static Procedure pointCutProceedProcedure;
   static Procedure listGetProcedure;
   static Procedure mapGetProcedure;
   static Component platformStrongComponent;
 
-  static AspectdMode getAspectdModeByNameAndImportUri(String name, String importUri) {
-    if(name == kAspectdAnnotationClassCall && importUri == kImportUriAspectdCall)
-      return AspectdMode.Call;
-    if(name == kAspectdAnnotationClassExecute && importUri == kImportUriAspectdExecute)
-      return AspectdMode.Execute;
-    if(name == kAspectdAnnotationClassInject && importUri == kImportUriAspectdInject)
-      return AspectdMode.Inject;
+  static AopMode getAopModeByNameAndImportUri(String name, String importUri) {
+    if(name == kAopAnnotationClassCall && importUri == kImportUriAopCall)
+      return AopMode.Call;
+    if(name == kAopAnnotationClassExecute && importUri == kImportUriAopExecute)
+      return AopMode.Execute;
+    if(name == kAopAnnotationClassInject && importUri == kImportUriAopInject)
+      return AopMode.Inject;
     return null;
   }
 
@@ -92,7 +92,7 @@ class AspectdUtils {
   static VariableDeclaration checkIfSkipableVarDeclaration(Source source, Statement statement) {
     if(statement is VariableDeclaration) {
       VariableDeclaration variableDeclaration = statement;
-      int lineNum = AspectdUtils.getLineNumBySourceAndOffset(source, variableDeclaration.fileOffset);
+      int lineNum = AopUtils.getLineNumBySourceAndOffset(source, variableDeclaration.fileOffset);
       if(lineNum == -1) {
         return null;
       }
@@ -103,7 +103,7 @@ class AspectdUtils {
       }
       List<int> sourceLineChars = source.source.sublist(charFrom,charTo);
       String sourceLine = String.fromCharCodes(sourceLineChars).trim();
-      if(sourceLine.endsWith(AspectdUtils.kAspectdPointcutIgnoreVariableDeclaration)) {
+      if(sourceLine.endsWith(AopUtils.kAopPointcutIgnoreVariableDeclaration)) {
         return variableDeclaration;
       }
     }
@@ -168,8 +168,8 @@ class AspectdUtils {
     return null;
   }
 
-  static void concatArgumentsForAspectdMethod(Map<String, String> sourceInfo,Arguments redirectArguments,AspectdItemInfo aspectdItemInfo, Expression targetExpression, Procedure procedure,Arguments invocationArguments) {
-    String stubMethodName = '${AspectdUtils.kAspectdStubMethodPrefix}${AspectdUtils.kPrimaryKeyAspectdMethod}';
+  static void concatArgumentsForAopMethod(Map<String, String> sourceInfo,Arguments redirectArguments,AopItemInfo aopItemInfo, Expression targetExpression, Procedure procedure,Arguments invocationArguments) {
+    String stubMethodName = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
     //重定向到AOP的函数体中去
     Arguments pointCutConstructorArguments = Arguments.empty();
     List<MapEntry> sourceInfos = List<MapEntry>();
@@ -179,7 +179,7 @@ class AspectdUtils {
     pointCutConstructorArguments.positional.add(MapLiteral(sourceInfos));
     pointCutConstructorArguments.positional.add(targetExpression);
     pointCutConstructorArguments.positional.add(StringLiteral(procedure?.name?.name));
-    pointCutConstructorArguments.positional.add(StringLiteral(aspectdItemInfo.stubKey??stubMethodName));
+    pointCutConstructorArguments.positional.add(StringLiteral(aopItemInfo.stubKey??stubMethodName));
     pointCutConstructorArguments.positional.add(ListLiteral(List<Expression>()..addAll(invocationArguments.positional)));
     List<MapEntry> entries = <MapEntry>[];
     for(NamedExpression namedExpression in invocationArguments.named){
@@ -242,10 +242,10 @@ class AspectdUtils {
   }
 
   // Skip aop operation for those aspectd/aop package.
-  static bool checkIfSkipAOP(AspectdItemInfo aspectdItemInfo, Library curLibrary) {
-    Library aopLibrary = aspectdItemInfo.aspectdProcedure.parent.parent;
-    Library aspectdLibrary = pointCutProceedProcedure.parent.parent;
-    if(curLibrary == aopLibrary || curLibrary == aspectdLibrary)
+  static bool checkIfSkipAOP(AopItemInfo aopItemInfo, Library curLibrary) {
+    Library aopLibrary1 = aopItemInfo.aopProcedure.parent.parent;
+    Library aopLibrary2 = pointCutProceedProcedure.parent.parent;
+    if(curLibrary == aopLibrary1 || curLibrary == aopLibrary2)
       return true;
     return false;
   }
@@ -260,7 +260,7 @@ class AspectdUtils {
         if(constant is InstanceConstant){
           InstanceConstant instanceConstant = constant;
           CanonicalName canonicalName =  instanceConstant.classReference.canonicalName;
-          if(canonicalName.name == AspectdUtils.kAspectdAnnotationClassAspect && canonicalName?.parent?.name == AspectdUtils.kImportUriAspectdAspect){
+          if(canonicalName.name == AopUtils.kAopAnnotationClassAspect && canonicalName?.parent?.name == AopUtils.kImportUriAopAspect){
             enabled = true;
             break;
           }
@@ -273,7 +273,7 @@ class AspectdUtils {
         if(cls == null)
           continue;
         Library library = cls?.parent as Library;
-        if(cls.name == AspectdUtils.kAspectdAnnotationClassAspect && library.importUri.toString() == AspectdUtils.kImportUriAspectdAspect){
+        if(cls.name == AopUtils.kAopAnnotationClassAspect && library.importUri.toString() == AopUtils.kImportUriAopAspect){
           enabled = true;
           break;
         }
@@ -310,7 +310,7 @@ class AspectdUtils {
     return sourceInfo;
   }
 
-  static Procedure createStubProcedure(Name methodName, AspectdItemInfo aspectdItemInfo, Procedure referProcedure ,Statement bodyStatements, bool shouldReturn) {
+  static Procedure createStubProcedure(Name methodName, AopItemInfo aopItemInfo, Procedure referProcedure ,Statement bodyStatements, bool shouldReturn) {
     FunctionNode functionNode = new FunctionNode(bodyStatements,
         typeParameters: referProcedure.function.typeParameters,
         positionalParameters: referProcedure.function.positionalParameters,
@@ -347,21 +347,21 @@ class AspectdUtils {
   }
 }
 
-class AspectdItemInfo {
-  final AspectdMode mode;
+class AopItemInfo {
+  final AopMode mode;
   final String importUri;
   final String clsName;
   final String methodName;
   final bool isStatic;
-  final Procedure aspectdProcedure;
+  final Procedure aopProcedure;
   final int lineNum;
   String stubKey;
   static String uniqueKeyForMethod(String importUri, String clsName, String methodName, bool isStatic, int lineNum){
-    return (importUri??"")+AspectdUtils.kAspectdUniqueKeySeperator
-        +(clsName??"")+AspectdUtils.kAspectdUniqueKeySeperator
-        +(methodName??"")+AspectdUtils.kAspectdUniqueKeySeperator
+    return (importUri??"")+AopUtils.kAopUniqueKeySeperator
+        +(clsName??"")+AopUtils.kAopUniqueKeySeperator
+        +(methodName??"")+AopUtils.kAopUniqueKeySeperator
         +(isStatic==true?"+":"-")
-        +(lineNum!=null?(AspectdUtils.kAspectdUniqueKeySeperator+"$lineNum"):"");
+        +(lineNum!=null?(AopUtils.kAopUniqueKeySeperator+"$lineNum"):"");
   }
-  AspectdItemInfo({this.mode,this.importUri,this.clsName,this.methodName,this.isStatic,this.aspectdProcedure,this.lineNum});
+  AopItemInfo({this.mode,this.importUri,this.clsName,this.methodName,this.isStatic,this.aopProcedure,this.lineNum});
 }
