@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'register/component/component.dart';
-
 import 'register/router/router.dart';
 
 void main() => runApp(MyApp());
@@ -63,25 +62,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // auto register demo
     ComponentManager().printComponent();
     RouterManager().printRouter();
-
-    _incrementCounter_call();
-    _incrementCounter_execute(1);
-    _incrementCounter_inject();
   }
 
-  void _incrementCounter_call() {
-
-  }
-
-  void _incrementCounter_execute(int a) {
-
-  }
-
-  void _incrementCounter_inject() {
-
-  }
-
-    @override
+  @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
