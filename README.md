@@ -253,6 +253,48 @@ Object context; //Aspectd Ignore
 ```
 would be discarded to avoid overring the original one.
 
+
+## auto register
+多业务场景，涉及到路由、组件统一注册时，往往需要手动在初始化是统一注册，这对各业务开发耦合度比较高，auto register就是解决这种耦合场景，让框架可以更紧凑。
+
+在aop/lib/config目录下放置register.json，用来配置需要注册的服务，像这样：
+```
+[
+  {
+    "interfaceLibrary": "package:example/register/component/component.dart",
+    "interfaceName": "CCComponent",
+    "initLibrary": "package:example/register/component/component.dart",
+    "initClassName": "ComponentManager",
+    "initMethodName": "init",
+    "registerToMethodName": "registerComponent"
+  },
+  {
+    "interfaceLibrary": "package:example/register/router/router.dart",
+    "interfaceName": "CCRouter",
+    "initMethodName": "init",
+    "registerToMethodName": "registerRouter"
+  }
+]
+```
+字段解释：
+```
+interfaceLibrary：待注册的接口类所在dart文件的引用路径
+interfaceName：待注册的接口类名
+initLibrary：interfaceLibrary子类注入的类所在的dart文件的引用路径
+initClassName：interfaceLibrary子类注入的类名，如果是顶级方法，该属性是空
+initMethodName：initClassName中的待注入代码的方法
+registerToMethodName：initClassName中实现注册的方法，参数是interfaceName
+```
+效果参考main.dart中的打印效果：
+```
+// auto register demo
+ComponentManager().printComponent();
+RouterManager().printRouter();
+```
+
+
+
+
 # Compatibility
 Flutter 1.0 and above.
 
