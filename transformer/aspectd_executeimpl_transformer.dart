@@ -79,7 +79,6 @@ class AspectdExecuteImplTransformer extends Transformer{
   }
 
   void transformMethodProcedure(Library library, Procedure procedure, AspectdItemInfo aspectdItemInfo) {
-    // 系统库中library不能操作
     if(!AspectdUtils.canOperateLibrary(library))
       return;
     if(procedure.parent is Class) {
@@ -110,8 +109,7 @@ class AspectdExecuteImplTransformer extends Transformer{
       } else if(parent is Class) {
         parent.addMember(originalStubProcedure);
       }
-      functionNode.body = createPointcutCallFromOriginal(originalLibrary,aspectdItemInfo, NullLiteral(),
-          originalProcedure, AspectdUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
+      functionNode.body = createPointcutCallFromOriginal(originalLibrary,aspectdItemInfo, NullLiteral(), originalProcedure, AspectdUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
 
       //Pointcut类中新增stub，并且添加调用
       Library pointcutLibrary = AspectdUtils.pointCutProceedProcedure.parent.parent as Library;
@@ -120,8 +118,7 @@ class AspectdExecuteImplTransformer extends Transformer{
 
       StaticInvocation staticInvocation = StaticInvocation(originalStubProcedure, AspectdUtils.concatArguments4PointcutStubCall(originalProcedure), isConst: originalStubProcedure.isConst);
 
-      Procedure stubProcedure2 = AspectdUtils.createStubProcedure(Name(aspectdItemInfo.stubKey,AspectdUtils.pointCutProceedProcedure.name.library) ,
-          aspectdItemInfo, AspectdUtils.pointCutProceedProcedure, AspectdUtils.createProcedureBodyWithExpression(staticInvocation, shouldReturn), shouldReturn);
+      Procedure stubProcedure2 = AspectdUtils.createStubProcedure(Name(aspectdItemInfo.stubKey,AspectdUtils.pointCutProceedProcedure.name.library) ,aspectdItemInfo, AspectdUtils.pointCutProceedProcedure, AspectdUtils.createProcedureBodyWithExpression(staticInvocation, shouldReturn), shouldReturn);
       pointcutClass.addMember(stubProcedure2);
       AspectdUtils.insertProceedBranch(stubProcedure2, shouldReturn);
   }
@@ -142,8 +139,7 @@ class AspectdExecuteImplTransformer extends Transformer{
     //目标新建stub函数，方便完成目标->aopstub->目标stub链路
     Procedure originalStubProcedure = AspectdUtils.createStubProcedure(Name(originalProcedure.name.name+'_'+aspectdItemInfo.stubKey,originalProcedure.name.library), aspectdItemInfo, originalProcedure,body, shouldReturn);
     originalClass.addMember(originalStubProcedure);
-    functionNode.body = createPointcutCallFromOriginal(originalLibrary,aspectdItemInfo, ThisExpression(),
-        originalProcedure, AspectdUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
+    functionNode.body = createPointcutCallFromOriginal(originalLibrary,aspectdItemInfo, ThisExpression(), originalProcedure, AspectdUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
 
     //Pointcut类中新增stub，并且添加调用
     Library pointcutLibrary = AspectdUtils.pointCutProceedProcedure.parent.parent as Library;
@@ -157,22 +153,17 @@ class AspectdExecuteImplTransformer extends Transformer{
     AspectdUtils.insertProceedBranch(stubProcedure2, shouldReturn);
   }
 
-  /// 在函数中插入对aop_impl.dart中的方法调用：构造PointCut实例，作为参数传给aop_impl.dart中的方法
-  Block createPointcutCallFromOriginal(Library library,AspectdItemInfo aspectdItemInfo,Expression targetExpression,
-      Procedure procedure,Arguments arguments,bool shouldReturn) {
+  Block createPointcutCallFromOriginal(Library library,AspectdItemInfo aspectdItemInfo,Expression targetExpression, Procedure procedure,Arguments arguments,bool shouldReturn) {
     AspectdUtils.insertLibraryDependency(library, aspectdItemInfo.aspectdProcedure.parent.parent);
     Arguments redirectArguments = Arguments.empty();
     AspectdUtils.concatArgumentsForAspectdMethod(null,redirectArguments, aspectdItemInfo, targetExpression, procedure,arguments);
     Expression callExpression = null;
     if(aspectdItemInfo.aspectdProcedure.isStatic) {
-      // 如果aop_impl.dart中的方法是静态方法，直接调用
       callExpression = StaticInvocation(aspectdItemInfo.aspectdProcedure, redirectArguments);
     } else {
-      // 如果aop_impl.dart中的方法是实例方法，需要先构造实例再调用
       ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference((aspectdItemInfo.aspectdProcedure.parent as Class).constructors.first.reference, Arguments([]));
       callExpression = MethodInvocation(redirectConstructorInvocation, aspectdItemInfo.aspectdProcedure.name, redirectArguments);
     }
-    // 构造函数代码块{}
     return AspectdUtils.createProcedureBodyWithExpression(callExpression, shouldReturn);
   }
 }

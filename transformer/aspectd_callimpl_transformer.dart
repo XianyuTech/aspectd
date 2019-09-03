@@ -204,15 +204,11 @@ class AspectdCallImplTransformer extends Transformer {
     //更改原始调用
     Arguments redirectArguments = Arguments.empty();
     Map<String, String>  sourceInfo = AspectdUtils.calcSourceInfo(_uriToSource,_curLibrary, methodInvocation.fileOffset);
-    // 构造PointCut对象调用，作为ExecuteDemo类中的某个方法的参数
     AspectdUtils.concatArgumentsForAspectdMethod(sourceInfo,redirectArguments, aspectdItemInfo, methodInvocation.receiver,methodProcedure,methodInvocation.arguments);
 
     Class cls = aspectdItemInfo.aspectdProcedure.parent as Class;
-    // ExecuteDemo构造函数调用
     ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference(cls.constructors.first.reference, Arguments([]));
-    // ExecuteDemo中的方法调用，用PointCunt对象作为参数
     MethodInvocation methodInvocation2 = MethodInvocation(redirectConstructorInvocation, aspectdItemInfo.aspectdProcedure.name, redirectArguments);
-    // 添加依赖 import "package:aop/aop_impl.dart";
     AspectdUtils.insertLibraryDependency(_curLibrary, aspectdItemInfo.aspectdProcedure.parent.parent);
     if(aspectdItemInfo.stubKey != null){
       return methodInvocation2;
@@ -236,13 +232,10 @@ class AspectdCallImplTransformer extends Transformer {
   bool insertInstanceMethod4Pointcut(AspectdItemInfo aspectdItemInfo,Class pointCutClass, Class procedureImpl, Procedure originalProcedure) {
     //Add library dependency
     //Add new Procedure
-    // (this.target as #lib2::_MyHomePageState).{=#lib2::_MyHomePageState::_incrementCounter_call}()
-    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')),
-        InterfaceType(procedureImpl)), originalProcedure, AspectdUtils.concatArguments4PointcutStubCall(originalProcedure));
+    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(procedureImpl)), originalProcedure, AspectdUtils.concatArguments4PointcutStubCall(originalProcedure));
     _transformedInvocationSet.add(mockedInvocation);
     bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
-    createPointcutStubProcedure(aspectdItemInfo,pointCutClass,
-        AspectdUtils.createProcedureBodyWithExpression(mockedInvocation, !(originalProcedure.function.returnType is VoidType)), shouldReturn);
+    createPointcutStubProcedure(aspectdItemInfo,pointCutClass, AspectdUtils.createProcedureBodyWithExpression(mockedInvocation, !(originalProcedure.function.returnType is VoidType)), shouldReturn);
     return true;
   }
 
@@ -250,10 +243,8 @@ class AspectdCallImplTransformer extends Transformer {
   void createPointcutStubProcedure(AspectdItemInfo aspectdItemInfo,Class pointCutClass,Statement bodyStatements, bool shouldReturn) {
     String stubMethodName = '${AspectdUtils.kAspectdStubMethodPrefix}${AspectdUtils.kPrimaryKeyAspectdMethod}';
     aspectdItemInfo.stubKey = stubMethodName;
-    // 在PointCut中生成aspectd_stub_xxx方法
     Procedure procedure = AspectdUtils.createStubProcedure(Name(aspectdItemInfo.stubKey,AspectdUtils.pointCutProceedProcedure.name.library), aspectdItemInfo, AspectdUtils.pointCutProceedProcedure, bodyStatements, shouldReturn);
     pointCutClass.addMember(procedure);
-    // 给PointCut.proceed方法中添加对aspectd_stub_xxx的调用
     AspectdUtils.insertProceedBranch(procedure, shouldReturn);
     AspectdUtils.kPrimaryKeyAspectdMethod++;
   }

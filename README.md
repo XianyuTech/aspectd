@@ -255,7 +255,7 @@ would be discarded to avoid overring the original one.
 
 
 ## auto register
-多业务场景，涉及到路由、组件统一注册时，往往需要手动在初始化是统一注册，这对各业务开发耦合度比较高，auto register就是解决这种耦合场景，让框架可以更紧凑。
+项目采用组件化方案时，涉及到路由、组件统一注册时，往往需要手动在初始化是统一注册，这对各业务开发耦合度比较高，auto register就是解决这种耦合场景，让框架可以更紧凑。
 
 在aop/lib/config目录下放置register.json，用来配置需要注册的服务，像这样：
 ```
