@@ -49,6 +49,27 @@ class RegisterInfo {
   }
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is RegisterInfo &&
+              runtimeType == other.runtimeType &&
+              interfaceLibrary == other.interfaceLibrary &&
+              interfaceName == other.interfaceName &&
+              initLibrary == other.initLibrary &&
+              initClassName == other.initClassName &&
+              initMethodName == other.initMethodName &&
+              registerToMethodName == other.registerToMethodName;
+
+  @override
+  int get hashCode =>
+      interfaceLibrary.hashCode ^
+      interfaceName.hashCode ^
+      initLibrary.hashCode ^
+      initClassName.hashCode ^
+      initMethodName.hashCode ^
+      registerToMethodName.hashCode;
+
+  @override
   String toString() {
     return 'RegisterInfo{interfaceLibrary: $interfaceLibrary, interfaceName: $interfaceName, initLibrary: $initLibrary, initClassName: $initClassName, initMethodName: $initMethodName, registerToMethodName: $registerToMethodName}';
   }
