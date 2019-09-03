@@ -1,4 +1,11 @@
-/// debug模式下必须在某个地方引用，不然没法打入包
+/// date: 2019-09-03 16:44
+/// author: bruce.zhang
+/// description: register和init方法是[顶级方法] demo
+///
+/// modification history:
+
+
+/// debug模式下必须在某个地方引用一次，不然没法打入包
 import 'impl/router_a.dart';
 
 
