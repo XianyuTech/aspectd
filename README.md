@@ -153,6 +153,7 @@ class CallDemo{
 In this case, notice that @Aspect() is needed to mark a class so that the aspectd will know that this class contains AspectD annotation informations. 
 @pragma("vm:entry-point") is needed so that the class/function will not be removed by tree-shaking.
 For @Call("package:app/calculator.dart","Calculator","-getCurTime"), there are several things to know. Now call/execute/inject accept three positional parameters, package name, class name(If the procedure is a library method, this part is empty string), and function name. The function name may have a prefix('-' or '+'), '-' refers to instance method while '+' refers to library static method(like main) and class method. There is also a named parameter lineNum for inject so that AspectD know which line to inject a code snippet. The lineNum parameter is 1 based and code snippet would be injected before that line.
+Besides, when you want to manipulate a static method(including library method and class method), your aop method(runAppKWLM here) should also be declared static. This requirement also applies when using execute command.
 
 ## execute
 
