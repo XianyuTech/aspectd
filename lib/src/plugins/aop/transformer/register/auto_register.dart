@@ -15,6 +15,7 @@ import 'package:path/path.dart' as path;
 
 import 'package:kernel/ast.dart';
 import 'package:front_end/src/fasta/kernel/kernel_ast_api.dart';
+
 import '../utils.dart';
 
 /// register.json file' path is lib/config/register.json
@@ -76,20 +77,23 @@ class RegisterInfo {
 }
 
 
-class AutoRegisterTransformer extends Transformer {
+class AutoRegisterTransformer {
   List<RegisterInfo> _registerInfoList;
 
   AutoRegisterTransformer();
 
-  void initRegisterInfo(Reference mainMethodNameRef) {
-    _registerInfoList = _parseRegisterInfo(mainMethodNameRef);
-  }
+  void transform(Component program) {
+    final List<Library> libraries = program.libraries;
 
-  void aspectdTransform(List<Library> libraries) {
-    if(libraries == null || libraries.isEmpty) {
+    if (libraries.isEmpty) {
       return;
     }
 
+    _registerInfoList = _parseRegisterInfo(program.mainMethodName);
+    _aspectdTransform(libraries);
+  }
+
+  void _aspectdTransform(List<Library> libraries) {
     if(_registerInfoList == null || _registerInfoList.isEmpty) {
       return;
     }
@@ -157,7 +161,7 @@ class AutoRegisterTransformer extends Transformer {
 
             for (var implCls in interfaceImplClsList) {
               if(!identical(library, implCls.parent)) {
-                AspectdUtils.insertLibraryDependency(library, implCls.parent);
+                AopUtils.insertLibraryDependency(library, implCls.parent);
               }
 
               if(implCls.constructors.isNotEmpty) {
@@ -199,7 +203,7 @@ class AutoRegisterTransformer extends Transformer {
 
         for (var implCls in interfaceImplClsList) {
           if(!identical(library, implCls.parent)) {
-            AspectdUtils.insertLibraryDependency(library, implCls.parent);
+            AopUtils.insertLibraryDependency(library, implCls.parent);
           }
 
           if(implCls.constructors.isNotEmpty) {

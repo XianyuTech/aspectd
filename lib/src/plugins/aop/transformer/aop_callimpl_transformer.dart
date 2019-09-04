@@ -6,15 +6,15 @@ import 'package:kernel/ast.dart';
 import 'package:front_end/src/fasta/kernel/kernel_ast_api.dart';
 import 'utils.dart';
 
-class AspectdCallImplTransformer extends Transformer {
-  Map<String,AspectdItemInfo> _aspectdInfoMap;
+class AopCallImplTransformer extends Transformer {
+  Map<String,AopItemInfo> _aopInfoMap;
   Map<String,Library> _libraryMap;
   Set<Object> _transformedInvocationSet = new Set<Object>();
   Library _curLibrary;
   Map<Uri, Source> _uriToSource;
 
-  AspectdCallImplTransformer(
-      this._aspectdInfoMap, this._libraryMap, this._uriToSource);
+  AopCallImplTransformer(
+      this._aopInfoMap, this._libraryMap, this._uriToSource);
 
   @override
   Library visitLibrary(Library node){
@@ -32,22 +32,22 @@ class AspectdCallImplTransformer extends Transformer {
       Procedure procedure = node;
       Class cls = procedure.parent as Class;
       String procedureImportUri = cls.reference.canonicalName.parent.name;
-      uniqueKeyForMethod = AspectdItemInfo.uniqueKeyForMethod(
+      uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(
           procedureImportUri, cls.name, methodInvocation.name.name, false, null);
     }
     else if(node == null) {
       String importUri = methodInvocation?.interfaceTargetReference?.canonicalName?.reference?.canonicalName?.nonRootTop?.name;
       String clsName = methodInvocation?.interfaceTargetReference?.canonicalName?.parent?.parent?.name;
       String methodName = methodInvocation?.interfaceTargetReference?.canonicalName?.name;
-      uniqueKeyForMethod = AspectdItemInfo.uniqueKeyForMethod(
+      uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(
           importUri, clsName, methodName, false, null);
     }
     if(uniqueKeyForMethod != null) {
-      AspectdItemInfo aspectdItemInfo = _aspectdInfoMap[uniqueKeyForMethod];
-      if (aspectdItemInfo?.mode == AspectdMode.Call &&
-          !_transformedInvocationSet.contains(methodInvocation) && AspectdUtils.checkIfSkipAOP(aspectdItemInfo, _curLibrary) == false) {
+      AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
+      if (aopItemInfo?.mode == AopMode.Call &&
+          !_transformedInvocationSet.contains(methodInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
         return transformInstanceMethodInvocation(
-            methodInvocation, aspectdItemInfo);
+            methodInvocation, aopItemInfo);
       }
     }
     return methodInvocation;
@@ -92,18 +92,18 @@ class AspectdCallImplTransformer extends Transformer {
       if(treeNode is Library) {
         Library library = treeNode;
         String libraryImportUri = library.importUri.toString();
-        String uniqueKeyForMethod = AspectdItemInfo.uniqueKeyForMethod(libraryImportUri, '', procedure.name.name, true,null);
-        AspectdItemInfo aspectdItemInfo = _aspectdInfoMap[uniqueKeyForMethod];
-        if(aspectdItemInfo?.mode == AspectdMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AspectdUtils.checkIfSkipAOP(aspectdItemInfo, _curLibrary) == false) {
-          return transformLibraryStaticMethodInvocation(staticInvocation, procedure, aspectdItemInfo);
+        String uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(libraryImportUri, '', procedure.name.name, true,null);
+        AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
+        if(aopItemInfo?.mode == AopMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
+          return transformLibraryStaticMethodInvocation(staticInvocation, procedure, aopItemInfo);
         }
       } else if(treeNode is Class) {
         Class cls = treeNode;
         String procedureImportUri = cls.reference.canonicalName.parent.name;
-        String uniqueKeyForMethod = AspectdItemInfo.uniqueKeyForMethod(procedureImportUri, cls.name, procedure.name.name, true,null);
-        AspectdItemInfo aspectdItemInfo = _aspectdInfoMap[uniqueKeyForMethod];
-        if(aspectdItemInfo?.mode == AspectdMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AspectdUtils.checkIfSkipAOP(aspectdItemInfo, _curLibrary) == false) {
-          return transformClassStaticMethodInvocation(staticInvocation, aspectdItemInfo);
+        String uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(procedureImportUri, cls.name, procedure.name.name, true,null);
+        AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
+        if(aopItemInfo?.mode == AopMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
+          return transformClassStaticMethodInvocation(staticInvocation, aopItemInfo);
         }
       }
     } else {
@@ -113,47 +113,47 @@ class AspectdCallImplTransformer extends Transformer {
   }
 
   //Library Static Method Invocation
-  StaticInvocation transformLibraryStaticMethodInvocation(StaticInvocation staticInvocation, Procedure procedure, AspectdItemInfo aspectdItemInfo) {
-    assert(aspectdItemInfo.mode!=null);
+  StaticInvocation transformLibraryStaticMethodInvocation(StaticInvocation staticInvocation, Procedure procedure, AopItemInfo aopItemInfo) {
+    assert(aopItemInfo.mode!=null);
     Library procedureLibrary = procedure.parent as Library;
 
     //更改原始调用
     Arguments redirectArguments = Arguments.empty();
-    Map<String, String> sourceInfo = AspectdUtils.calcSourceInfo(_uriToSource,_curLibrary, staticInvocation.fileOffset);
-    AspectdUtils.concatArgumentsForAspectdMethod(sourceInfo,redirectArguments, aspectdItemInfo, StringLiteral(procedureLibrary.importUri.toString()),procedure,staticInvocation.arguments);
+    Map<String, String> sourceInfo = AopUtils.calcSourceInfo(_uriToSource,_curLibrary, staticInvocation.fileOffset);
+    AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, StringLiteral(procedureLibrary.importUri.toString()),procedure,staticInvocation.arguments);
 
-    StaticInvocation staticInvocation2 = StaticInvocation(aspectdItemInfo.aspectdProcedure, redirectArguments);
-    if(aspectdItemInfo.stubKey != null){
+    StaticInvocation staticInvocation2 = StaticInvocation(aopItemInfo.aopProcedure, redirectArguments);
+    if(aopItemInfo.stubKey != null){
       return staticInvocation2;
     }
 
-    insertStaticMethod4Pointcut(aspectdItemInfo, AspectdUtils.pointCutProceedProcedure.parent as Class, staticInvocation, procedureLibrary,procedure);
+    insertStaticMethod4Pointcut(aopItemInfo, AopUtils.pointCutProceedProcedure.parent as Class, staticInvocation, procedureLibrary,procedure);
     return staticInvocation2;
   }
 
   //Class Static Method Invocation
-  StaticInvocation transformClassStaticMethodInvocation(StaticInvocation staticInvocation, AspectdItemInfo aspectdItemInfo) {
-    assert(aspectdItemInfo.mode!=null);
+  StaticInvocation transformClassStaticMethodInvocation(StaticInvocation staticInvocation, AopItemInfo aopItemInfo) {
+    assert(aopItemInfo.mode!=null);
     Procedure procedure = staticInvocation.targetReference.node as Procedure;
     Class procedureClass = procedure.parent as Class;
 
     //更改原始调用
     Arguments redirectArguments = Arguments.empty();
-    Map<String, String>  sourceInfo = AspectdUtils.calcSourceInfo(_uriToSource,_curLibrary, staticInvocation.fileOffset);
-    AspectdUtils.concatArgumentsForAspectdMethod(sourceInfo,redirectArguments, aspectdItemInfo, StringLiteral(procedureClass.name),procedure,staticInvocation.arguments);
+    Map<String, String>  sourceInfo = AopUtils.calcSourceInfo(_uriToSource,_curLibrary, staticInvocation.fileOffset);
+    AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, StringLiteral(procedureClass.name),procedure,staticInvocation.arguments);
 
-    StaticInvocation staticInvocation2 = StaticInvocation(aspectdItemInfo.aspectdProcedure, redirectArguments);
-    if(aspectdItemInfo.stubKey != null){
+    StaticInvocation staticInvocation2 = StaticInvocation(aopItemInfo.aopProcedure, redirectArguments);
+    if(aopItemInfo.stubKey != null){
       return staticInvocation2;
     }
 
-    insertStaticMethod4Pointcut(aspectdItemInfo, AspectdUtils.pointCutProceedProcedure.parent as Class, staticInvocation, staticInvocation.targetReference.node.parent.parent as Library, procedure);
+    insertStaticMethod4Pointcut(aopItemInfo, AopUtils.pointCutProceedProcedure.parent as Class, staticInvocation, staticInvocation.targetReference.node.parent.parent as Library, procedure);
     return staticInvocation2;
   }
 
   //Instance Method Invocation
-  MethodInvocation transformInstanceMethodInvocation(MethodInvocation methodInvocation, AspectdItemInfo aspectdItemInfo) {
-    assert(aspectdItemInfo.mode!=null);
+  MethodInvocation transformInstanceMethodInvocation(MethodInvocation methodInvocation, AopItemInfo aopItemInfo) {
+    assert(aopItemInfo.mode!=null);
 
     Procedure methodProcedure = methodInvocation.interfaceTargetReference.node as Procedure;
     Class methodClass = methodInvocation?.interfaceTargetReference?.node?.parent;
@@ -203,50 +203,50 @@ class AspectdCallImplTransformer extends Transformer {
 
     //更改原始调用
     Arguments redirectArguments = Arguments.empty();
-    Map<String, String>  sourceInfo = AspectdUtils.calcSourceInfo(_uriToSource,_curLibrary, methodInvocation.fileOffset);
-    AspectdUtils.concatArgumentsForAspectdMethod(sourceInfo,redirectArguments, aspectdItemInfo, methodInvocation.receiver,methodProcedure,methodInvocation.arguments);
+    Map<String, String>  sourceInfo = AopUtils.calcSourceInfo(_uriToSource,_curLibrary, methodInvocation.fileOffset);
+    AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, methodInvocation.receiver,methodProcedure,methodInvocation.arguments);
 
-    Class cls = aspectdItemInfo.aspectdProcedure.parent as Class;
+    Class cls = aopItemInfo.aopProcedure.parent as Class;
     ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference(cls.constructors.first.reference, Arguments([]));
-    MethodInvocation methodInvocation2 = MethodInvocation(redirectConstructorInvocation, aspectdItemInfo.aspectdProcedure.name, redirectArguments);
-    AspectdUtils.insertLibraryDependency(_curLibrary, aspectdItemInfo.aspectdProcedure.parent.parent);
-    if(aspectdItemInfo.stubKey != null){
+    MethodInvocation methodInvocation2 = MethodInvocation(redirectConstructorInvocation, aopItemInfo.aopProcedure.name, redirectArguments);
+    AopUtils.insertLibraryDependency(_curLibrary, aopItemInfo.aopProcedure.parent.parent);
+    if(aopItemInfo.stubKey != null){
       return methodInvocation2;
     }
 
-    insertInstanceMethod4Pointcut(aspectdItemInfo, AspectdUtils.pointCutProceedProcedure.parent as Class,methodImplClass, methodProcedure);
+    insertInstanceMethod4Pointcut(aopItemInfo, AopUtils.pointCutProceedProcedure.parent as Class,methodImplClass, methodProcedure);
     return methodInvocation2;
   }
 
-  bool insertStaticMethod4Pointcut(AspectdItemInfo aspectdItemInfo, Class pointCutClass, StaticInvocation originalStaticInvocation, Library originalLibrary,Procedure originalProcedure) {
+  bool insertStaticMethod4Pointcut(AopItemInfo aopItemInfo, Class pointCutClass, StaticInvocation originalStaticInvocation, Library originalLibrary,Procedure originalProcedure) {
     //Add library dependency
-    AspectdUtils.insertLibraryDependency(pointCutClass.parent as Library, originalLibrary);
+    AopUtils.insertLibraryDependency(pointCutClass.parent as Library, originalLibrary);
     //Add new Procedure
-    StaticInvocation staticInvocation = StaticInvocation(originalProcedure, AspectdUtils.concatArguments4PointcutStubCall(originalProcedure), isConst: originalProcedure.isConst);
+    StaticInvocation staticInvocation = StaticInvocation(originalProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure), isConst: originalProcedure.isConst);
     _transformedInvocationSet.add(staticInvocation);
     bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
-    createPointcutStubProcedure(aspectdItemInfo,pointCutClass,AspectdUtils.createProcedureBodyWithExpression(staticInvocation, shouldReturn),shouldReturn);
+    createPointcutStubProcedure(aopItemInfo,pointCutClass,AopUtils.createProcedureBodyWithExpression(staticInvocation, shouldReturn),shouldReturn);
     return true;
   }
 
-  bool insertInstanceMethod4Pointcut(AspectdItemInfo aspectdItemInfo,Class pointCutClass, Class procedureImpl, Procedure originalProcedure) {
+  bool insertInstanceMethod4Pointcut(AopItemInfo aopItemInfo,Class pointCutClass, Class procedureImpl, Procedure originalProcedure) {
     //Add library dependency
     //Add new Procedure
-    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(procedureImpl)), originalProcedure, AspectdUtils.concatArguments4PointcutStubCall(originalProcedure));
+    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(procedureImpl)), originalProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure));
     _transformedInvocationSet.add(mockedInvocation);
     bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
-    createPointcutStubProcedure(aspectdItemInfo,pointCutClass, AspectdUtils.createProcedureBodyWithExpression(mockedInvocation, !(originalProcedure.function.returnType is VoidType)), shouldReturn);
+    createPointcutStubProcedure(aopItemInfo,pointCutClass, AopUtils.createProcedureBodyWithExpression(mockedInvocation, !(originalProcedure.function.returnType is VoidType)), shouldReturn);
     return true;
   }
 
   //Will create stub and insert call branch in proceed.
-  void createPointcutStubProcedure(AspectdItemInfo aspectdItemInfo,Class pointCutClass,Statement bodyStatements, bool shouldReturn) {
-    String stubMethodName = '${AspectdUtils.kAspectdStubMethodPrefix}${AspectdUtils.kPrimaryKeyAspectdMethod}';
-    aspectdItemInfo.stubKey = stubMethodName;
-    Procedure procedure = AspectdUtils.createStubProcedure(Name(aspectdItemInfo.stubKey,AspectdUtils.pointCutProceedProcedure.name.library), aspectdItemInfo, AspectdUtils.pointCutProceedProcedure, bodyStatements, shouldReturn);
+  void createPointcutStubProcedure(AopItemInfo aopItemInfo, Class pointCutClass,Statement bodyStatements, bool shouldReturn) {
+    String stubMethodName = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
+    aopItemInfo.stubKey = stubMethodName;
+    Procedure procedure = AopUtils.createStubProcedure(Name(aopItemInfo.stubKey,AopUtils.pointCutProceedProcedure.name.library), aopItemInfo, AopUtils.pointCutProceedProcedure, bodyStatements, shouldReturn);
     pointCutClass.addMember(procedure);
-    AspectdUtils.insertProceedBranch(procedure, shouldReturn);
-    AspectdUtils.kPrimaryKeyAspectdMethod++;
+    AopUtils.insertProceedBranch(procedure, shouldReturn);
+    AopUtils.kPrimaryKeyAopMethod++;
   }
 }
 

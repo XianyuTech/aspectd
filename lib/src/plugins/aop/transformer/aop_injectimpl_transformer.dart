@@ -6,29 +6,29 @@ import 'package:kernel/ast.dart';
 import 'package:front_end/src/fasta/kernel/kernel_ast_api.dart';
 import 'utils.dart';
 
-class AspectdStatementsInsertInfo {
+class AopStatementsInsertInfo {
   final Library library;
   final Source source;
   final Constructor constructor;
   final Procedure procedure;
   final Node node;
-  final AspectdItemInfo aspectdItemInfo;
-  final List<Statement> aspectdInsertStatements;
-  AspectdStatementsInsertInfo({this.library,this.source,this.constructor,this.procedure,this.node,this.aspectdItemInfo, this.aspectdInsertStatements});
+  final AopItemInfo aopItemInfo;
+  final List<Statement> aopInsertStatements;
+  AopStatementsInsertInfo({this.library,this.source,this.constructor,this.procedure,this.node,this.aopItemInfo, this.aopInsertStatements});
 }
 
-class AspectdInjectImplTransformer extends Transformer{
-  Map<String,AspectdItemInfo> _aspectdInfoMap;
+class AopInjectImplTransformer extends Transformer{
+  Map<String,AopItemInfo> _aopInfoMap;
   Map<String,Library> _libraryMap;
   Map<Uri, Source> _uriToSource;
   Set<VariableDeclaration> _mockedVariableDeclaration = Set();
   Map<String, VariableDeclaration> _originalVariableDeclaration = {};
   Class _curClass;
   Node _curMethodNode;
-  Library _curAspectdLibrary;
-  AspectdStatementsInsertInfo _curAspectdStatementsInsertInfo;
+  Library _curAopLibrary;
+  AopStatementsInsertInfo _curAopStatementsInsertInfo;
 
-  AspectdInjectImplTransformer(this._aspectdInfoMap, this._libraryMap,this._uriToSource);
+  AopInjectImplTransformer(this._aopInfoMap, this._libraryMap,this._uriToSource);
 
   @override
   VariableDeclaration visitVariableDeclaration(VariableDeclaration node){
@@ -51,21 +51,21 @@ class AspectdInjectImplTransformer extends Transformer{
   PropertyGet visitPropertyGet(PropertyGet node){
     node.transformChildren(this);
     Node interfaceTargetNode = node.interfaceTargetReference.node;
-    if(_curAspectdLibrary != null) {
+    if(_curAopLibrary != null) {
       if(interfaceTargetNode is Field) {
-        if(interfaceTargetNode.fileUri == _curAspectdLibrary.fileUri) {
-          List<String> keypaths = AspectdUtils.getPropertyKeyPaths(node.toString());
+        if(interfaceTargetNode.fileUri == _curAopLibrary.fileUri) {
+          List<String> keypaths = AopUtils.getPropertyKeyPaths(node.toString());
           String firstEle = keypaths[0];
           if(firstEle == 'this') {
-            Class cls = AspectdUtils.findClassFromThisWithKeypath(_curClass,keypaths);
-            Field field = AspectdUtils.findFieldForClassWithName(cls, node.name.name);
+            Class cls = AopUtils.findClassFromThisWithKeypath(_curClass,keypaths);
+            Field field = AopUtils.findFieldForClassWithName(cls, node.name.name);
             return PropertyGet(node.receiver, field.name);
           } else {
             VariableDeclaration variableDeclaration = _originalVariableDeclaration[firstEle];
             if(variableDeclaration.type is InterfaceType) {
               InterfaceType interfaceType = variableDeclaration.type;
-              Class cls = AspectdUtils.findClassFromThisWithKeypath(interfaceType.classNode,keypaths);
-              Field field = AspectdUtils.findFieldForClassWithName(cls, node.name.name);
+              Class cls = AopUtils.findClassFromThisWithKeypath(interfaceType.classNode,keypaths);
+              Field field = AopUtils.findFieldForClassWithName(cls, node.name.name);
               return PropertyGet(node.receiver, field.name);
             }
           }
@@ -99,44 +99,44 @@ class AspectdInjectImplTransformer extends Transformer{
   @override
   Block visitBlock(Block node){
     node.transformChildren(this);
-    if(_curAspectdStatementsInsertInfo != null) {
-      Library library = _curAspectdStatementsInsertInfo.library;
-      Source source = _curAspectdStatementsInsertInfo.source;
-      AspectdItemInfo aspectdItemInfo = _curAspectdStatementsInsertInfo.aspectdItemInfo;
-      List<Statement> aspectdInsertStatements = _curAspectdStatementsInsertInfo.aspectdInsertStatements;
-      insertStatementsToBody(library,source,node,aspectdItemInfo,aspectdInsertStatements);
+    if(_curAopStatementsInsertInfo != null) {
+      Library library = _curAopStatementsInsertInfo.library;
+      Source source = _curAopStatementsInsertInfo.source;
+      AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
+      List<Statement> aopInsertStatements = _curAopStatementsInsertInfo.aopInsertStatements;
+      insertStatementsToBody(library,source,node, aopItemInfo, aopInsertStatements);
     }
     return node;
   }
 
-  void aspectdTransform() {
-    _aspectdInfoMap?.forEach((String uniqueKey, AspectdItemInfo aspectdItemInfo){
-      Library aspectdAnnoLibrary = _libraryMap[aspectdItemInfo.importUri];
-      String clsName = aspectdItemInfo.clsName;
-      if (aspectdAnnoLibrary == null) {
+  void aopTransform() {
+    _aopInfoMap?.forEach((String uniqueKey, AopItemInfo aopItemInfo){
+      Library aopAnnoLibrary = _libraryMap[aopItemInfo.importUri];
+      String clsName = aopItemInfo.clsName;
+      if (aopAnnoLibrary == null) {
         return;
       }
       //类静态/实例方法
       if (clsName != null && clsName.length>0) {
         Class expectedCls = null;
-        for(Class cls in aspectdAnnoLibrary.classes) {
-          if(cls.name == aspectdItemInfo.clsName) {
+        for(Class cls in aopAnnoLibrary.classes) {
+          if(cls.name == aopItemInfo.clsName) {
             expectedCls = cls;
             //Check Constructors
-            if(aspectdItemInfo.methodName == aspectdItemInfo.clsName || aspectdItemInfo.methodName.startsWith(aspectdItemInfo.clsName+'.')) {
+            if(aopItemInfo.methodName == aopItemInfo.clsName || aopItemInfo.methodName.startsWith(aopItemInfo.clsName+'.')) {
               for(Constructor constructor in cls.constructors) {
-                if(cls.name+(constructor.name.name==''?'':'.'+constructor.name.name) == aspectdItemInfo.methodName && true == aspectdItemInfo.isStatic) {
+                if(cls.name+(constructor.name.name==''?'':'.'+constructor.name.name) == aopItemInfo.methodName && true == aopItemInfo.isStatic) {
                   _curClass = expectedCls;
-                  transformConstructor(aspectdAnnoLibrary,_uriToSource[aspectdAnnoLibrary.fileUri], constructor, aspectdItemInfo);
+                  transformConstructor(aopAnnoLibrary,_uriToSource[aopAnnoLibrary.fileUri], constructor, aopItemInfo);
                   return;
                 }
               }
             }
             //Check Procedures
               for(Procedure procedure in cls.procedures) {
-                if(procedure.name.name == aspectdItemInfo.methodName && procedure.isStatic == aspectdItemInfo.isStatic) {
+                if(procedure.name.name == aopItemInfo.methodName && procedure.isStatic == aopItemInfo.isStatic) {
                   _curClass = expectedCls;
-                  transformMethodProcedure(aspectdAnnoLibrary,_uriToSource[aspectdAnnoLibrary.fileUri], procedure, aspectdItemInfo);
+                  transformMethodProcedure(aopAnnoLibrary,_uriToSource[aopAnnoLibrary.fileUri], procedure, aopItemInfo);
                   return;
                 }
             }
@@ -145,67 +145,67 @@ class AspectdInjectImplTransformer extends Transformer{
         }
         _libraryMap.forEach((importUri,lib){
           for(Class cls in lib.classes) {
-            if(cls.name == aspectdItemInfo.clsName) {
+            if(cls.name == aopItemInfo.clsName) {
               for(Procedure procedure in cls.procedures) {
-                if(procedure.name.name == aspectdItemInfo.methodName && procedure.isStatic == aspectdItemInfo.isStatic) {
+                if(procedure.name.name == aopItemInfo.methodName && procedure.isStatic == aopItemInfo.isStatic) {
                   _curClass = cls;
-                  transformMethodProcedure(lib, _uriToSource[aspectdAnnoLibrary.fileUri], procedure, aspectdItemInfo);
+                  transformMethodProcedure(lib, _uriToSource[aopAnnoLibrary.fileUri], procedure, aopItemInfo);
                 }
               }
             }
           }
         });
       } else {
-        for(Procedure procedure in aspectdAnnoLibrary.procedures) {
-          if(procedure.name.name == aspectdItemInfo.methodName && procedure.isStatic == aspectdItemInfo.isStatic) {
-            transformMethodProcedure(aspectdAnnoLibrary, _uriToSource[aspectdAnnoLibrary.fileUri], procedure, aspectdItemInfo);
+        for(Procedure procedure in aopAnnoLibrary.procedures) {
+          if(procedure.name.name == aopItemInfo.methodName && procedure.isStatic == aopItemInfo.isStatic) {
+            transformMethodProcedure(aopAnnoLibrary, _uriToSource[aopAnnoLibrary.fileUri], procedure, aopItemInfo);
           }
         }
       }
     });
   }
 
-  void transformMethodProcedure(Library library, Source source, Procedure procedure, AspectdItemInfo aspectdItemInfo) {
-    List<Statement> aspectdInsertStatements = onPrepareTransform(library, procedure,aspectdItemInfo);
+  void transformMethodProcedure(Library library, Source source, Procedure procedure, AopItemInfo aopItemInfo) {
+    List<Statement> aopInsertStatements = onPrepareTransform(library, procedure,aopItemInfo);
     if(procedure.function.body is Block) {
       _curMethodNode = procedure;
-      insertStatementsToBody(library, source, procedure.function, aspectdItemInfo, aspectdInsertStatements);
+      insertStatementsToBody(library, source, procedure.function, aopItemInfo, aopInsertStatements);
     }
-    onPostTransform(aspectdItemInfo);
+    onPostTransform(aopItemInfo);
   }
 
-  void transformConstructor(Library library, Source source, Constructor constructor, AspectdItemInfo aspectdItemInfo) {
-    List<Statement> aspectdInsertStatements = onPrepareTransform(library, constructor,aspectdItemInfo);
+  void transformConstructor(Library library, Source source, Constructor constructor, AopItemInfo aopItemInfo) {
+    List<Statement> aopInsertStatements = onPrepareTransform(library, constructor,aopItemInfo);
 
     Statement body = constructor.function.body;
     bool canBeInitializers = true;
-    aspectdInsertStatements.forEach((statement){
+    aopInsertStatements.forEach((statement){
       if(!(statement is AssertStatement))
         canBeInitializers = false;
     });
     //Insert in body part
     if(!canBeInitializers ||
-        ((body is Block) && body.statements.length>0 && aspectdItemInfo.lineNum>=AspectdUtils.getLineStartNumForStatement(source, body.statements.first))||
-        (constructor.initializers.length>0 && aspectdItemInfo.lineNum>AspectdUtils.getLineStartNumForInitializer(source, constructor.initializers.last))) {
+        ((body is Block) && body.statements.length>0 && aopItemInfo.lineNum>=AopUtils.getLineStartNumForStatement(source, body.statements.first))||
+        (constructor.initializers.length>0 && aopItemInfo.lineNum>AopUtils.getLineStartNumForInitializer(source, constructor.initializers.last))) {
       _curMethodNode = constructor;
-      insertStatementsToBody(library, source, constructor.function, aspectdItemInfo,aspectdInsertStatements);
+      insertStatementsToBody(library, source, constructor.function, aopItemInfo, aopInsertStatements);
     }
     //Insert in Initializers
     else {
       int len = constructor.initializers.length;
       for (int i = 0; i < len; i++) {
         Initializer initializer = constructor.initializers[i];
-        int lineStart = AspectdUtils.getLineStartNumForInitializer(source, initializer);
+        int lineStart = AopUtils.getLineStartNumForInitializer(source, initializer);
         if(lineStart == -1)
           continue;
         int lineEnds = -1;
         if (i == len - 1) {
-          lineEnds = AspectdUtils.getLineNumBySourceAndOffset(
+          lineEnds = AopUtils.getLineNumBySourceAndOffset(
               source, constructor.function.fileEndOffset) - 1;
         } else {
-          lineEnds = AspectdUtils.getLineStartNumForInitializer(source, constructor.initializers[i + 1]) - 1;
+          lineEnds = AopUtils.getLineStartNumForInitializer(source, constructor.initializers[i + 1]) - 1;
         }
-        int lineNum2Insert = aspectdItemInfo.lineNum;
+        int lineNum2Insert = aopItemInfo.lineNum;
         if(lineNum2Insert>lineStart && lineNum2Insert<=lineEnds) {
           assert(false);
           break;
@@ -218,7 +218,7 @@ class AspectdInjectImplTransformer extends Transformer{
           }
           if(statement2InsertPos != -1) {
             List<Initializer> tmpInitializers = [];
-            for(Statement statement in aspectdInsertStatements) {
+            for(Statement statement in aopInsertStatements) {
               if(statement is AssertStatement)
                 tmpInitializers.add(AssertInitializer(statement));
             }
@@ -228,23 +228,23 @@ class AspectdInjectImplTransformer extends Transformer{
       }
     }
     visitConstructor(constructor);
-    onPostTransform(aspectdItemInfo);
+    onPostTransform(aopItemInfo);
   }
 
-  List<Statement> onPrepareTransform(Library library,Node methodNode,AspectdItemInfo aspectdItemInfo) {
-    Block block2Insert = aspectdItemInfo.aspectdProcedure.function.body as Block;
-    Library aspectdLibrary = aspectdItemInfo.aspectdProcedure?.parent?.parent;
+  List<Statement> onPrepareTransform(Library library,Node methodNode,AopItemInfo aopItemInfo) {
+    Block block2Insert = aopItemInfo.aopProcedure.function.body as Block;
+    Library aopLibrary = aopItemInfo.aopProcedure?.parent?.parent;
     List<Statement> tmpStatements = [];
     for(Statement statement in block2Insert.statements) {
-      VariableDeclaration variableDeclaration = AspectdUtils.checkIfSkipableVarDeclaration(_uriToSource[aspectdLibrary.fileUri], statement);
+      VariableDeclaration variableDeclaration = AopUtils.checkIfSkipableVarDeclaration(_uriToSource[aopLibrary.fileUri], statement);
       if(variableDeclaration != null) {
         _mockedVariableDeclaration.add(variableDeclaration);
       } else {
         tmpStatements.add(statement);
       }
     }
-    for(LibraryDependency libraryDependency in aspectdLibrary.dependencies) {
-      AspectdUtils.insertLibraryDependency(library, libraryDependency.importedLibraryReference.node);
+    for(LibraryDependency libraryDependency in aopLibrary.dependencies) {
+      AopUtils.insertLibraryDependency(library, libraryDependency.importedLibraryReference.node);
     }
     if(methodNode is Procedure) {
       for(VariableDeclaration variableDeclaration in methodNode.function.namedParameters) {
@@ -264,31 +264,31 @@ class AspectdInjectImplTransformer extends Transformer{
     return tmpStatements;
   }
 
-  void onPostTransform(AspectdItemInfo aspectdItemInfo) {
-    Block block2Insert = aspectdItemInfo.aspectdProcedure.function.body as Block;
+  void onPostTransform(AopItemInfo aopItemInfo) {
+    Block block2Insert = aopItemInfo.aopProcedure.function.body as Block;
     block2Insert.statements.clear();
     _mockedVariableDeclaration.clear();
     _originalVariableDeclaration.clear();
-    _curAspectdLibrary = null;
+    _curAopLibrary = null;
   }
 
   void checkIfInsertInFunction(FunctionNode functionNode) {
-    if(_curAspectdStatementsInsertInfo != null) {
-      int lineFrom = AspectdUtils.getLineNumBySourceAndOffset(_curAspectdStatementsInsertInfo.source,functionNode.fileOffset);
-      int lineTo = AspectdUtils.getLineNumBySourceAndOffset(_curAspectdStatementsInsertInfo.source,functionNode.fileEndOffset);
-      int expectedLineNum = _curAspectdStatementsInsertInfo.aspectdItemInfo.lineNum;
+    if(_curAopStatementsInsertInfo != null) {
+      int lineFrom = AopUtils.getLineNumBySourceAndOffset(_curAopStatementsInsertInfo.source,functionNode.fileOffset);
+      int lineTo = AopUtils.getLineNumBySourceAndOffset(_curAopStatementsInsertInfo.source,functionNode.fileEndOffset);
+      int expectedLineNum = _curAopStatementsInsertInfo.aopItemInfo.lineNum;
       if(expectedLineNum>=lineFrom && expectedLineNum<=lineTo) {
-        Library library = _curAspectdStatementsInsertInfo.library;
-        Source source = _curAspectdStatementsInsertInfo.source;
-        AspectdItemInfo aspectdItemInfo = _curAspectdStatementsInsertInfo.aspectdItemInfo;
-        List<Statement> aspectdInsertStatements = _curAspectdStatementsInsertInfo.aspectdInsertStatements;
-        _curAspectdStatementsInsertInfo = null;
-        functionNode.body = insertStatementsToBody(library,source,functionNode,aspectdItemInfo,aspectdInsertStatements);
+        Library library = _curAopStatementsInsertInfo.library;
+        Source source = _curAopStatementsInsertInfo.source;
+        AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
+        List<Statement> aopInsertStatements = _curAopStatementsInsertInfo.aopInsertStatements;
+        _curAopStatementsInsertInfo = null;
+        functionNode.body = insertStatementsToBody(library,source,functionNode,aopItemInfo, aopInsertStatements);
       }
     }
   }
 
-  Statement insertStatementsToBody(Library library, Source source, Node node, AspectdItemInfo aspectdItemInfo,List<Statement> aspectdInsertStatements) {
+  Statement insertStatementsToBody(Library library, Source source, Node node, AopItemInfo aopItemInfo,List<Statement> aopInsertStatements) {
     Statement body = null;
     if(node is FunctionNode) {
       body = node.body;
@@ -308,27 +308,27 @@ class AspectdInjectImplTransformer extends Transformer{
       int len = statements.length;
       for(int i=0;i<len;i++){
         Statement statement = statements[i];
-        Node nodeToVisitRecursively = AspectdUtils.getNodeToVisitRecursively(statement);
-        int lineStart = AspectdUtils.getLineStartNumForStatement(source, statement);
+        Node nodeToVisitRecursively = AopUtils.getNodeToVisitRecursively(statement);
+        int lineStart = AopUtils.getLineStartNumForStatement(source, statement);
         int lineEnds = -1;
-        int lineNum2Insert = aspectdItemInfo.lineNum;
+        int lineNum2Insert = aopItemInfo.lineNum;
         int statement2InsertPos = -1;
         if(i != len-1) {
-          lineEnds = AspectdUtils.getLineStartNumForStatement(source, statements[i+1])-1;
+          lineEnds = AopUtils.getLineStartNumForStatement(source, statements[i+1])-1;
         }
         if(lineStart < 0 || lineEnds <0) {
           if(node is FunctionNode) {
             if(lineStart <0) {
-              lineStart = AspectdUtils.getLineNumBySourceAndOffset(
+              lineStart = AopUtils.getLineNumBySourceAndOffset(
                   source, node.fileOffset);
             }
-            if(lineEnds <0 && !AspectdUtils.isAsyncFunctionNode(node)) {
-              lineEnds = AspectdUtils.getLineNumBySourceAndOffset(source, node.fileEndOffset)-1;
+            if(lineEnds <0 && !AopUtils.isAsyncFunctionNode(node)) {
+              lineEnds = AopUtils.getLineNumBySourceAndOffset(source, node.fileEndOffset)-1;
             }
           } else if(node is Block) {
             if(_curMethodNode is Procedure) {
               Procedure procedure = _curMethodNode;
-              if(AspectdUtils.isAsyncFunctionNode(procedure.function)
+              if(AopUtils.isAsyncFunctionNode(procedure.function)
                   && procedure == body?.parent?.parent?.parent?.parent?.parent?.parent?.parent?.parent) {
                 if(lineEnds < 0 && i == len-1) {
                   lineEnds = lineNum2Insert;
@@ -337,9 +337,9 @@ class AspectdInjectImplTransformer extends Transformer{
                 if(node.parent is FunctionNode) {
                   FunctionNode functionNode = node.parent;
                   if(lineStart<0)
-                    lineStart = AspectdUtils.getLineNumBySourceAndOffset(source, functionNode.fileOffset);
+                    lineStart = AopUtils.getLineNumBySourceAndOffset(source, functionNode.fileOffset);
                   if(lineEnds<0)
-                    lineEnds = AspectdUtils.getLineNumBySourceAndOffset(source, functionNode.fileEndOffset);
+                    lineEnds = AopUtils.getLineNumBySourceAndOffset(source, functionNode.fileEndOffset);
                 }
               }
             }
@@ -348,7 +348,7 @@ class AspectdInjectImplTransformer extends Transformer{
 
         if((lineNum2Insert>=lineStart && lineNum2Insert<lineEnds) || lineEnds<lineStart || lineStart == -1 || lineEnds == -1) {
           if(nodeToVisitRecursively != null) {
-            _curAspectdStatementsInsertInfo = AspectdStatementsInsertInfo(library: library, source: source,constructor: null,procedure: null,node: nodeToVisitRecursively,aspectdItemInfo: aspectdItemInfo,aspectdInsertStatements: aspectdInsertStatements);
+            _curAopStatementsInsertInfo = AopStatementsInsertInfo(library: library, source: source,constructor: null,procedure: null,node: nodeToVisitRecursively, aopItemInfo: aopItemInfo, aopInsertStatements: aopInsertStatements);
             visitNode(nodeToVisitRecursively);
           }
           continue;
@@ -359,9 +359,9 @@ class AspectdInjectImplTransformer extends Transformer{
           statement2InsertPos = len;
         }
         if(statement2InsertPos != -1) {
-          _curAspectdStatementsInsertInfo = null;
-          statements.insertAll(statement2InsertPos, aspectdInsertStatements);
-          _curAspectdLibrary = aspectdItemInfo.aspectdProcedure?.parent?.parent;
+          _curAopStatementsInsertInfo = null;
+          statements.insertAll(statement2InsertPos, aopInsertStatements);
+          _curAopLibrary = aopItemInfo.aopProcedure?.parent?.parent;
           visitNode(node);
           break;
         }

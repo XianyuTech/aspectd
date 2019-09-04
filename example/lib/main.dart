@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'register/component/component.dart';
 import 'register/router/router.dart';
 
-void main() => runApp(MyApp());
+void appInit() async{
+
+}
+
+void main() {
+  appInit();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -48,6 +55,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  void onPluginDemo() {
+    print('[KWLM]:onPluginDemo Called!');
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -105,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
+            GestureDetector(child: Text('onPluginDemo'), onTap: onPluginDemo)
           ],
         ),
       ),

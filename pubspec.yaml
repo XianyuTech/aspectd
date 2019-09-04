@@ -11,6 +11,8 @@ dev_dependencies:
   kernel: any
   front_end: any
   args: any
+  path: any
+  yaml: any
 
 dependency_overrides:
   kernel:
