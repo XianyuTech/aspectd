@@ -82,7 +82,6 @@ class AutoRegisterWrapperTransformer {
   AutoRegisterWrapperTransformer({this.platformStrongComponent});
 
   void transform(Component program) {
-    print('xxxxx===');
     final List<Library> libraries = program.libraries;
 
     if (libraries.isEmpty) {
