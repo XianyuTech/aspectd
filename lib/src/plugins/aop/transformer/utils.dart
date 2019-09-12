@@ -198,7 +198,7 @@ class AopUtils {
       Arguments getArguments = Arguments.empty();
       getArguments.positional.add(IntLiteral(i));
       MethodInvocation methodInvocation = MethodInvocation(PropertyGet(ThisExpression(),Name('positionalParams')), listGetProcedure.name, getArguments);
-      AsExpression asExpression = AsExpression(methodInvocation, variableDeclaration.type);
+      AsExpression asExpression = AsExpression(methodInvocation, deepCopyASTNode(variableDeclaration.type, ignoreGenerics: true));
       arguments.positional.add(asExpression);
       i++;
     }
@@ -207,7 +207,7 @@ class AopUtils {
       Arguments getArguments = Arguments.empty();
       getArguments.positional.add(StringLiteral(variableDeclaration.name));
       MethodInvocation methodInvocation = MethodInvocation(PropertyGet(ThisExpression(),Name('namedParams')), mapGetProcedure.name, getArguments);
-      AsExpression asExpression = AsExpression(methodInvocation, variableDeclaration.type);
+      AsExpression asExpression = AsExpression(methodInvocation,  deepCopyASTNode(variableDeclaration.type, ignoreGenerics: true));
       namedEntries.add(NamedExpression(variableDeclaration.name, asExpression));
     }
     if(namedEntries.length>0)
@@ -312,11 +312,11 @@ class AopUtils {
 
   static Procedure createStubProcedure(Name methodName, AopItemInfo aopItemInfo, Procedure referProcedure ,Statement bodyStatements, bool shouldReturn) {
     FunctionNode functionNode = new FunctionNode(bodyStatements,
-        typeParameters: referProcedure.function.typeParameters,
+        typeParameters: deepCopyASTNodes<TypeParameter>(referProcedure.function.typeParameters),
         positionalParameters: referProcedure.function.positionalParameters,
         namedParameters: referProcedure.function.namedParameters,
         requiredParameterCount: referProcedure.function.requiredParameterCount,
-        returnType: shouldReturn ? referProcedure.function.returnType : VoidType(),
+        returnType: shouldReturn ? deepCopyASTNode(referProcedure.function.returnType) : VoidType(),
         asyncMarker: referProcedure.function.asyncMarker,
         dartAsyncMarker: referProcedure.function.dartAsyncMarker
     );
@@ -332,6 +332,54 @@ class AopUtils {
     procedure.fileEndOffset = referProcedure.fileEndOffset;
     procedure.startFileOffset = referProcedure.startFileOffset;
     return procedure;
+  }
+
+  static dynamic deepCopyASTNode(dynamic node,{bool isReturnType = false, bool ignoreGenerics = false}) {
+    if (node is TypeParameter) {
+      if (ignoreGenerics)
+        return TypeParameter(node.name, node.bound, node.defaultType);
+    }
+    if (node is VariableDeclaration) {
+      return VariableDeclaration(node.name,
+          initializer: node.initializer,
+          type: deepCopyASTNode(node.type),
+          flags: node.flags,
+          isFinal: node.isFinal,
+          isConst: node.isConst,
+          isFieldFormal: node.isFieldFormal,
+          isCovariant: node.isCovariant,
+          isLate: node.isLate,
+          isRequired: node.isRequired
+      );
+    }
+    if (node is TypeParameterType) {
+      if (isReturnType || ignoreGenerics)
+        return DynamicType();
+      return TypeParameterType(deepCopyASTNode(node.parameter), deepCopyASTNode(node.promotedBound), node.declaredNullability);
+    }
+    if (node is FunctionType) {
+      return FunctionType(deepCopyASTNodes(node.positionalParameters), deepCopyASTNode(node.returnType, isReturnType: true),
+          namedParameters: deepCopyASTNodes(node.namedParameters),
+          typeParameters: deepCopyASTNodes(node.typeParameters),
+          nullability: node.nullability,
+          requiredParameterCount: node.requiredParameterCount,
+          typedefType: deepCopyASTNode(node.typedefType, ignoreGenerics: ignoreGenerics)
+      );
+    }
+    if (node is TypedefType) {
+      return TypedefType(node.typedefNode, deepCopyASTNodes(node.typeArguments, ignoreGeneric: ignoreGenerics), node.nullability);
+    }
+    return node;
+  }
+
+  static List<T> deepCopyASTNodes<T>(List<T> nodes, {bool ignoreGeneric = false}) {
+    List<T> newNodes = List<T>();
+    for (T node in nodes) {
+      dynamic newNode = deepCopyASTNode(node, ignoreGenerics: ignoreGeneric);
+      if (newNode != null)
+        newNodes.add(newNode);
+    }
+    return newNodes;
   }
 
   static Arguments argumentsFromFunctionNode(FunctionNode functionNode) {

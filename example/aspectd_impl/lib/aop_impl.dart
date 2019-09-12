@@ -10,7 +10,7 @@ class CallDemo {
   @pragma("vm:entry-point")
   static void appInit(PointCut pointcut) {
     pointcut.proceed();
-    print('[KWLM1] called!');
+    print('[KWLM]1: appInit!');
   }
 }
 
@@ -24,6 +24,15 @@ class ExecuteDemo {
   @pragma("vm:entry-point")
   void _onPluginDemo(PointCut pointcut) {
     pointcut.proceed();
-    print('[KWLM2] called!');
+    print('[KWLM]2: _incrementCounter!');
+  }
+
+  @Execute("package:flutter/src/gestures/recognizer.dart",
+      "GestureRecognizer", "-invokeCallback")
+  @pragma("vm:entry-point")
+  dynamic hookinvokeCallback(PointCut pointcut) {
+    var raw = pointcut.positionalParams[0];
+    print("[KWLM]3: invokeCallback");
+    return pointcut.proceed();
   }
 }
