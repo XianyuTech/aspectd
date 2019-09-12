@@ -1,21 +1,21 @@
-From 4c9565ba2c5fc0c0d35d1be302f4ef7fe38d39e3 Mon Sep 17 00:00:00 2001
+From 810c8db083de62a15551d77d754ad849ff369f42 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Tue, 3 Sep 2019 00:11:18 +0800
+Date: Thu, 12 Sep 2019 12:12:20 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 305 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 304 ++++++++++++++++++
  .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 316 insertions(+)
+ 3 files changed, 315 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..ef1b37608
+index 000000000..1f9d9d391
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,304 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -28,7 +28,6 @@ index 000000000..ef1b37608
 +import 'base/build.dart';
 +import 'base/common.dart';
 +import 'base/file_system.dart';
-+import 'base/process.dart';
 +import 'base/process_manager.dart';
 +import 'build_info.dart';
 +import 'bundle.dart';
@@ -133,12 +132,12 @@ index 000000000..ef1b37608
 +    if (pubspecLockFile.existsSync()) {
 +      pubspecLockFile.deleteSync();
 +    }
-+    await runCommandAndStreamOutput(
++    await processManager.run(
 +        <String>[sdkBinaryName('pub'), 'get', '--verbosity=warning'],
 +        workingDirectory: snapshotDir.parent.path,
 +        environment: <String, String>{'FLUTTER_ROOT': Cache.flutterRoot});
 +    if (pubspecLockFile.existsSync()) {
-+      await runCommandAndStreamOutput(<String>[
++      await processManager.run(<String>[
 +        sdkBinaryName('dart'),
 +        '--snapshot=snapshot/aspectd.dart.snapshot',
 +        'bin/starter.dart'
@@ -322,7 +321,7 @@ index 000000000..ef1b37608
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index 763a8b934..9dda2650a 100644
+index f572442b9..41b28612e 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
 @@ -5,6 +5,7 @@
@@ -333,7 +332,7 @@ index 763a8b934..9dda2650a 100644
  import '../base/build.dart';
  import '../base/common.dart';
  import '../base/context.dart';
-@@ -115,6 +116,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+@@ -116,6 +117,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
