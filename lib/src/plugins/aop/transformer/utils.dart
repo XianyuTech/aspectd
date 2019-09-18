@@ -168,7 +168,7 @@ class AopUtils {
     return null;
   }
 
-  static void concatArgumentsForAopMethod(Map<String, String> sourceInfo,Arguments redirectArguments,AopItemInfo aopItemInfo, Expression targetExpression, Procedure procedure,Arguments invocationArguments) {
+  static void concatArgumentsForAopMethod(Map<String, String> sourceInfo,Arguments redirectArguments,AopItemInfo aopItemInfo, Expression targetExpression, Member member,Arguments invocationArguments) {
     String stubMethodName = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
     //重定向到AOP的函数体中去
     Arguments pointCutConstructorArguments = Arguments.empty();
@@ -178,7 +178,7 @@ class AopUtils {
     });
     pointCutConstructorArguments.positional.add(MapLiteral(sourceInfos));
     pointCutConstructorArguments.positional.add(targetExpression);
-    pointCutConstructorArguments.positional.add(StringLiteral(procedure?.name?.name));
+    pointCutConstructorArguments.positional.add(StringLiteral(member?.name?.name));
     pointCutConstructorArguments.positional.add(StringLiteral(aopItemInfo.stubKey??stubMethodName));
     pointCutConstructorArguments.positional.add(ListLiteral(List<Expression>()..addAll(invocationArguments.positional)));
     List<MapEntry> entries = <MapEntry>[];
@@ -191,10 +191,10 @@ class AopUtils {
     redirectArguments.positional.add(pointCutConstructorInvocation);
   }
 
-  static Arguments concatArguments4PointcutStubCall(Procedure procedure) {
+  static Arguments concatArguments4PointcutStubCall(Member member) {
     Arguments arguments = Arguments.empty();
     int i=0;
-    for(VariableDeclaration variableDeclaration in procedure.function.positionalParameters) {
+    for(VariableDeclaration variableDeclaration in member.function.positionalParameters) {
       Arguments getArguments = Arguments.empty();
       getArguments.positional.add(IntLiteral(i));
       MethodInvocation methodInvocation = MethodInvocation(PropertyGet(ThisExpression(),Name('positionalParams')), listGetProcedure.name, getArguments);
@@ -203,7 +203,7 @@ class AopUtils {
       i++;
     }
     List<NamedExpression> namedEntries = List<NamedExpression>();
-    for(VariableDeclaration variableDeclaration in procedure.function.namedParameters){
+    for(VariableDeclaration variableDeclaration in member.function.namedParameters){
       Arguments getArguments = Arguments.empty();
       getArguments.positional.add(StringLiteral(variableDeclaration.name));
       MethodInvocation methodInvocation = MethodInvocation(PropertyGet(ThisExpression(),Name('namedParams')), mapGetProcedure.name, getArguments);
@@ -243,7 +243,7 @@ class AopUtils {
 
   // Skip aop operation for those aspectd/aop package.
   static bool checkIfSkipAOP(AopItemInfo aopItemInfo, Library curLibrary) {
-    Library aopLibrary1 = aopItemInfo.aopProcedure.parent.parent;
+    Library aopLibrary1 = aopItemInfo.aopMember.parent.parent;
     Library aopLibrary2 = pointCutProceedProcedure.parent.parent;
     if(curLibrary == aopLibrary1 || curLibrary == aopLibrary2)
       return true;
@@ -334,6 +334,34 @@ class AopUtils {
     return procedure;
   }
 
+  static Constructor createStubConstructor(Name methodName, AopItemInfo aopItemInfo, Constructor referConstructor ,Statement bodyStatements, bool shouldReturn) {
+    FunctionNode functionNode = new FunctionNode(bodyStatements,
+        typeParameters: deepCopyASTNodes<TypeParameter>(referConstructor.function.typeParameters),
+        positionalParameters: referConstructor.function.positionalParameters,
+        namedParameters: referConstructor.function.namedParameters,
+        requiredParameterCount: referConstructor.function.requiredParameterCount,
+        returnType: shouldReturn ? deepCopyASTNode(referConstructor.function.returnType) : VoidType(),
+        asyncMarker: referConstructor.function.asyncMarker,
+        dartAsyncMarker: referConstructor.function.dartAsyncMarker
+    );
+    Constructor constructor = new Constructor(
+      functionNode,
+      name: Name(methodName.name, methodName.library),
+      isConst: referConstructor.isConst,
+      isExternal: referConstructor.isExternal,
+      isSynthetic: referConstructor.isSynthetic,
+      initializers: deepCopyASTNodes(referConstructor.initializers),
+      transformerFlags: referConstructor.transformerFlags,
+      fileUri: referConstructor.fileUri,
+      reference: Reference()..node = referConstructor.reference.node
+    );
+
+    constructor.fileOffset = referConstructor.fileOffset;
+    constructor.fileEndOffset = referConstructor.fileEndOffset;
+    constructor.startFileOffset = referConstructor.startFileOffset;
+    return constructor;
+  }
+
   static dynamic deepCopyASTNode(dynamic node,{bool isReturnType = false, bool ignoreGenerics = false}) {
     if (node is TypeParameter) {
       if (ignoreGenerics)
@@ -401,7 +429,7 @@ class AopItemInfo {
   final String clsName;
   final String methodName;
   final bool isStatic;
-  final Procedure aopProcedure;
+  final Member aopMember;
   final int lineNum;
   String stubKey;
   static String uniqueKeyForMethod(String importUri, String clsName, String methodName, bool isStatic, int lineNum){
@@ -411,5 +439,5 @@ class AopItemInfo {
         +(isStatic==true?"+":"-")
         +(lineNum!=null?(AopUtils.kAopUniqueKeySeperator+"$lineNum"):"");
   }
-  AopItemInfo({this.mode,this.importUri,this.clsName,this.methodName,this.isStatic,this.aopProcedure,this.lineNum});
+  AopItemInfo({this.mode,this.importUri,this.clsName,this.methodName,this.isStatic,this.aopMember,this.lineNum});
 }

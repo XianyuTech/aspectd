@@ -24,6 +24,35 @@ class AopCallImplTransformer extends Transformer {
   }
 
   @override
+  InvocationExpression visitConstructorInvocation(ConstructorInvocation constructorInvocation) {
+    constructorInvocation.transformChildren(this);
+    Node node = constructorInvocation.targetReference?.node;
+    String uniqueKeyForMethod = null;
+    if (node is Constructor) {
+      Constructor constructor = node;
+      Class cls = constructor.parent as Class;
+      String procedureImportUri = cls.reference.canonicalName.parent.name;
+      String functionName = '${cls.name}';
+      if (constructor.name.name.isNotEmpty) {
+        functionName += '.${constructor.name.name}';
+      }
+      uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(
+          procedureImportUri, cls.name, functionName, true, null);
+    } else {
+      assert(false);
+    }
+    if(uniqueKeyForMethod != null) {
+      AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
+      if (aopItemInfo?.mode == AopMode.Call &&
+          !_transformedInvocationSet.contains(constructorInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
+        return transformConstructorInvocation(
+            constructorInvocation, aopItemInfo);
+      }
+    }
+    return constructorInvocation;
+  }
+
+  @override
   MethodInvocation visitMethodInvocation(MethodInvocation methodInvocation) {
     methodInvocation.transformChildren(this);
     Node node = methodInvocation.interfaceTargetReference?.node;
@@ -122,13 +151,33 @@ class AopCallImplTransformer extends Transformer {
     Map<String, String> sourceInfo = AopUtils.calcSourceInfo(_uriToSource,_curLibrary, staticInvocation.fileOffset);
     AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, StringLiteral(procedureLibrary.importUri.toString()),procedure,staticInvocation.arguments);
 
-    StaticInvocation staticInvocation2 = StaticInvocation(aopItemInfo.aopProcedure, redirectArguments);
+    StaticInvocation staticInvocationNew = StaticInvocation(aopItemInfo.aopMember as Procedure, redirectArguments);
     if(aopItemInfo.stubKey != null){
-      return staticInvocation2;
+      return staticInvocationNew;
     }
 
     insertStaticMethod4Pointcut(aopItemInfo, AopUtils.pointCutProceedProcedure.parent as Class, staticInvocation, procedureLibrary,procedure);
-    return staticInvocation2;
+    return staticInvocationNew;
+  }
+
+  //Class Constructor Invocation
+  StaticInvocation transformConstructorInvocation(ConstructorInvocation constructorInvocation, AopItemInfo aopItemInfo) {
+    assert(aopItemInfo.mode!=null);
+    Constructor constructor = constructorInvocation.targetReference.node as Constructor;
+    Class procedureClass = constructor.parent as Class;
+
+    //更改原始调用
+    Arguments redirectArguments = Arguments.empty();
+    Map<String, String>  sourceInfo = AopUtils.calcSourceInfo(_uriToSource,_curLibrary, constructorInvocation.fileOffset);
+    AopUtils.concatArgumentsForAopMethod(sourceInfo, redirectArguments, aopItemInfo, StringLiteral(procedureClass.name), constructor, constructorInvocation.arguments);
+
+    StaticInvocation staticInvocationNew = StaticInvocation(aopItemInfo.aopMember, redirectArguments);
+    if(aopItemInfo.stubKey != null){
+      return staticInvocationNew;
+    }
+
+    insertConstructor4Pointcut(aopItemInfo, AopUtils.pointCutProceedProcedure.parent as Class, constructorInvocation, constructorInvocation.targetReference.node.parent.parent as Library, constructor);
+    return staticInvocationNew;
   }
 
   //Class Static Method Invocation
@@ -142,13 +191,13 @@ class AopCallImplTransformer extends Transformer {
     Map<String, String>  sourceInfo = AopUtils.calcSourceInfo(_uriToSource,_curLibrary, staticInvocation.fileOffset);
     AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, StringLiteral(procedureClass.name),procedure,staticInvocation.arguments);
 
-    StaticInvocation staticInvocation2 = StaticInvocation(aopItemInfo.aopProcedure, redirectArguments);
+    StaticInvocation staticInvocationNew = StaticInvocation(aopItemInfo.aopMember, redirectArguments);
     if(aopItemInfo.stubKey != null){
-      return staticInvocation2;
+      return staticInvocationNew;
     }
 
     insertStaticMethod4Pointcut(aopItemInfo, AopUtils.pointCutProceedProcedure.parent as Class, staticInvocation, staticInvocation.targetReference.node.parent.parent as Library, procedure);
-    return staticInvocation2;
+    return staticInvocationNew;
   }
 
   //Instance Method Invocation
@@ -206,25 +255,36 @@ class AopCallImplTransformer extends Transformer {
     Map<String, String>  sourceInfo = AopUtils.calcSourceInfo(_uriToSource,_curLibrary, methodInvocation.fileOffset);
     AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, methodInvocation.receiver,methodProcedure,methodInvocation.arguments);
 
-    Class cls = aopItemInfo.aopProcedure.parent as Class;
+    Class cls = aopItemInfo.aopMember.parent as Class;
     ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference(cls.constructors.first.reference, Arguments([]));
-    MethodInvocation methodInvocation2 = MethodInvocation(redirectConstructorInvocation, aopItemInfo.aopProcedure.name, redirectArguments);
-    AopUtils.insertLibraryDependency(_curLibrary, aopItemInfo.aopProcedure.parent.parent);
+    MethodInvocation methodInvocationNew = MethodInvocation(redirectConstructorInvocation, aopItemInfo.aopMember.name, redirectArguments);
+    AopUtils.insertLibraryDependency(_curLibrary, aopItemInfo.aopMember.parent.parent);
     if(aopItemInfo.stubKey != null){
-      return methodInvocation2;
+      return methodInvocationNew;
     }
 
     insertInstanceMethod4Pointcut(aopItemInfo, AopUtils.pointCutProceedProcedure.parent as Class,methodImplClass, methodProcedure);
-    return methodInvocation2;
+    return methodInvocationNew;
   }
 
-  bool insertStaticMethod4Pointcut(AopItemInfo aopItemInfo, Class pointCutClass, StaticInvocation originalStaticInvocation, Library originalLibrary,Procedure originalProcedure) {
+  bool insertConstructor4Pointcut(AopItemInfo aopItemInfo, Class pointCutClass, ConstructorInvocation constructorInvocation, Library originalLibrary,Member originalMember) {
     //Add library dependency
     AopUtils.insertLibraryDependency(pointCutClass.parent as Library, originalLibrary);
     //Add new Procedure
-    StaticInvocation staticInvocation = StaticInvocation(originalProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure), isConst: originalProcedure.isConst);
+    ConstructorInvocation constructorInvocation = ConstructorInvocation(originalMember, AopUtils.concatArguments4PointcutStubCall(originalMember));
+    _transformedInvocationSet.add(constructorInvocation);
+    bool shouldReturn = !(originalMember.function.returnType is VoidType);
+    createPointcutStubProcedure(aopItemInfo,pointCutClass,AopUtils.createProcedureBodyWithExpression(constructorInvocation, shouldReturn),shouldReturn);
+    return true;
+  }
+
+  bool insertStaticMethod4Pointcut(AopItemInfo aopItemInfo, Class pointCutClass, StaticInvocation originalStaticInvocation, Library originalLibrary,Member originalMember) {
+    //Add library dependency
+    AopUtils.insertLibraryDependency(pointCutClass.parent as Library, originalLibrary);
+    //Add new Procedure
+    StaticInvocation staticInvocation = StaticInvocation(originalMember, AopUtils.concatArguments4PointcutStubCall(originalMember), isConst: originalMember.isConst);
     _transformedInvocationSet.add(staticInvocation);
-    bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
+    bool shouldReturn = !(originalMember.function.returnType is VoidType);
     createPointcutStubProcedure(aopItemInfo,pointCutClass,AopUtils.createProcedureBodyWithExpression(staticInvocation, shouldReturn),shouldReturn);
     return true;
   }

@@ -126,9 +126,9 @@ class AopWrapperTransformer {
         if(!aspectdEnabled)
           continue;
         for(Member member in cls.members){
-          if(!(member is Procedure))
+          if(!(member is Member))
             continue;
-          AopItemInfo aopItemInfo =  _processAopProcedure(member as Procedure);
+          AopItemInfo aopItemInfo =  _processAopMember(member);
           if(aopItemInfo != null) {
             String uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(aopItemInfo.importUri, aopItemInfo.clsName, aopItemInfo.methodName, aopItemInfo.isStatic, aopItemInfo.lineNum);
             aopInfoMap.putIfAbsent(uniqueKeyForMethod,()=>aopItemInfo);
@@ -138,8 +138,8 @@ class AopWrapperTransformer {
     }
   }
 
-  AopItemInfo _processAopProcedure(Procedure procedure){
-    for(Expression annotation in procedure.annotations){
+  AopItemInfo _processAopMember(Member member){
+    for(Expression annotation in member.annotations){
       //Release mode
       if(annotation is ConstantExpression){
         ConstantExpression constantExpression = annotation;
@@ -179,7 +179,7 @@ class AopWrapperTransformer {
             methodName = methodName.substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
             isStatic = true;
           }
-          return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic,aopProcedure: procedure,mode: aopMode, lineNum: lineNum);
+          return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic, aopMember: member, mode: aopMode, lineNum: lineNum);
         }
       }
       //Debug Mode
@@ -204,7 +204,7 @@ class AopWrapperTransformer {
           methodName = methodName.substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
           isStatic = true;
         }
-        return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic, aopProcedure: procedure,mode: aopMode, lineNum: lineNum);
+        return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic, aopMember: member,mode: aopMode, lineNum: lineNum);
       }
     }
     return null;

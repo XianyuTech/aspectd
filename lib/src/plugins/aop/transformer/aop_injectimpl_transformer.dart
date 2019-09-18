@@ -232,8 +232,8 @@ class AopInjectImplTransformer extends Transformer{
   }
 
   List<Statement> onPrepareTransform(Library library,Node methodNode,AopItemInfo aopItemInfo) {
-    Block block2Insert = aopItemInfo.aopProcedure.function.body as Block;
-    Library aopLibrary = aopItemInfo.aopProcedure?.parent?.parent;
+    Block block2Insert = aopItemInfo.aopMember.function.body as Block;
+    Library aopLibrary = aopItemInfo.aopMember?.parent?.parent;
     List<Statement> tmpStatements = [];
     for(Statement statement in block2Insert.statements) {
       VariableDeclaration variableDeclaration = AopUtils.checkIfSkipableVarDeclaration(_uriToSource[aopLibrary.fileUri], statement);
@@ -265,7 +265,7 @@ class AopInjectImplTransformer extends Transformer{
   }
 
   void onPostTransform(AopItemInfo aopItemInfo) {
-    Block block2Insert = aopItemInfo.aopProcedure.function.body as Block;
+    Block block2Insert = aopItemInfo.aopMember.function.body as Block;
     block2Insert.statements.clear();
     _mockedVariableDeclaration.clear();
     _originalVariableDeclaration.clear();
@@ -361,7 +361,7 @@ class AopInjectImplTransformer extends Transformer{
         if(statement2InsertPos != -1) {
           _curAopStatementsInsertInfo = null;
           statements.insertAll(statement2InsertPos, aopInsertStatements);
-          _curAopLibrary = aopItemInfo.aopProcedure?.parent?.parent;
+          _curAopLibrary = aopItemInfo.aopMember?.parent?.parent;
           visitNode(node);
           break;
         }

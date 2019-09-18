@@ -18,12 +18,12 @@ dependency_overrides:
   kernel:
     git:
       url: https://github.com/dart-lang/sdk.git
-      ref: be661765345f62fa4212b76f897fdd3e66e8aa54
+      ref: 7505b3a5f07cfbcd920e2aeeae5581c5337b859a
       path: pkg/kernel
   front_end:
     git:
       url: https://github.com/dart-lang/sdk.git
-      ref: be661765345f62fa4212b76f897fdd3e66e8aa54
+      ref: 7505b3a5f07cfbcd920e2aeeae5581c5337b859a
       path: pkg/front_end
 
 
