@@ -1,6 +1,6 @@
-From 810c8db083de62a15551d77d754ad849ff369f42 Mon Sep 17 00:00:00 2001
+From 605da574ea76e476a7d05bebd4f28788b812f491 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Thu, 12 Sep 2019 12:12:20 +0800
+Date: Wed, 18 Sep 2019 11:01:33 +0800
 Subject: [PATCH] aspectd
 
 ---
@@ -12,7 +12,7 @@ Subject: [PATCH] aspectd
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..1f9d9d391
+index 000000000..590796723
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
 @@ -0,0 +1,304 @@
@@ -239,7 +239,7 @@ index 000000000..1f9d9d391
 +      defaultKernelFile.deleteSync();
 +    }
 +
-+    fs.file(aspectdTransformedKernelFilePath).renameSync(defaultKernelFilePath);
++    fs.file(aspectdTransformedKernelFilePath).copySync(defaultKernelFilePath);
 +    final File assetsBlob =
 +        fs.file(fs.path.join(argResults['asset-dir'], 'kernel_blob.bin'));
 +    if (assetsBlob.existsSync()) {
@@ -315,13 +315,13 @@ index 000000000..1f9d9d391
 +    if (defaultKernelFile.existsSync()) {
 +      defaultKernelFile.deleteSync();
 +    }
-+    fs.file(aspectdTransformedKernelFilePath).renameSync(defaultKernelFilePath);
++    fs.file(aspectdTransformedKernelFilePath).copySync(defaultKernelFilePath);
 +    fs.currentDirectory = mainDirectory;
 +    return null;
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index f572442b9..41b28612e 100644
+index 5f1524354..ed3f26a24 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
 @@ -5,6 +5,7 @@
@@ -332,7 +332,7 @@ index f572442b9..41b28612e 100644
  import '../base/build.dart';
  import '../base/common.dart';
  import '../base/context.dart';
-@@ -116,6 +117,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+@@ -117,6 +118,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
