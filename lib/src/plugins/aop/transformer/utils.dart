@@ -383,7 +383,7 @@ class AopUtils {
     if (node is TypeParameterType) {
       if (isReturnType || ignoreGenerics)
         return DynamicType();
-      return TypeParameterType(deepCopyASTNode(node.parameter), deepCopyASTNode(node.promotedBound), node.declaredNullability);
+      return TypeParameterType(deepCopyASTNode(node.parameter), deepCopyASTNode(node.promotedBound), node.typeParameterTypeNullability);
     }
     if (node is FunctionType) {
       return FunctionType(deepCopyASTNodes(node.positionalParameters), deepCopyASTNode(node.returnType, isReturnType: true),
