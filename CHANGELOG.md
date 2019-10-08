@@ -23,3 +23,9 @@
 ## [0.9.5]
 
 * Design diagram in https.
+
+## [0.9.6]
+
+* Add MIT license
+* Add better demo and README
+* Keep compatible with latest dart-sdk as it has breaking changes in TypeParameterType.
