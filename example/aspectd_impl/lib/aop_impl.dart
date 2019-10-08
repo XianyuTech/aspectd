@@ -9,8 +9,9 @@ class CallDemo {
   @Call("package:example/main.dart", "", "+appInit")
   @pragma("vm:entry-point")
   static void appInit(PointCut pointcut) {
+    print('[KWLM]1: Before appInit!');
     pointcut.proceed();
-    print('[KWLM]1: appInit!');
+    print('[KWLM]1: After appInit!');
   }
 
   @Call("package:example/main.dart", "MyApp", "+MyApp")
@@ -37,9 +38,9 @@ class ExecuteDemo {
 
   @Execute("package:example/main.dart", "_MyHomePageState", "-_incrementCounter")
   @pragma("vm:entry-point")
-  void _onPluginDemo(PointCut pointcut) {
-    pointcut.proceed();
-    print('[KWLM]4: _incrementCounter!');
+  void _incrementCounter(PointCut pointcut) {
+//    pointcut.proceed();
+    print('[KWLM]4: Around _incrementCounter!');
   }
 
   @Execute("package:flutter/src/gestures/recognizer.dart",
