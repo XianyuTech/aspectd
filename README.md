@@ -284,6 +284,7 @@ Because of the dart compilation implementation, there are several points to pay 
 3. @pragma("vm:entry-point") is needed to mark class/function to avoid been trimmed by tree-shaking.
 4. inject might fail in some cases while call&execute are expected to be more stable.
 5. If you want to disable AspectD, remove the aspectd.dart.snapshot located in aspectd or change the name of aspectd_impl package, or remove the @Aspect() annotation. Anyone will be fine.
+6. If you want to hook an instance method, the hook class should declare a default constructor and mark it with @pragma("vm:entry-point").
 
 # Contact
 
