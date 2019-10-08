@@ -1,21 +1,21 @@
-From 605da574ea76e476a7d05bebd4f28788b812f491 Mon Sep 17 00:00:00 2001
+From e021e0dc6bf641c1ec4621791d66063e4df89f99 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Wed, 18 Sep 2019 11:01:33 +0800
+Date: Fri, 20 Sep 2019 16:34:32 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 304 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 305 ++++++++++++++++++
  .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 315 insertions(+)
+ 3 files changed, 316 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..590796723
+index 000000000..51d637c29
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,304 @@
+@@ -0,0 +1,305 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -46,8 +46,8 @@ index 000000000..590796723
 +  static bool _isAspectdEnabled;
 +  static String aspectdTransformerSnapshot;
 +  static Directory getAspectdDirectory(Directory rootProjectDir) {
-+    return fs.directory(fs.path.normalize(
-+        fs.path.join(rootProjectDir.path, aspectdImplPackageRelPath, aspectdImplPackageName)));
++    return fs.directory(fs.path.normalize(fs.path.join(rootProjectDir.path,
++        aspectdImplPackageRelPath, aspectdImplPackageName)));
 +  }
 +
 +  static Future<void> checkAspectdTransformerSnapshot() async {
@@ -63,7 +63,7 @@ index 000000000..590796723
 +            'aspectd.dart.snapshot');
 +        final File expectedTransformerSnapshot =
 +            fs.file(expectedTransformerSnapshotPath);
-+        final String expectedDartSha = await getExpectedDartSha();
++        final String expectedDartSha = getExpectedDartSha();
 +        final String aspectdPubspecPath = fs.path
 +            .join(fs.directory(aspectdLibPath).parent.path, 'pubspec.yaml');
 +        final String defaultDartSha = getDartShaFromPubspec(aspectdPubspecPath);
@@ -92,6 +92,7 @@ index 000000000..590796723
 +          final ProcessResult result = await processManager.run(command);
 +          final String outputStr = result.stderr.toString().trim();
 +          if (outputStr == unmatchDartKernelBinaryErrMsg) {
++            fs.file(expectedTransformerSnapshotPath).deleteSync();
 +            return;
 +          }
 +          aspectdTransformerSnapshot = expectedTransformerSnapshotPath;
@@ -100,9 +101,9 @@ index 000000000..590796723
 +    }
 +  }
 +
-+  static Future<String> getExpectedDartSha() async {
-+    final File engineVersionFile = fs.file(
-+        fs.path.join(Cache.flutterRoot, 'bin', 'cache', 'dart-sdk', 'revision'));
++  static String getExpectedDartSha() {
++    final File engineVersionFile = fs.file(fs.path
++        .join(Cache.flutterRoot, 'bin', 'cache', 'dart-sdk', 'revision'));
 +    final String engineVersion = engineVersionFile.readAsStringSync().trim();
 +    return engineVersion;
 +  }
