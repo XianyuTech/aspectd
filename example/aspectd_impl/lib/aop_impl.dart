@@ -15,14 +15,14 @@ class CallDemo {
 
   @Call("package:example/main.dart", "MyApp", "+MyApp")
   @pragma("vm:entry-point")
-  static dynamic MyAppDefine(PointCut pointcut) {
+  static dynamic myAppDefine(PointCut pointcut) {
     print('[KWLM]2: MyApp default constructor!');
     return pointcut.proceed();
   }
 
   @Call("package:example/main.dart", "MyHomePage", "+MyHomePage")
   @pragma("vm:entry-point")
-  static dynamic MyHomePage(PointCut pointcut) {
+  static dynamic myHomePage(PointCut pointcut) {
     dynamic obj = pointcut.proceed();
     print('[KWLM]3: MyHomePage named constructor!');
     return obj;
@@ -46,7 +46,6 @@ class ExecuteDemo {
       "GestureRecognizer", "-invokeCallback")
   @pragma("vm:entry-point")
   dynamic hookinvokeCallback(PointCut pointcut) {
-    var raw = pointcut.positionalParams[0];
     print("[KWLM]5: invokeCallback");
     return pointcut.proceed();
   }
