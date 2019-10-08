@@ -1,6 +1,6 @@
 import 'package:kernel/ast.dart';
-import 'package:aspectd/src/plugins/aop/aop_transformer_wrapper.dart';
-import 'package:aspectd/src/plugins/pluginDemo/pluginDemo_transformer_wrapper.dart';
+import 'plugins/aop/aop_transformer_wrapper.dart';
+import 'plugins/pluginDemo/pluginDemo_transformer_wrapper.dart';
 
 class TransformerWrapper{
   Component platformStrongComponent;

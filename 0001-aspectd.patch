@@ -1,6 +1,6 @@
-From e021e0dc6bf641c1ec4621791d66063e4df89f99 Mon Sep 17 00:00:00 2001
+From 0e200bd8c7deea2ffb13e2edafa90fede345f416 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Fri, 20 Sep 2019 16:34:32 +0800
+Date: Tue, 8 Oct 2019 17:36:18 +0800
 Subject: [PATCH] aspectd
 
 ---
@@ -12,7 +12,7 @@ Subject: [PATCH] aspectd
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..51d637c29
+index 000000000..1d35fab08
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
 @@ -0,0 +1,305 @@
@@ -141,7 +141,7 @@ index 000000000..51d637c29
 +      await processManager.run(<String>[
 +        sdkBinaryName('dart'),
 +        '--snapshot=snapshot/aspectd.dart.snapshot',
-+        'bin/starter.dart'
++        'tool/starter.dart'
 +      ], workingDirectory: snapshotDir.parent.path);
 +    }
 +  }
@@ -345,7 +345,7 @@ index 5f1524354..ed3f26a24 100644
        if (platform == TargetPlatform.ios) {
          // Determine which iOS architectures to build for.
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index 92b4474d9..54d491563 100644
+index a65803a8a..3e04ba094 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -356,9 +356,9 @@ index 92b4474d9..54d491563 100644
  import '../base/common.dart';
  import '../base/file_system.dart';
  import '../build_info.dart';
-@@ -132,6 +133,11 @@ class BuildBundleCommand extends BuildSubCommand {
-       fileSystemScheme: argResults['filesystem-scheme'],
+@@ -140,6 +141,11 @@ class BuildBundleCommand extends BuildSubCommand {
        fileSystemRoots: argResults['filesystem-root'],
+       shouldBuildWithAssemble: true,
      );
 +
 +    if (await AspectdHook.isAspectdEnabled()) {
@@ -369,5 +369,5 @@ index 92b4474d9..54d491563 100644
    }
  }
 -- 
-2.21.0 (Apple Git-122)
+2.21.0 (Apple Git-122.1)
 

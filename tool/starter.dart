@@ -2,7 +2,7 @@ import 'package:args/args.dart';
 import 'package:kernel/ast.dart';
 import 'package:kernel/kernel.dart';
 
-import 'package:aspectd/src/transformer_wrapper.dart';
+import '../transformer/transformer_wrapper.dart';
 import '../util/dill_ops.dart';
 
 const String _kOptionInput = 'input';
