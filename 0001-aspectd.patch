@@ -1,13 +1,13 @@
-From b893f19d5ae6514b219d8b2d2296826fa68034fb Mon Sep 17 00:00:00 2001
+From 03c682f6feb5e2d2a66d0e1d0a8ffd971d509098 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Tue, 15 Oct 2019 22:41:40 +0800
+Date: Tue, 15 Oct 2019 23:20:13 +0800
 Subject: [PATCH] aspectd
 
 ---
  packages/flutter_tools/lib/src/aspectd.dart   | 305 ++++++++++++++++++
- .../lib/src/commands/build_aot.dart           |   6 +
+ .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 317 insertions(+)
+ 3 files changed, 316 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
@@ -322,19 +322,18 @@ index 000000000..1d35fab08
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index 246ab6abd..17cf29148 100644
+index e0e3dd060..3db289fa0 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
-@@ -4,6 +4,8 @@
- 
+@@ -5,6 +5,7 @@
  import 'dart:async';
  
-+import '../artifacts.dart';
+ import '../artifacts.dart';
 +import '../aspectd.dart';
  import '../base/build.dart';
  import '../base/common.dart';
- import '../base/file_system.dart';
-@@ -104,6 +106,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+ import '../base/context.dart';
+@@ -117,6 +118,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
@@ -346,7 +345,7 @@ index 246ab6abd..17cf29148 100644
        if (platform == TargetPlatform.ios) {
          // Determine which iOS architectures to build for.
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index da0c7fcdf..66efcb3d5 100644
+index a65803a8a..3e04ba094 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -357,9 +356,9 @@ index da0c7fcdf..66efcb3d5 100644
  import '../base/common.dart';
  import '../base/file_system.dart';
  import '../build_info.dart';
-@@ -129,6 +130,11 @@ class BuildBundleCommand extends BuildSubCommand {
-       fileSystemScheme: argResults['filesystem-scheme'],
+@@ -140,6 +141,11 @@ class BuildBundleCommand extends BuildSubCommand {
        fileSystemRoots: argResults['filesystem-root'],
+       shouldBuildWithAssemble: true,
      );
 +
 +    if (await AspectdHook.isAspectdEnabled()) {
