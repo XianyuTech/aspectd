@@ -186,7 +186,7 @@ class AopWrapperTransformer {
       else if(annotation is ConstructorInvocation){
         ConstructorInvocation constructorInvocation = annotation;
         Class cls = constructorInvocation?.targetReference?.node?.parent as Class;
-        AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(cls.name,(cls?.parent as Library).importUri.toString());
+        AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(cls?.name,(cls?.parent as Library)?.importUri?.toString());
         if(aopMode == null)
           continue;
         String importUri = (constructorInvocation.arguments.positional[0] as StringLiteral).value;

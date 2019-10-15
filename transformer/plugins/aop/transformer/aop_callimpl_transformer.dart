@@ -39,7 +39,7 @@ class AopCallImplTransformer extends Transformer {
       uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(
           procedureImportUri, cls.name, functionName, true, null);
     } else {
-      assert(false);
+      return constructorInvocation;
     }
     if(uniqueKeyForMethod != null) {
       AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
