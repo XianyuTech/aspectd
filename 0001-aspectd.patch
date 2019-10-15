@@ -1,18 +1,18 @@
-From 0e200bd8c7deea2ffb13e2edafa90fede345f416 Mon Sep 17 00:00:00 2001
+From ddf1b4d5370b576c183a8cfe6ee1c58465949452 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Tue, 8 Oct 2019 17:36:18 +0800
+Date: Tue, 15 Oct 2019 21:55:23 +0800
 Subject: [PATCH] aspectd
 
 ---
  packages/flutter_tools/lib/src/aspectd.dart   | 305 ++++++++++++++++++
- .../lib/src/commands/build_aot.dart           |   5 +
+ .../lib/src/commands/build_aot.dart           |   6 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 316 insertions(+)
+ 3 files changed, 317 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..1d35fab08
+index 000000000..ecadb94fa
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
 @@ -0,0 +1,305 @@
@@ -193,7 +193,7 @@ index 000000000..1d35fab08
 +    final String mainPath =
 +        fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart');
 +    fs.currentDirectory = aspectdDirectory;
-+    await BundleBuilder().build(
++    await build(
 +        platform: platform,
 +        buildMode: buildMode,
 +        mainPath: mainPath,
@@ -322,18 +322,19 @@ index 000000000..1d35fab08
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index 5f1524354..ed3f26a24 100644
+index ea3206996..6855d2246 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
-@@ -5,6 +5,7 @@
+@@ -4,6 +4,8 @@
+ 
  import 'dart:async';
  
- import '../artifacts.dart';
++import '../artifacts.dart';
 +import '../aspectd.dart';
  import '../base/build.dart';
  import '../base/common.dart';
- import '../base/context.dart';
-@@ -117,6 +118,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+ import '../base/file_system.dart';
+@@ -98,6 +100,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
@@ -345,7 +346,7 @@ index 5f1524354..ed3f26a24 100644
        if (platform == TargetPlatform.ios) {
          // Determine which iOS architectures to build for.
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index a65803a8a..3e04ba094 100644
+index 40a027947..1bb9e9d0d 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -354,11 +355,11 @@ index a65803a8a..3e04ba094 100644
  
 +import '../aspectd.dart';
  import '../base/common.dart';
- import '../base/file_system.dart';
  import '../build_info.dart';
-@@ -140,6 +141,11 @@ class BuildBundleCommand extends BuildSubCommand {
+ import '../bundle.dart';
+@@ -92,6 +93,11 @@ class BuildBundleCommand extends BuildSubCommand {
+       fileSystemScheme: argResults['filesystem-scheme'],
        fileSystemRoots: argResults['filesystem-root'],
-       shouldBuildWithAssemble: true,
      );
 +
 +    if (await AspectdHook.isAspectdEnabled()) {
@@ -369,5 +370,5 @@ index a65803a8a..3e04ba094 100644
    }
  }
 -- 
-2.21.0 (Apple Git-122.1)
+2.21.0 (Apple Git-122)
 
