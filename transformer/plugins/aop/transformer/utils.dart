@@ -376,26 +376,23 @@ class AopUtils {
           isConst: node.isConst,
           isFieldFormal: node.isFieldFormal,
           isCovariant: node.isCovariant,
-          isLate: node.isLate,
-          isRequired: node.isRequired
       );
     }
     if (node is TypeParameterType) {
       if (isReturnType || ignoreGenerics)
         return DynamicType();
-      return TypeParameterType(deepCopyASTNode(node.parameter), deepCopyASTNode(node.promotedBound), node.typeParameterTypeNullability);
+      return TypeParameterType(deepCopyASTNode(node.parameter), deepCopyASTNode(node.promotedBound));
     }
     if (node is FunctionType) {
       return FunctionType(deepCopyASTNodes(node.positionalParameters), deepCopyASTNode(node.returnType, isReturnType: true),
           namedParameters: deepCopyASTNodes(node.namedParameters),
           typeParameters: deepCopyASTNodes(node.typeParameters),
-          nullability: node.nullability,
           requiredParameterCount: node.requiredParameterCount,
           typedefType: deepCopyASTNode(node.typedefType, ignoreGenerics: ignoreGenerics)
       );
     }
     if (node is TypedefType) {
-      return TypedefType(node.typedefNode, deepCopyASTNodes(node.typeArguments, ignoreGeneric: ignoreGenerics), node.nullability);
+      return TypedefType(node.typedefNode, deepCopyASTNodes(node.typeArguments, ignoreGeneric: ignoreGenerics));
     }
     return node;
   }
