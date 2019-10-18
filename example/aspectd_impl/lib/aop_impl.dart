@@ -8,10 +8,11 @@ class CallDemo {
 
   @Call("package:example/main.dart", "", "+appInit")
   @pragma("vm:entry-point")
-  static void appInit(PointCut pointcut) {
+  static dynamic appInit(PointCut pointcut) {
     print('[KWLM]1: Before appInit!');
-    pointcut.proceed();
+    dynamic object = pointcut.proceed();
     print('[KWLM]1: After appInit!');
+    return object;
   }
 
   @Call("package:example/main.dart", "MyApp", "+MyApp")
@@ -38,9 +39,10 @@ class ExecuteDemo {
 
   @Execute("package:example/main.dart", "_MyHomePageState", "-_incrementCounter")
   @pragma("vm:entry-point")
-  void _incrementCounter(PointCut pointcut) {
-//    pointcut.proceed();
+  dynamic _incrementCounter(PointCut pointcut) {
+    dynamic obj = pointcut.proceed();
     print('[KWLM]4: Around _incrementCounter!');
+    return obj;
   }
 
   @Execute("package:flutter/src/gestures/recognizer.dart",
