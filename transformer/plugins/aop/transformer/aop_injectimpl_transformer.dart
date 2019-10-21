@@ -119,7 +119,7 @@ class AopInjectImplTransformer extends Transformer{
         return;
       }
       //类静态/实例方法
-      if (clsName != null && clsName.length>0) {
+      if ((clsName?.length ?? 0) > 0) {
         Class expectedCls = null;
         for (Class cls in aopAnnoLibrary.classes) {
           if (cls.name == aopItemInfo.clsName) {
@@ -188,8 +188,8 @@ class AopInjectImplTransformer extends Transformer{
     });
     //Insert in body part
     if (!canBeInitializers ||
-        ((body is Block) && body.statements.length>0 && aopItemInfo.lineNum>=AopUtils.getLineStartNumForStatement(source, body.statements.first))||
-        (constructor.initializers.length>0 && aopItemInfo.lineNum>AopUtils.getLineStartNumForInitializer(source, constructor.initializers.last))) {
+        ((body is Block) && body.statements.length > 0 && aopItemInfo.lineNum>=AopUtils.getLineStartNumForStatement(source, body.statements.first))||
+        (constructor.initializers.length > 0 && aopItemInfo.lineNum>AopUtils.getLineStartNumForInitializer(source, constructor.initializers.last))) {
       _curMethodNode = constructor;
       insertStatementsToBody(library, source, constructor.function, aopItemInfo, aopInsertStatements);
     }

@@ -115,10 +115,7 @@ class AopExecuteImplTransformer extends Transformer{
     final Set<Member> filteredMembers = Set<Member>();
     //Check Constructors
     for (Constructor constructor in cls.constructors) {
-      String functionName = '${cls.name}';
-      if (constructor.name.name.isNotEmpty) {
-        functionName += '.${constructor.name.name}';
-      }
+      String functionName = AopUtils.nameForConstructor(constructor);
       if (true == aopItemInfo.isStatic) { //&& constructor.function.body != null
         if (aopItemInfo.isRegex) {
           if (RegExp(aopItemInfo.methodName).hasMatch(functionName)) {
@@ -153,28 +150,30 @@ class AopExecuteImplTransformer extends Transformer{
       Set<Library> filteredLibraries = filterLibraryWithAopItemInfo(_libraryMap, aopItemInfo);
       for (Library filteredLibrary in filteredLibraries) {
         String clsName = aopItemInfo.clsName;
-        //类静态/实例方法
-        if (clsName != null && clsName.length>0) {
-          Set<Class> filteredLibraryClses = filterClassWithAopItemInfo(filteredLibrary, aopItemInfo);
-          for (Class filteredCls in filteredLibraryClses) {
-            Set<Member> filteredMembers = filterClassMemberWithAopItemInfo(filteredCls, aopItemInfo);
-            for (Member filteredMember in filteredMembers) {
-              if (filteredMember is Constructor) {
-                transformConstructor(filteredLibrary, filteredMember, aopItemInfo);
-              } else if (filteredMember is Procedure) {
-                if (filteredMember.function.body == null) {
-                  filteredMember = filterFirstMatchPatchClassMember(_libraryMap, filteredMember, aopItemInfo);
-                }
-                transformMethodProcedure(filteredLibrary, filteredMember, aopItemInfo);
-              }
-            }
-          }
-        }
-        // 库静态方法
-        else {
+        //库静态方法
+        bool isLibraryMethodNotRegex = (clsName?.length ?? 0) == 0 && !aopItemInfo.isRegex;
+        bool isLibraryMethodAndRegex = RegExp(clsName).hasMatch('') && aopItemInfo.isRegex;
+        if (isLibraryMethodNotRegex || isLibraryMethodAndRegex) {
           Set<Procedure> filteredProcedures = filterLibraryProcedureWithAopItemInfo(filteredLibrary, aopItemInfo);
           for (Procedure procedure in filteredProcedures) {
             transformMethodProcedure(filteredLibrary, procedure, aopItemInfo);
+          }
+        }
+        //类静态/实例方法
+        if ((clsName?.length ?? 0) > 0) {
+          Set<Class> filteredLibraryClses = filterClassWithAopItemInfo(filteredLibrary, aopItemInfo);
+            for (Class filteredCls in filteredLibraryClses) {
+              Set<Member> filteredMembers = filterClassMemberWithAopItemInfo(filteredCls, aopItemInfo);
+              for (Member filteredMember in filteredMembers) {
+                if (filteredMember is Constructor) {
+                 transformConstructor(filteredLibrary, filteredMember, aopItemInfo);
+               } else if (filteredMember is Procedure) {
+                 if (filteredMember.function.body == null) {
+                   filteredMember = filterFirstMatchPatchClassMember(_libraryMap, filteredMember, aopItemInfo);
+                 }
+                 transformMethodProcedure(filteredLibrary, filteredMember, aopItemInfo);
+              }
+            }
           }
         }
       }
@@ -182,6 +181,9 @@ class AopExecuteImplTransformer extends Transformer{
   }
 
   void transformConstructor(Library originalLibrary, Constructor constructor, AopItemInfo aopItemInfo) {
+    if (constructor?.function?.body == null) {
+      return;
+    }
     if (!AopUtils.canOperateLibrary(originalLibrary)) {
       return;
     }
@@ -193,15 +195,18 @@ class AopExecuteImplTransformer extends Transformer{
     aopItemInfo.stubKey = stubMethodName;
     AopUtils.kPrimaryKeyAopMethod++;
 
+    String constructorName = AopUtils.nameForConstructor(constructor);
+
     //目标新建stub函数，方便完成目标->aopstub->目标stub链路
-    Member originalStubConstructor = AopUtils.createStubConstructor(Name(constructor.name.name+'_'+aopItemInfo.stubKey, constructor.parent.parent), aopItemInfo, constructor, body, shouldReturn);
+    Member originalStubConstructor = AopUtils.createStubConstructor(Name(constructorName+'_'+aopItemInfo.stubKey, constructor.parent.parent), aopItemInfo, constructor, body, shouldReturn);
     Node parent = constructor.parent;
     if (parent is Library) {
       parent.addMember(originalStubConstructor);
     } else if (parent is Class) {
       parent.addMember(originalStubConstructor);
     }
-    functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, NullLiteral(), constructor, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
+
+    functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, StringLiteral(constructorName), constructor, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
 
     //Pointcut类中新增stub，并且添加调用
     Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent as Library;
@@ -244,12 +249,15 @@ class AopExecuteImplTransformer extends Transformer{
       //目标新建stub函数，方便完成目标->aopstub->目标stub链路
       Procedure originalStubProcedure = AopUtils.createStubProcedure(Name(originalProcedure.name.name+'_'+aopItemInfo.stubKey,originalProcedure.name.library), aopItemInfo, originalProcedure,body, shouldReturn);
       Node parent = originalProcedure.parent;
+      String parentIdentifier;
       if (parent is Library) {
         parent.addMember(originalStubProcedure);
+        parentIdentifier = parent.importUri.toString();
       } else if (parent is Class) {
         parent.addMember(originalStubProcedure);
+        parentIdentifier = parent.name;
       }
-      functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, NullLiteral(), originalProcedure, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
+      functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, StringLiteral(parentIdentifier), originalProcedure, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
 
       //Pointcut类中新增stub，并且添加调用
       Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent as Library;

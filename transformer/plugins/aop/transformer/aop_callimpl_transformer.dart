@@ -96,7 +96,7 @@ class AopCallImplTransformer extends Transformer {
         tempName = staticInvocation?.targetReference?.canonicalName?.parent?.parent?.parent?.name;
       }
       //Library Static
-      if (procedureName != null && procedureName.length>0 && tempName!=null && tempName.length>0 && _libraryMap[tempName]!=null) {
+      if ((procedureName?.length ?? 0) > 0 && tempName!=null && tempName.length > 0 && _libraryMap[tempName]!=null) {
         Library  originalLibrary = _libraryMap[tempName];
         for (Procedure procedure in originalLibrary.procedures) {
           if (procedure.name.name == procedureName) {

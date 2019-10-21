@@ -92,7 +92,7 @@ class AopWrapperTransformer {
     AopUtils.platformStrongComponent = platformStrongComponent;
 
     // Aop call transformer
-    if (callInfoMap.keys.length>0) {
+    if (callInfoMap.keys.length > 0) {
       final AopCallImplTransformer aopCallImplTransformer =
       AopCallImplTransformer(
         callInfoMap,
@@ -108,14 +108,14 @@ class AopWrapperTransformer {
       }
     }
     // Aop execute transformer
-    if (executeInfoMap.keys.length>0) {
+    if (executeInfoMap.keys.length > 0) {
       AopExecuteImplTransformer(
           executeInfoMap,
           libraryMap
       )..aopTransform();
     }
     // Aop inject transformer
-    if (injectInfoMap.keys.length>0) {
+    if (injectInfoMap.keys.length > 0) {
       AopInjectImplTransformer(
           injectInfoMap,
           libraryMap,

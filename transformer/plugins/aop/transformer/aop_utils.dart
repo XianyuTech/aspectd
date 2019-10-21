@@ -181,7 +181,11 @@ class AopUtils {
     });
     pointCutConstructorArguments.positional.add(MapLiteral(sourceInfos));
     pointCutConstructorArguments.positional.add(targetExpression);
-    pointCutConstructorArguments.positional.add(StringLiteral(member?.name?.name));
+    String memberName = member?.name?.name;
+    if (member is Constructor) {
+      memberName = AopUtils.nameForConstructor(member);
+    }
+    pointCutConstructorArguments.positional.add(StringLiteral(memberName));
     pointCutConstructorArguments.positional.add(StringLiteral(aopItemInfo.stubKey??stubMethodName));
     pointCutConstructorArguments.positional.add(ListLiteral(List<Expression>()..addAll(invocationArguments.positional)));
     List<MapEntry> entries = <MapEntry>[];
@@ -213,7 +217,7 @@ class AopUtils {
       AsExpression asExpression = AsExpression(methodInvocation,  deepCopyASTNode(variableDeclaration.type, ignoreGenerics: true));
       namedEntries.add(NamedExpression(variableDeclaration.name, asExpression));
     }
-    if (namedEntries.length>0) {
+    if (namedEntries.length > 0) {
       arguments.named.addAll(namedEntries);
     }
     return arguments;
@@ -424,5 +428,13 @@ class AopUtils {
       named.add(NamedExpression(variableDeclaration.name, VariableGet(variableDeclaration)));
     }
     return Arguments(positional,named: named);
+  }
+
+  static String nameForConstructor(Constructor constructor) {
+    String constructorName = '${(constructor.parent as Class).name}';
+    if (constructor.name.name.isNotEmpty) {
+      constructorName += '.${constructor.name.name}';
+    }
+    return constructorName;
   }
 }

@@ -53,23 +53,23 @@ class ExecuteDemo {
     return pointcut.proceed();
   }
 
-  @Execute("package:example/main.dart", "MyApp", "+MyApp")
+  @Execute("dart:math", "Random", "-next.*", isRegex: true)
   @pragma("vm:entry-point")
-  static dynamic myAppDefine(PointCut pointcut) {
-    print('[KWLM]6: MyApp default constructor!');
-    return pointcut.proceed();
+  static dynamic randomNext(PointCut pointcut) {
+    return 10;
   }
-
-    @Execute("dart:math", "Random", "-next.*", isRegex: true)
-    @pragma("vm:entry-point")
-    static dynamic randomNext(PointCut pointcut) {
-      return 10;
-    }
 
   @Execute("package:example\\/.+\\.dart", ".+PageState", "-.+", isRegex: true)
   @pragma("vm:entry-point")
-  dynamic universalHook(PointCut pointcut) {
-    print('[KWLM8]:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+  dynamic pageStateRegexHook(PointCut pointcut) {
+    print('[KWLM6]:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+    return pointcut.proceed();
+  }
+
+  @Execute("package:example\\/.+\\.dart", ".*", "+.+", isRegex: true)
+  @pragma("vm:entry-point")
+  dynamic clsStaticUniversalHook(PointCut pointcut) {
+    print('[KWLM7]:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
     return pointcut.proceed();
   }
 }

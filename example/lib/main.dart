@@ -5,8 +5,13 @@ void appInit() async{
 
 }
 
+void appInit2() async{
+
+}
+
 void main() {
   appInit();
+  appInit2();
   runApp(MyApp());
 }
 
@@ -44,11 +49,17 @@ class MyHomePage extends StatefulWidget {
   // case the title) provided by the parent (in this case the App widget) and
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
+  static int getTag() => 1;
+  static int getTag2() => 2;
 
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MyHomePageState createState() {
+    print('[KWLM]:${getTag()}');
+    print('[KWLM]:${getTag2()}');
+    return _MyHomePageState();
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
