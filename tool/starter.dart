@@ -22,20 +22,20 @@ int main(List<String> args) {
   DillOps dillOps = new DillOps();
   Component component = dillOps.readComponentFromDill(intputDill);
   Component platformStrongComponent = null;
-  if(sdkRoot != null) {
+  if (sdkRoot != null) {
     platformStrongComponent = dillOps.readComponentFromDill(sdkRoot+'platform_strong.dill');
-    for(Library library in platformStrongComponent.libraries){
+    for (Library library in platformStrongComponent.libraries) {
       libraryAbbrMap.putIfAbsent(library.name, ()=>library.reference.node);
     }
   }
 
-  for(CanonicalName canonicalName in component.root.children){
+  for (CanonicalName canonicalName in component.root.children) {
     Library library = libraryAbbrMap[canonicalName.name];
     library ??= libraryAbbrMap[canonicalName.name.replaceAll(':', '.')];
-    if(canonicalName.reference == null) {
+    if (canonicalName.reference == null) {
       canonicalName.reference = Reference()..node = library;
     }
-    else if(canonicalName.reference.canonicalName != null && canonicalName.reference.node==null) {
+    else if (canonicalName.reference.canonicalName != null && canonicalName.reference.node==null) {
       canonicalName.reference.node = library;
     }
   }

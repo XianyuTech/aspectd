@@ -1,10 +1,7 @@
 import 'package:kernel/ast.dart';
 
-enum AopMode{
-  Call,
-  Execute,
-  Inject
-}
+import 'aop_iteminfo.dart';
+import 'aop_mode.dart';
 
 class AopUtils {
   static String kAopAnnotationClassCall = 'Call';
@@ -20,6 +17,7 @@ class AopUtils {
   static String kAopAnnotationImportUri = 'importUri';
   static String kAopAnnotationClsName = 'clsName';
   static String kAopAnnotationMethodName = 'methodName';
+  static String kAopAnnotationIsRegex = 'isRegex';
   static String kAopAnnotationLineNum = 'lineNum';
   static String kAopAnnotationClassPointCut = 'PointCut';
   static String kAopAnnotationInstanceMethodPrefix = '-';
@@ -34,34 +32,38 @@ class AopUtils {
   static Component platformStrongComponent;
 
   static AopMode getAopModeByNameAndImportUri(String name, String importUri) {
-    if(name == kAopAnnotationClassCall && importUri == kImportUriAopCall)
+    if (name == kAopAnnotationClassCall && importUri == kImportUriAopCall) {
       return AopMode.Call;
-    if(name == kAopAnnotationClassExecute && importUri == kImportUriAopExecute)
+    }
+    if (name == kAopAnnotationClassExecute && importUri == kImportUriAopExecute) {
       return AopMode.Execute;
-    if(name == kAopAnnotationClassInject && importUri == kImportUriAopInject)
+    }
+    if (name == kAopAnnotationClassInject && importUri == kImportUriAopInject) {
       return AopMode.Inject;
+    }
     return null;
   }
 
   //Generic Operation
   static void insertLibraryDependency(Library library, Library dependLibrary) {
-    for(LibraryDependency dependency in library.dependencies) {
-      if(dependency.importedLibraryReference.node == dependLibrary)
+    for (LibraryDependency dependency in library.dependencies) {
+      if (dependency.importedLibraryReference.node == dependLibrary) {
         return;
+      }
     }
     library.dependencies.add(new LibraryDependency.import(dependLibrary));
   }
 
   static int getLineStartNumForStatement(Source source, Statement statement) {
     int fileOffset = statement.fileOffset;
-    if(fileOffset == -1) {
-      if(statement is ExpressionStatement) {
+    if (fileOffset == -1) {
+      if (statement is ExpressionStatement) {
         ExpressionStatement expressionStatement = statement;
         fileOffset = expressionStatement.expression.fileOffset;
-      } else if(statement is AssertStatement) {
+      } else if (statement is AssertStatement) {
         AssertStatement assertStatement = statement;
         fileOffset = assertStatement.conditionStartOffset;
-      } else if(statement is LabeledStatement) {
+      } else if (statement is LabeledStatement) {
         fileOffset = statement.body.fileOffset;
       }
     }
@@ -70,8 +72,8 @@ class AopUtils {
 
   static int getLineStartNumForInitializer(Source source, Initializer initializer) {
     int fileOffset = initializer.fileOffset;
-    if(fileOffset == -1) {
-      if(initializer is AssertInitializer) {
+    if (fileOffset == -1) {
+      if (initializer is AssertInitializer) {
         fileOffset = initializer.statement.conditionStartOffset;
       }
     }
@@ -80,9 +82,9 @@ class AopUtils {
 
   static int getLineNumBySourceAndOffset(Source source, int fileOffset) {
     int lineNum = source.lineStarts.length;
-    for(int i=0;i<lineNum;i++) {
+    for (int i=0;i<lineNum;i++) {
       int lineStart = source.lineStarts[i];
-      if(fileOffset>=lineStart && (i==lineNum-1 || fileOffset<source.lineStarts[i+1])) {
+      if (fileOffset>=lineStart && (i==lineNum-1 || fileOffset<source.lineStarts[i+1])) {
         return i;
       }
     }
@@ -90,20 +92,20 @@ class AopUtils {
   }
 
   static VariableDeclaration checkIfSkipableVarDeclaration(Source source, Statement statement) {
-    if(statement is VariableDeclaration) {
+    if (statement is VariableDeclaration) {
       VariableDeclaration variableDeclaration = statement;
       int lineNum = AopUtils.getLineNumBySourceAndOffset(source, variableDeclaration.fileOffset);
-      if(lineNum == -1) {
+      if (lineNum == -1) {
         return null;
       }
       int charFrom = source.lineStarts[lineNum];
       int charTo = source.source.length;
-      if(lineNum<source.lineStarts.length-1) {
+      if (lineNum<source.lineStarts.length-1) {
         charTo = source.lineStarts[lineNum+1];
       }
       List<int> sourceLineChars = source.source.sublist(charFrom,charTo);
       String sourceLine = String.fromCharCodes(sourceLineChars).trim();
-      if(sourceLine.endsWith(AopUtils.kAopPointcutIgnoreVariableDeclaration)) {
+      if (sourceLine.endsWith(AopUtils.kAopPointcutIgnoreVariableDeclaration)) {
         return variableDeclaration;
       }
     }
@@ -113,10 +115,10 @@ class AopUtils {
   static List<String> getPropertyKeyPaths(String propertyDesc) {
     List<String> tmpItems = propertyDesc.split('.');
     List<String> items = [];
-    tmpItems.forEach((item){
+    tmpItems.forEach((item) {
       int idx1 = item.lastIndexOf('::');
       int idx2 = item.lastIndexOf('}');
-      if(idx1!=-1 && idx2!=-1) {
+      if (idx1!=-1 && idx2!=-1) {
         items.add(item.substring(idx1+2,idx2));
       } else {
         items.add(item);
@@ -128,12 +130,13 @@ class AopUtils {
   static Class findClassFromThisWithKeypath(Class thisClass, List<String> keypaths) {
     int len = keypaths.length;
     Class cls = thisClass;
-    for(int i=0;i<len-1;i++) {
+    for (int i=0;i<len-1;i++) {
       String part = keypaths[i];
-      if(part == 'this')
+      if (part == 'this') {
         continue;
-      for(Field field in cls.fields) {
-        if(field.name.name == part) {
+      }
+      for (Field field in cls.fields) {
+        if (field.name.name == part) {
           cls = (field.type as InterfaceType).className.node;
           break;
         }
@@ -143,8 +146,8 @@ class AopUtils {
   }
 
   static Field findFieldForClassWithName(Class cls,String fieldName) {
-    for(Field field in cls.fields) {
-      if(field.name.name == fieldName) {
+    for (Field field in cls.fields) {
+      if (field.name.name == fieldName) {
         return field;
       }
     }
@@ -156,13 +159,13 @@ class AopUtils {
   }
 
   static Node getNodeToVisitRecursively(Object statement) {
-    if(statement is FunctionDeclaration) {
+    if (statement is FunctionDeclaration) {
       return statement.function;
     }
-    if(statement is LabeledStatement) {
+    if (statement is LabeledStatement) {
       return statement.body;
     }
-    if(statement is IfStatement) {
+    if (statement is IfStatement) {
       return statement.then;
     }
     return null;
@@ -173,7 +176,7 @@ class AopUtils {
     //重定向到AOP的函数体中去
     Arguments pointCutConstructorArguments = Arguments.empty();
     List<MapEntry> sourceInfos = List<MapEntry>();
-    sourceInfo?.forEach((String key, String value){
+    sourceInfo?.forEach((String key, String value) {
       sourceInfos.add(MapEntry(StringLiteral(key), StringLiteral(value)));
     });
     pointCutConstructorArguments.positional.add(MapLiteral(sourceInfos));
@@ -182,7 +185,7 @@ class AopUtils {
     pointCutConstructorArguments.positional.add(StringLiteral(aopItemInfo.stubKey??stubMethodName));
     pointCutConstructorArguments.positional.add(ListLiteral(List<Expression>()..addAll(invocationArguments.positional)));
     List<MapEntry> entries = <MapEntry>[];
-    for(NamedExpression namedExpression in invocationArguments.named){
+    for (NamedExpression namedExpression in invocationArguments.named) {
       entries.add(MapEntry(StringLiteral(namedExpression.name),namedExpression.value));
     }
     pointCutConstructorArguments.positional.add(MapLiteral(entries));
@@ -194,7 +197,7 @@ class AopUtils {
   static Arguments concatArguments4PointcutStubCall(Member member) {
     Arguments arguments = Arguments.empty();
     int i=0;
-    for(VariableDeclaration variableDeclaration in member.function.positionalParameters) {
+    for (VariableDeclaration variableDeclaration in member.function.positionalParameters) {
       Arguments getArguments = Arguments.empty();
       getArguments.positional.add(IntLiteral(i));
       MethodInvocation methodInvocation = MethodInvocation(PropertyGet(ThisExpression(),Name('positionalParams')), listGetProcedure.name, getArguments);
@@ -203,15 +206,16 @@ class AopUtils {
       i++;
     }
     List<NamedExpression> namedEntries = List<NamedExpression>();
-    for(VariableDeclaration variableDeclaration in member.function.namedParameters){
+    for (VariableDeclaration variableDeclaration in member.function.namedParameters) {
       Arguments getArguments = Arguments.empty();
       getArguments.positional.add(StringLiteral(variableDeclaration.name));
       MethodInvocation methodInvocation = MethodInvocation(PropertyGet(ThisExpression(),Name('namedParams')), mapGetProcedure.name, getArguments);
       AsExpression asExpression = AsExpression(methodInvocation,  deepCopyASTNode(variableDeclaration.type, ignoreGenerics: true));
       namedEntries.add(NamedExpression(variableDeclaration.name, asExpression));
     }
-    if(namedEntries.length>0)
+    if (namedEntries.length>0) {
       arguments.named.addAll(namedEntries);
+    }
     return arguments;
   }
 
@@ -226,14 +230,15 @@ class AopUtils {
   }
 
   static bool canOperateLibrary(Library library) {
-    if(platformStrongComponent != null && platformStrongComponent.libraries.contains(library))
+    if (platformStrongComponent != null && platformStrongComponent.libraries.contains(library)) {
       return false;
+    }
     return true;
   }
 
   static Block createProcedureBodyWithExpression(Expression expression,bool shouldReturn) {
     Block bodyStatements = Block(List<Statement>());
-    if(shouldReturn) {
+    if (shouldReturn) {
       bodyStatements.addStatement(ReturnStatement(expression));
     } else {
       bodyStatements.addStatement(ExpressionStatement(expression));
@@ -245,35 +250,37 @@ class AopUtils {
   static bool checkIfSkipAOP(AopItemInfo aopItemInfo, Library curLibrary) {
     Library aopLibrary1 = aopItemInfo.aopMember.parent.parent;
     Library aopLibrary2 = pointCutProceedProcedure.parent.parent;
-    if(curLibrary == aopLibrary1 || curLibrary == aopLibrary2)
+    if (curLibrary == aopLibrary1 || curLibrary == aopLibrary2) {
       return true;
+    }
     return false;
   }
 
-  static bool checkIfClassEnableAspectd(List<Expression> annotations){
+  static bool checkIfClassEnableAspectd(List<Expression> annotations) {
     bool enabled = false;
-    for(Expression annotation in annotations){
+    for (Expression annotation in annotations) {
       //Release Mode
-      if(annotation is ConstantExpression){
+      if (annotation is ConstantExpression) {
         ConstantExpression constantExpression = annotation;
         Constant constant = constantExpression.constant;
-        if(constant is InstanceConstant){
+        if (constant is InstanceConstant) {
           InstanceConstant instanceConstant = constant;
           CanonicalName canonicalName =  instanceConstant.classReference.canonicalName;
-          if(canonicalName.name == AopUtils.kAopAnnotationClassAspect && canonicalName?.parent?.name == AopUtils.kImportUriAopAspect){
+          if (canonicalName.name == AopUtils.kAopAnnotationClassAspect && canonicalName?.parent?.name == AopUtils.kImportUriAopAspect) {
             enabled = true;
             break;
           }
         }
       }
       //Debug Mode
-      else if(annotation is ConstructorInvocation) {
+      else if (annotation is ConstructorInvocation) {
         ConstructorInvocation constructorInvocation = annotation;
         Class cls = constructorInvocation.targetReference.node?.parent as Class;
-        if(cls == null)
+        if (cls == null) {
           continue;
+        }
         Library library = cls?.parent as Library;
-        if(cls.name == AopUtils.kAopAnnotationClassAspect && library.importUri.toString() == AopUtils.kImportUriAopAspect){
+        if (cls.name == AopUtils.kAopAnnotationClassAspect && library.importUri.toString() == AopUtils.kImportUriAopAspect) {
           enabled = true;
           break;
         }
@@ -286,7 +293,7 @@ class AopUtils {
     Map<String, String> sourceInfo = Map<String, String>();
     String importUri = library.importUri.toString();
     int idx = importUri.lastIndexOf('/');
-    if(idx != -1) {
+    if (idx != -1) {
       importUri = importUri.substring(0,idx);
     }
     Uri fileUri = library.fileUri;
@@ -294,9 +301,9 @@ class AopUtils {
     int lineNum;
     int lineOffSet;
     int lineStartCnt = source.lineStarts.length;
-    for(int i=0;i<lineStartCnt;i++){
+    for (int i=0;i<lineStartCnt;i++) {
       int lineStartIdx = source.lineStarts[i];
-      if(lineStartIdx<=fileOffset
+      if (lineStartIdx<=fileOffset
           && (i==lineStartCnt-1 || source.lineStarts[i+1]>fileOffset)) {
         lineNum = i;
         lineOffSet = fileOffset-lineStartIdx;
@@ -410,31 +417,12 @@ class AopUtils {
   static Arguments argumentsFromFunctionNode(FunctionNode functionNode) {
     List<Expression> positional = [];
     List<NamedExpression> named = [];
-    for(VariableDeclaration variableDeclaration in functionNode.positionalParameters){
+    for (VariableDeclaration variableDeclaration in functionNode.positionalParameters) {
       positional.add(VariableGet(variableDeclaration));
     }
-    for(VariableDeclaration variableDeclaration in functionNode.namedParameters){
+    for (VariableDeclaration variableDeclaration in functionNode.namedParameters) {
       named.add(NamedExpression(variableDeclaration.name, VariableGet(variableDeclaration)));
     }
     return Arguments(positional,named: named);
   }
-}
-
-class AopItemInfo {
-  final AopMode mode;
-  final String importUri;
-  final String clsName;
-  final String methodName;
-  final bool isStatic;
-  final Member aopMember;
-  final int lineNum;
-  String stubKey;
-  static String uniqueKeyForMethod(String importUri, String clsName, String methodName, bool isStatic, int lineNum){
-    return (importUri??"")+AopUtils.kAopUniqueKeySeperator
-        +(clsName??"")+AopUtils.kAopUniqueKeySeperator
-        +(methodName??"")+AopUtils.kAopUniqueKeySeperator
-        +(isStatic==true?"+":"-")
-        +(lineNum!=null?(AopUtils.kAopUniqueKeySeperator+"$lineNum"):"");
-  }
-  AopItemInfo({this.mode,this.importUri,this.clsName,this.methodName,this.isStatic,this.aopMember,this.lineNum});
 }

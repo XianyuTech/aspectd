@@ -7,7 +7,7 @@ class TransformerWrapper{
   
   TransformerWrapper(this.platformStrongComponent);
   
-  bool transform(Component component){
+  bool transform(Component component) {
     AopWrapperTransformer aopWrapperTransformer = new AopWrapperTransformer(platformStrongComponent: this.platformStrongComponent);
     aopWrapperTransformer.transform(component);
 

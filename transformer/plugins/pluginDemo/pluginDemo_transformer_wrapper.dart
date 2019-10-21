@@ -6,19 +6,22 @@ class PluginDemoWrapperTransformer {
   PluginDemoWrapperTransformer({this.platformStrongComponent});
 
   void transform(Component program) {
-    for(Library library in program.libraries) {
+    for (Library library in program.libraries) {
       String libraryName = library.canonicalName.name;
-      if(libraryName != 'package:example/main.dart')
+      if (libraryName != 'package:example/main.dart') {
         continue;
-      for(Class cls in library.classes) {
+      }
+      for (Class cls in library.classes) {
         String clsName = cls.name;
-        if(clsName != '_MyHomePageState')
+        if (clsName != '_MyHomePageState') {
           continue;
-        for(Procedure procedure in cls.procedures) {
+        }
+        for (Procedure procedure in cls.procedures) {
           String procedureName = procedure.name.name;
-          if(procedureName != 'onPluginDemo')
+          if (procedureName != 'onPluginDemo') {
             continue;
-          procedure.function.body = Block([]);
+          }
+//          procedure.function.body = Block([]);
         }
       }
     }

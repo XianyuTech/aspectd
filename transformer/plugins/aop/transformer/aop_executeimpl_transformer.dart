@@ -4,7 +4,9 @@
 
 import 'package:kernel/ast.dart';
 import 'package:front_end/src/fasta/kernel/kernel_ast_api.dart';
-import 'utils.dart';
+
+import 'aop_iteminfo.dart';
+import 'aop_utils.dart';
 
 class AopStatementsInsertInfo {
   final Library library;
@@ -23,80 +25,156 @@ class AopExecuteImplTransformer extends Transformer{
 
   AopExecuteImplTransformer(this._aopInfoMap, this._libraryMap);
 
-  void aopTransform() {
-    _aopInfoMap?.forEach((String uniqueKey, AopItemInfo aopItemInfo){
-      Library aopAnnoLibrary = _libraryMap[aopItemInfo.importUri];
-      String clsName = aopItemInfo.clsName;
-      //类静态/实例方法
-      if(clsName != null && clsName.length>0) {
-        Class expectedCls = null;
-        for(Class cls in aopAnnoLibrary.classes) {
-          if(cls.name == aopItemInfo.clsName) {
-            expectedCls = cls;
-            //Check Constructors
-            for(Constructor constructor in cls.constructors) {
-              String functionName = '${cls.name}';
-              if (constructor.name.name.isNotEmpty) {
-                functionName += '.${constructor.name.name}';
-              }
-              if(functionName == aopItemInfo.methodName && true == aopItemInfo.isStatic && constructor.function.body != null) {
-                transformConstructor(aopAnnoLibrary, constructor, aopItemInfo);
-                return;
-              }
+  Set<Library> filterLibraryWithAopItemInfo (Map<String,Library> libraryMap, AopItemInfo aopItemInfo) {
+    final Set<Library> filteredLibraries = Set<Library>();
+    if (aopItemInfo.isRegex) {
+      for (String libraryName in libraryMap.keys) {
+        if (RegExp(aopItemInfo.importUri).hasMatch(libraryName)) {
+          filteredLibraries.add(libraryMap[libraryName]);
+        }
+      }
+    } else {
+      Library library = libraryMap[aopItemInfo.importUri];
+      if (library != null) {
+        filteredLibraries.add(library);
+      }
+    }
+    return filteredLibraries;
+  }
+
+  Member filterFirstMatchPatchClassMember(Map<String,Library> libraryMap, Member expectMember, AopItemInfo aopItemInfo) {
+    Member filteredMember;
+    Class expectedCls = expectMember.parent;
+    for (String importUri in libraryMap.keys) {
+      Library lib = libraryMap[importUri];
+      if (lib != expectedCls.parent) {
+        continue;
+      }
+      for (Class mightPatchCls in lib.classes) {
+        bool matches = false;
+        if (mightPatchCls.name == aopItemInfo.clsName) {
+          matches = true;
+        } else {
+          for (int i=0;i<mightPatchCls.implementedTypes.length && matches == false;i++) {
+            Supertype supertype = mightPatchCls.implementedTypes[i];
+            if (supertype.className.node == expectedCls && mightPatchCls.parent == expectedCls.parent && mightPatchCls.name == '_'+expectedCls.name) {
+              matches = true;
             }
-            //Check Procedures
-            for(Procedure procedure in cls.procedures) {
-              if(procedure.name.name == aopItemInfo.methodName && procedure.isStatic == aopItemInfo.isStatic && procedure.function.body != null) {
-                transformMethodProcedure(aopAnnoLibrary, procedure, aopItemInfo);
-                return;
-              }
-            }
-            break;
           }
         }
-        //一些被系统操控的特殊类，如_Random等
-        _libraryMap.forEach((importUri,lib){
-          for(Class cls in lib.classes) {
-            bool matches = false;
-            if(cls.name == aopItemInfo.clsName) {
-              matches = true;
-            } else {
-              for(int i=0;i<cls.implementedTypes.length && matches == false;i++){
-                Supertype supertype = cls.implementedTypes[i];
-                if(supertype.className.node == expectedCls && cls.parent == expectedCls.parent && cls.name == '_'+expectedCls.name) {
-                  matches = true;
+        if (matches) {
+          for (Member member in mightPatchCls.members) {
+            //Here, the patch member's body must be non-empty.
+            if (member.name.name == expectMember.name.name && member.function.body != null) {
+              return member;
+            }
+          }
+        }
+      }
+    }
+    return filteredMember;
+  }
+
+  Set<Procedure> filterLibraryProcedureWithAopItemInfo (Library library, AopItemInfo aopItemInfo) {
+    final Set<Procedure> filteredProcedures = Set<Procedure>();
+    //Check Procedures
+    for (Procedure procedure in library.procedures) {
+      if (procedure.isStatic == aopItemInfo.isStatic && procedure.function.body != null) {
+        if (aopItemInfo.isRegex) {
+          if (RegExp(aopItemInfo.methodName).hasMatch(procedure.name.name)) {
+            filteredProcedures.add(procedure);
+          }
+        } else {
+          if (aopItemInfo.methodName == procedure.name.name) {
+            filteredProcedures.add(procedure);
+          }
+        }
+      }
+    }
+    return filteredProcedures;
+  }
+
+  Set<Class> filterClassWithAopItemInfo (Library library, AopItemInfo aopItemInfo) {
+    assert((aopItemInfo.clsName?.length ?? 0)>0);
+    final Set<Class> filteredClasses = Set<Class>();
+    for (Class cls in library.classes) {
+      if (aopItemInfo.isRegex) {
+        if (RegExp(aopItemInfo.clsName).hasMatch(cls.name)) {
+          filteredClasses.add(cls);
+        }
+      } else {
+        if (aopItemInfo.clsName == cls.name) {
+          filteredClasses.add(cls);
+        }
+      }
+    }
+    return filteredClasses;
+  }
+
+  Set<Member> filterClassMemberWithAopItemInfo (Class cls, AopItemInfo aopItemInfo) {
+    final Set<Member> filteredMembers = Set<Member>();
+    //Check Constructors
+    for (Constructor constructor in cls.constructors) {
+      String functionName = '${cls.name}';
+      if (constructor.name.name.isNotEmpty) {
+        functionName += '.${constructor.name.name}';
+      }
+      if (true == aopItemInfo.isStatic) { //&& constructor.function.body != null
+        if (aopItemInfo.isRegex) {
+          if (RegExp(aopItemInfo.methodName).hasMatch(functionName)) {
+            filteredMembers.add(constructor);
+          }
+        } else {
+          if (aopItemInfo.methodName == functionName) {
+            filteredMembers.add(constructor);
+          }
+        }
+      }
+    }
+    //Check Procedures
+    for (Procedure procedure in cls.procedures) {
+      if (procedure.isStatic == aopItemInfo.isStatic) { //procedure.function.body != null
+        if (aopItemInfo.isRegex) {
+          if (RegExp(aopItemInfo.methodName).hasMatch(procedure.name.name)) {
+            filteredMembers.add(procedure);
+          }
+        } else {
+          if (aopItemInfo.methodName == procedure.name.name) {
+            filteredMembers.add(procedure);
+          }
+        }
+      }
+    }
+    return filteredMembers;
+  }
+
+  void aopTransform() {
+    _aopInfoMap?.forEach((String uniqueKey, AopItemInfo aopItemInfo) {
+      Set<Library> filteredLibraries = filterLibraryWithAopItemInfo(_libraryMap, aopItemInfo);
+      for (Library filteredLibrary in filteredLibraries) {
+        String clsName = aopItemInfo.clsName;
+        //类静态/实例方法
+        if (clsName != null && clsName.length>0) {
+          Set<Class> filteredLibraryClses = filterClassWithAopItemInfo(filteredLibrary, aopItemInfo);
+          for (Class filteredCls in filteredLibraryClses) {
+            Set<Member> filteredMembers = filterClassMemberWithAopItemInfo(filteredCls, aopItemInfo);
+            for (Member filteredMember in filteredMembers) {
+              if (filteredMember is Constructor) {
+                transformConstructor(filteredLibrary, filteredMember, aopItemInfo);
+              } else if (filteredMember is Procedure) {
+                if (filteredMember.function.body == null) {
+                  filteredMember = filterFirstMatchPatchClassMember(_libraryMap, filteredMember, aopItemInfo);
                 }
-              }
-            }
-            if(!matches)
-              continue;
-            //Check Constructors
-            for(Constructor constructor in cls.constructors) {
-              String functionName = '${cls.name}';
-              if (constructor.name.name.isNotEmpty) {
-                functionName += '.${constructor.name.name}';
-              }
-              if(functionName == aopItemInfo.methodName && true == aopItemInfo.isStatic && constructor.function.body != null) {
-                transformConstructor(aopAnnoLibrary, constructor, aopItemInfo);
-                return;
-              }
-            }
-            for(int i=0;i<cls.procedures.length;i++) {
-              Procedure procedure = cls.procedures[i];
-              if(procedure.name.name == aopItemInfo.methodName && procedure.isStatic == aopItemInfo.isStatic) {
-                transformMethodProcedure(lib, procedure, aopItemInfo);
-                return;
+                transformMethodProcedure(filteredLibrary, filteredMember, aopItemInfo);
               }
             }
           }
-        });
-      }
-      // 库静态方法
-      else {
-        for(int i=0;i<aopAnnoLibrary.procedures.length;i++) {
-          Procedure procedure = aopAnnoLibrary.procedures[i];
-          if(procedure.name.name == aopItemInfo.methodName && procedure.isStatic == aopItemInfo.isStatic) {
-            transformMethodProcedure(aopAnnoLibrary, procedure, aopItemInfo);
+        }
+        // 库静态方法
+        else {
+          Set<Procedure> filteredProcedures = filterLibraryProcedureWithAopItemInfo(filteredLibrary, aopItemInfo);
+          for (Procedure procedure in filteredProcedures) {
+            transformMethodProcedure(filteredLibrary, procedure, aopItemInfo);
           }
         }
       }
@@ -104,8 +182,9 @@ class AopExecuteImplTransformer extends Transformer{
   }
 
   void transformConstructor(Library originalLibrary, Constructor constructor, AopItemInfo aopItemInfo) {
-    if(!AopUtils.canOperateLibrary(originalLibrary))
+    if (!AopUtils.canOperateLibrary(originalLibrary)) {
       return;
+    }
     FunctionNode functionNode = constructor.function;
     Statement body = functionNode.body;
     bool shouldReturn = !(constructor.function.returnType is VoidType);
@@ -117,9 +196,9 @@ class AopExecuteImplTransformer extends Transformer{
     //目标新建stub函数，方便完成目标->aopstub->目标stub链路
     Member originalStubConstructor = AopUtils.createStubConstructor(Name(constructor.name.name+'_'+aopItemInfo.stubKey, constructor.parent.parent), aopItemInfo, constructor, body, shouldReturn);
     Node parent = constructor.parent;
-    if(parent is Library) {
+    if (parent is Library) {
       parent.addMember(originalStubConstructor);
-    } else if(parent is Class) {
+    } else if (parent is Class) {
       parent.addMember(originalStubConstructor);
     }
     functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, NullLiteral(), constructor, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
@@ -136,15 +215,19 @@ class AopExecuteImplTransformer extends Transformer{
   }
 
   void transformMethodProcedure(Library library, Procedure procedure, AopItemInfo aopItemInfo) {
-    if(!AopUtils.canOperateLibrary(library))
+    if (procedure?.function?.body == null) {
       return;
-    if(procedure.parent is Class) {
-        if(procedure.isStatic) {
+    }
+    if (!AopUtils.canOperateLibrary(library)) {
+      return;
+    }
+    if (procedure.parent is Class) {
+        if (procedure.isStatic) {
           transformStaticMethodProcedure(library,aopItemInfo,procedure);
         } else {
           transformInstanceMethodProcedure(library,aopItemInfo,procedure);
         }
-      } else if(procedure.parent is Library) {
+      } else if (procedure.parent is Library) {
         transformStaticMethodProcedure(library,aopItemInfo,procedure);
       }
   }
@@ -161,9 +244,9 @@ class AopExecuteImplTransformer extends Transformer{
       //目标新建stub函数，方便完成目标->aopstub->目标stub链路
       Procedure originalStubProcedure = AopUtils.createStubProcedure(Name(originalProcedure.name.name+'_'+aopItemInfo.stubKey,originalProcedure.name.library), aopItemInfo, originalProcedure,body, shouldReturn);
       Node parent = originalProcedure.parent;
-      if(parent is Library) {
+      if (parent is Library) {
         parent.addMember(originalStubProcedure);
-      } else if(parent is Class) {
+      } else if (parent is Class) {
         parent.addMember(originalStubProcedure);
       }
       functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, NullLiteral(), originalProcedure, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
@@ -184,7 +267,7 @@ class AopExecuteImplTransformer extends Transformer{
     FunctionNode functionNode = originalProcedure.function;
     Class originalClass = (originalProcedure.parent as Class);
     Statement body = functionNode.body;
-    if(body == null) {
+    if (body == null) {
       return;
     }
     bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
@@ -217,7 +300,7 @@ class AopExecuteImplTransformer extends Transformer{
     Expression callExpression = null;
     if (aopItemInfo.aopMember is Procedure) {
       Procedure procedure = aopItemInfo.aopMember;
-      if(procedure.isStatic) {
+      if (procedure.isStatic) {
         callExpression = StaticInvocation(aopItemInfo.aopMember, redirectArguments);
       } else {
         ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference((aopItemInfo.aopMember.parent as Class).constructors.first.reference, Arguments([]));

@@ -18,7 +18,7 @@ int main(List<String> args) {
     if (pubspec == null)
       return null;
     final YamlList pluginsNode = pubspec['plugins'];
-    for(YamlNode yamlNode in pluginsNode.nodes) {
+    for (YamlNode yamlNode in pluginsNode.nodes) {
       if (yamlNode.value == null)
         continue;
       String pluginName = yamlNode.value.toString();
@@ -63,7 +63,7 @@ class TransformerWrapper{
   
   TransformerWrapper(this.platformStrongComponent);
   
-  bool transform(Component component){
+  bool transform(Component component) {
     ${transformerWrapperCallTransform}return true;
   }
 }''';

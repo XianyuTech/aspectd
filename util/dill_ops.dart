@@ -17,11 +17,11 @@ class BinaryPrinterFactory {
 }
 
 class DillOps {
-  DillOps(){
+  DillOps() {
     printerFactory = new BinaryPrinterFactory();
   }
   BinaryPrinterFactory printerFactory;
-  Component readComponentFromDill(String dillFile){
+  Component readComponentFromDill(String dillFile) {
     final Component component = new Component();
     final List<int> bytes = new File(dillFile).readAsBytesSync();
 

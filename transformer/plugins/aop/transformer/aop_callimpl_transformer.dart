@@ -4,7 +4,10 @@
 
 import 'package:kernel/ast.dart';
 import 'package:front_end/src/fasta/kernel/kernel_ast_api.dart';
-import 'utils.dart';
+
+import 'aop_iteminfo.dart';
+import 'aop_mode.dart';
+import 'aop_utils.dart';
 
 class AopCallImplTransformer extends Transformer {
   Map<String,AopItemInfo> _aopInfoMap;
@@ -17,7 +20,7 @@ class AopCallImplTransformer extends Transformer {
       this._aopInfoMap, this._libraryMap, this._uriToSource);
 
   @override
-  Library visitLibrary(Library node){
+  Library visitLibrary(Library node) {
     _curLibrary = node;
     node.transformChildren(this);
     return node;
@@ -41,7 +44,7 @@ class AopCallImplTransformer extends Transformer {
     } else {
       return constructorInvocation;
     }
-    if(uniqueKeyForMethod != null) {
+    if (uniqueKeyForMethod != null) {
       AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
       if (aopItemInfo?.mode == AopMode.Call &&
           !_transformedInvocationSet.contains(constructorInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
@@ -64,14 +67,14 @@ class AopCallImplTransformer extends Transformer {
       uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(
           procedureImportUri, cls.name, methodInvocation.name.name, false, null);
     }
-    else if(node == null) {
+    else if (node == null) {
       String importUri = methodInvocation?.interfaceTargetReference?.canonicalName?.reference?.canonicalName?.nonRootTop?.name;
       String clsName = methodInvocation?.interfaceTargetReference?.canonicalName?.parent?.parent?.name;
       String methodName = methodInvocation?.interfaceTargetReference?.canonicalName?.name;
       uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(
           importUri, clsName, methodName, false, null);
     }
-    if(uniqueKeyForMethod != null) {
+    if (uniqueKeyForMethod != null) {
       AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
       if (aopItemInfo?.mode == AopMode.Call &&
           !_transformedInvocationSet.contains(methodInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
@@ -83,20 +86,20 @@ class AopCallImplTransformer extends Transformer {
   }
 
   @override
-  StaticInvocation visitStaticInvocation(StaticInvocation staticInvocation){
+  StaticInvocation visitStaticInvocation(StaticInvocation staticInvocation) {
     staticInvocation.transformChildren(this);
     Node node = staticInvocation.targetReference?.node;
-    if(node == null) {
+    if (node == null) {
       String procedureName = staticInvocation?.targetReference?.canonicalName?.name;
       String tempName = staticInvocation?.targetReference?.canonicalName?.parent?.parent?.name;
-      if(tempName == '@methods') {
+      if (tempName == '@methods') {
         tempName = staticInvocation?.targetReference?.canonicalName?.parent?.parent?.parent?.name;
       }
       //Library Static
-      if(procedureName != null && procedureName.length>0 && tempName!=null && tempName.length>0 && _libraryMap[tempName]!=null) {
+      if (procedureName != null && procedureName.length>0 && tempName!=null && tempName.length>0 && _libraryMap[tempName]!=null) {
         Library  originalLibrary = _libraryMap[tempName];
-        for(Procedure procedure in originalLibrary.procedures){
-          if(procedure.name.name == procedureName) {
+        for (Procedure procedure in originalLibrary.procedures) {
+          if (procedure.name.name == procedureName) {
             node = procedure;
           }
         }
@@ -106,9 +109,9 @@ class AopCallImplTransformer extends Transformer {
         tempName = staticInvocation?.targetReference?.canonicalName?.parent?.parent?.parent?.name;
         String clsName = staticInvocation?.targetReference?.canonicalName?.parent?.parent?.name;
         Library  originalLibrary = _libraryMap[tempName];
-        for(Class cls in originalLibrary.classes) {
-          for(Procedure procedure in cls.procedures){
-            if(cls.name == clsName && procedure.name.name == procedureName) {
+        for (Class cls in originalLibrary.classes) {
+          for (Procedure procedure in cls.procedures) {
+            if (cls.name == clsName && procedure.name.name == procedureName) {
               node = procedure;
             }
           }
@@ -118,20 +121,20 @@ class AopCallImplTransformer extends Transformer {
     if (node is Procedure) {
       Procedure procedure = node;
       TreeNode treeNode = procedure.parent;
-      if(treeNode is Library) {
+      if (treeNode is Library) {
         Library library = treeNode;
         String libraryImportUri = library.importUri.toString();
         String uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(libraryImportUri, '', procedure.name.name, true,null);
         AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
-        if(aopItemInfo?.mode == AopMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
+        if (aopItemInfo?.mode == AopMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
           return transformLibraryStaticMethodInvocation(staticInvocation, procedure, aopItemInfo);
         }
-      } else if(treeNode is Class) {
+      } else if (treeNode is Class) {
         Class cls = treeNode;
         String procedureImportUri = cls.reference.canonicalName.parent.name;
         String uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(procedureImportUri, cls.name, procedure.name.name, true,null);
         AopItemInfo aopItemInfo = _aopInfoMap[uniqueKeyForMethod];
-        if(aopItemInfo?.mode == AopMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
+        if (aopItemInfo?.mode == AopMode.Call && !_transformedInvocationSet.contains(staticInvocation) && AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
           return transformClassStaticMethodInvocation(staticInvocation, aopItemInfo);
         }
       }
@@ -152,7 +155,7 @@ class AopCallImplTransformer extends Transformer {
     AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, StringLiteral(procedureLibrary.importUri.toString()),procedure,staticInvocation.arguments);
 
     StaticInvocation staticInvocationNew = StaticInvocation(aopItemInfo.aopMember as Procedure, redirectArguments);
-    if(aopItemInfo.stubKey != null){
+    if (aopItemInfo.stubKey != null) {
       return staticInvocationNew;
     }
 
@@ -172,7 +175,7 @@ class AopCallImplTransformer extends Transformer {
     AopUtils.concatArgumentsForAopMethod(sourceInfo, redirectArguments, aopItemInfo, StringLiteral(procedureClass.name), constructor, constructorInvocation.arguments);
 
     StaticInvocation staticInvocationNew = StaticInvocation(aopItemInfo.aopMember, redirectArguments);
-    if(aopItemInfo.stubKey != null){
+    if (aopItemInfo.stubKey != null) {
       return staticInvocationNew;
     }
 
@@ -192,7 +195,7 @@ class AopCallImplTransformer extends Transformer {
     AopUtils.concatArgumentsForAopMethod(sourceInfo,redirectArguments, aopItemInfo, StringLiteral(procedureClass.name),procedure,staticInvocation.arguments);
 
     StaticInvocation staticInvocationNew = StaticInvocation(aopItemInfo.aopMember, redirectArguments);
-    if(aopItemInfo.stubKey != null){
+    if (aopItemInfo.stubKey != null) {
       return staticInvocationNew;
     }
 
@@ -209,22 +212,22 @@ class AopCallImplTransformer extends Transformer {
     Class methodImplClass = methodClass;
     String procedureName = methodInvocation?.name?.name;
     Library originalLibrary = methodProcedure?.parent?.parent as Library;
-    if(originalLibrary == null) {
+    if (originalLibrary == null) {
       String libImportUri = methodInvocation?.interfaceTargetReference?.canonicalName?.nonRootTop?.name;
       originalLibrary = _libraryMap[libImportUri];
     }
-    if(methodClass == null){
+    if (methodClass == null) {
       String expectedName = methodInvocation?.interfaceTargetReference?.canonicalName?.parent?.parent?.name;
-      for(Class cls in originalLibrary.classes) {
-        if(cls.name == expectedName) {
+      for (Class cls in originalLibrary.classes) {
+        if (cls.name == expectedName) {
           methodClass = cls;
           break;
         }
       }
     }
 
-    if(methodClass.flags & Class.FlagAbstract != 0) {
-      for(Class cls in originalLibrary.classes) {
+    if (methodClass.flags & Class.FlagAbstract != 0) {
+      for (Class cls in originalLibrary.classes) {
         String clsName = cls.name;
         if (cls.flags & Class.FlagAbstract != 0) //抽象类
           continue;
@@ -240,9 +243,9 @@ class AopCallImplTransformer extends Transformer {
           continue;
         }
         methodImplClass = cls;
-        for(Procedure procedure in cls.procedures) {
+        for (Procedure procedure in cls.procedures) {
           String methodName = procedure.name.name;
-          if(methodName == procedureName) {
+          if (methodName == procedureName) {
             methodProcedure = procedure;
             break;
           }
@@ -259,7 +262,7 @@ class AopCallImplTransformer extends Transformer {
     ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference(cls.constructors.first.reference, Arguments([]));
     MethodInvocation methodInvocationNew = MethodInvocation(redirectConstructorInvocation, aopItemInfo.aopMember.name, redirectArguments);
     AopUtils.insertLibraryDependency(_curLibrary, aopItemInfo.aopMember.parent.parent);
-    if(aopItemInfo.stubKey != null){
+    if (aopItemInfo.stubKey != null) {
       return methodInvocationNew;
     }
 

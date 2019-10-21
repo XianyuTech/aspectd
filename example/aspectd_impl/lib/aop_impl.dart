@@ -41,7 +41,7 @@ class ExecuteDemo {
   @pragma("vm:entry-point")
   dynamic _incrementCounter(PointCut pointcut) {
     dynamic obj = pointcut.proceed();
-    print('[KWLM]4: Around _incrementCounter!');
+    print('[KWLM]4:${pointcut.sourceInfos}:${pointcut.target}:${pointcut.function}!');
     return obj;
   }
 
@@ -53,10 +53,23 @@ class ExecuteDemo {
     return pointcut.proceed();
   }
 
-//  @Execute("package:example/main.dart", "MyApp", "+MyApp")
-//  @pragma("vm:entry-point")
-//  static dynamic MyAppDefine(PointCut pointcut) {
-//    print('[KWLM]6: MyApp default constructor!');
-//    return pointcut.proceed();
-//  }
+  @Execute("package:example/main.dart", "MyApp", "+MyApp")
+  @pragma("vm:entry-point")
+  static dynamic myAppDefine(PointCut pointcut) {
+    print('[KWLM]6: MyApp default constructor!');
+    return pointcut.proceed();
+  }
+
+    @Execute("dart:math", "Random", "-next.*", isRegex: true)
+    @pragma("vm:entry-point")
+    static dynamic randomNext(PointCut pointcut) {
+      return 10;
+    }
+
+  @Execute("package:example\\/.+\\.dart", ".+PageState", "-.+", isRegex: true)
+  @pragma("vm:entry-point")
+  dynamic universalHook(PointCut pointcut) {
+    print('[KWLM8]:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+    return pointcut.proceed();
+  }
 }

@@ -26,8 +26,8 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/front_end"
-      ref: "70a7ef3f589ec525c2a3b14fa7d47f44d09a29f3"
-      resolved-ref: "70a7ef3f589ec525c2a3b14fa7d47f44d09a29f3"
+      ref: a61c775db81ef2a389d5aee6236176362b082d58
+      resolved-ref: a61c775db81ef2a389d5aee6236176362b082d58
       url: "https://github.com/dart-lang/sdk.git"
     source: git
     version: "0.1.28"
@@ -35,8 +35,8 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/kernel"
-      ref: "70a7ef3f589ec525c2a3b14fa7d47f44d09a29f3"
-      resolved-ref: "70a7ef3f589ec525c2a3b14fa7d47f44d09a29f3"
+      ref: a61c775db81ef2a389d5aee6236176362b082d58
+      resolved-ref: a61c775db81ef2a389d5aee6236176362b082d58
       url: "https://github.com/dart-lang/sdk.git"
     source: git
     version: "0.3.27"

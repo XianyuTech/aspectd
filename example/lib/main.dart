@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 void appInit() async{
@@ -11,9 +12,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
-//  MyApp.define(){
-//
-//  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -57,7 +55,14 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   void onPluginDemo() {
-    print('[KWLM]:onPluginDemo Called!');
+    print('[KWLM]:onPluginDemo111 Called!');
+  }
+
+  void onRandomDemo() {
+    Random random = Random();
+    print('[KWLM]nextInt:${random.nextInt(100)}');
+    print('[KWLM]nextDouble:${random.nextDouble()}');
+    print('[KWLM]nextBool:${random.nextBool()}');
   }
 
   void _incrementCounter() {
@@ -112,7 +117,8 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
-            GestureDetector(child: Text('onPluginDemo'), onTap: onPluginDemo)
+            GestureDetector(child: Text('onPluginDemo',style: TextStyle(fontSize: 30)), onTap: onPluginDemo),
+            GestureDetector(child: Text('Random Demo', style: TextStyle(fontSize: 30)), onTap: onRandomDemo)
           ],
         ),
       ),
