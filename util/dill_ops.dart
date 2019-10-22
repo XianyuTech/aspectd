@@ -11,29 +11,29 @@ import 'package:kernel/binary/ast_from_binary.dart'
 class BinaryPrinterFactory {
   /// Creates new [BinaryPrinter] to write to [targetSink].
   BinaryPrinter newBinaryPrinter(Sink<List<int>> targetSink) {
-    return new LimitedBinaryPrinter(targetSink, (_) => true /* predicate */,
+    return LimitedBinaryPrinter(targetSink, (_) => true /* predicate */,
         false /* excludeUriToSource */);
   }
 }
 
 class DillOps {
   DillOps() {
-    printerFactory = new BinaryPrinterFactory();
+    printerFactory = BinaryPrinterFactory();
   }
   BinaryPrinterFactory printerFactory;
   Component readComponentFromDill(String dillFile) {
-    final Component component = new Component();
-    final List<int> bytes = new File(dillFile).readAsBytesSync();
+    final Component component = Component();
+    final List<int> bytes = File(dillFile).readAsBytesSync();
 
-    new BinaryBuilderWithMetadata(bytes).readComponent(component);
+    BinaryBuilderWithMetadata(bytes).readComponent(component);
     return component;
   }
 
   writeDillFile(Component component, String filename,
       {bool filterExternal: false}) async {
-    final IOSink sink = new File(filename).openWrite();
+    final IOSink sink = File(filename).openWrite();
     final BinaryPrinter printer = filterExternal
-        ? new LimitedBinaryPrinter(
+        ? LimitedBinaryPrinter(
         sink, (lib) => !lib.isExternal, true /* excludeUriToSource */)
         : printerFactory.newBinaryPrinter(sink);
 

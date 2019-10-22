@@ -19,7 +19,7 @@ int main(List<String> args) {
   final String outputDill = argResults[_kOptionOutput];
   final String sdkRoot = argResults[_kOptionSdkRoot];
 
-  DillOps dillOps = new DillOps();
+  DillOps dillOps = DillOps();
   Component component = dillOps.readComponentFromDill(intputDill);
   Component platformStrongComponent = null;
   if (sdkRoot != null) {
@@ -40,7 +40,7 @@ int main(List<String> args) {
     }
   }
 
-  TransformerWrapper transformerWrapper = new TransformerWrapper(platformStrongComponent);
+  TransformerWrapper transformerWrapper = TransformerWrapper(platformStrongComponent);
   transformerWrapper.transform(component);
 
   dillOps.writeDillFile(component, outputDill);

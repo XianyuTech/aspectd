@@ -3,7 +3,7 @@ import 'dart:io';
 import "package:path/path.dart" as p;
 import 'package:yaml/yaml.dart';
 
-RegExp pluginNameExp = new RegExp(r"^[a-zA-Z_][a-zA-Z0-9_]*$",);
+RegExp pluginNameExp = RegExp(r"^[a-zA-Z_][a-zA-Z0-9_]*$",);
 
 /// This function is used to generate plugins based on configurations specified
 /// in lib/src/plugins/config.yaml.
@@ -53,7 +53,7 @@ int main(List<String> args) {
       transformerWrapperImport =
       '${transformerWrapperImport}import \'package:aspectd/src/plugins/${pluginItem}/${pluginItem}_transformer_wrapper.dart\';\n';
       transformerWrapperCallTransform =
-      '${transformerWrapperCallTransform}${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = new ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n\n    ';
+      '${transformerWrapperCallTransform}${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n\n    ';
     }
     String transformerWrapperContent = '''
 import 'package:kernel/ast.dart';

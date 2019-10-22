@@ -8,10 +8,10 @@ class TransformerWrapper{
   TransformerWrapper(this.platformStrongComponent);
   
   bool transform(Component component) {
-    AopWrapperTransformer aopWrapperTransformer = new AopWrapperTransformer(platformStrongComponent: this.platformStrongComponent);
+    AopWrapperTransformer aopWrapperTransformer = AopWrapperTransformer(platformStrongComponent: this.platformStrongComponent);
     aopWrapperTransformer.transform(component);
 
-    PluginDemoWrapperTransformer pluginDemoWrapperTransformer = new PluginDemoWrapperTransformer(platformStrongComponent: this.platformStrongComponent);
+    PluginDemoWrapperTransformer pluginDemoWrapperTransformer = PluginDemoWrapperTransformer(platformStrongComponent: this.platformStrongComponent);
     pluginDemoWrapperTransformer.transform(component);
 
     return true;

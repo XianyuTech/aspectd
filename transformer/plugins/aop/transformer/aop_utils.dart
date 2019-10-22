@@ -51,7 +51,7 @@ class AopUtils {
         return;
       }
     }
-    library.dependencies.add(new LibraryDependency.import(dependLibrary));
+    library.dependencies.add(LibraryDependency.import(dependLibrary));
   }
 
   static int getLineStartNumForStatement(Source source, Statement statement) {
@@ -322,7 +322,7 @@ class AopUtils {
   }
 
   static Procedure createStubProcedure(Name methodName, AopItemInfo aopItemInfo, Procedure referProcedure ,Statement bodyStatements, bool shouldReturn) {
-    FunctionNode functionNode = new FunctionNode(bodyStatements,
+    FunctionNode functionNode = FunctionNode(bodyStatements,
         typeParameters: deepCopyASTNodes<TypeParameter>(referProcedure.function.typeParameters),
         positionalParameters: referProcedure.function.positionalParameters,
         namedParameters: referProcedure.function.namedParameters,
@@ -331,7 +331,7 @@ class AopUtils {
         asyncMarker: referProcedure.function.asyncMarker,
         dartAsyncMarker: referProcedure.function.dartAsyncMarker
     );
-    Procedure procedure = new Procedure(
+    Procedure procedure = Procedure(
       Name(methodName.name, methodName.library),ProcedureKind.Method, functionNode,
       isStatic: referProcedure.isStatic,
       fileUri: referProcedure.fileUri,
@@ -346,7 +346,7 @@ class AopUtils {
   }
 
   static Constructor createStubConstructor(Name methodName, AopItemInfo aopItemInfo, Constructor referConstructor ,Statement bodyStatements, bool shouldReturn) {
-    FunctionNode functionNode = new FunctionNode(bodyStatements,
+    FunctionNode functionNode = FunctionNode(bodyStatements,
         typeParameters: deepCopyASTNodes<TypeParameter>(referConstructor.function.typeParameters),
         positionalParameters: referConstructor.function.positionalParameters,
         namedParameters: referConstructor.function.namedParameters,
@@ -355,7 +355,7 @@ class AopUtils {
         asyncMarker: referConstructor.function.asyncMarker,
         dartAsyncMarker: referConstructor.function.dartAsyncMarker
     );
-    Constructor constructor = new Constructor(
+    Constructor constructor = Constructor(
       functionNode,
       name: Name(methodName.name, methodName.library),
       isConst: referConstructor.isConst,
