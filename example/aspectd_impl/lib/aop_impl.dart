@@ -2,9 +2,9 @@ import 'package:aspectd/aspectd.dart';
 
 //@Aspect()
 //@pragma("vm:entry-point")
-//class CallDemo {
+//class RegularCallDemo {
 //  @pragma("vm:entry-point")
-//  CallDemo();
+//  RegularCallDemo();
 //
 //  @Call("package:example/main.dart", "", "+appInit")
 //  @pragma("vm:entry-point")
@@ -30,7 +30,30 @@ import 'package:aspectd/aspectd.dart';
 //    return obj;
 //  }
 //}
+
+//@Aspect()
+//@pragma("vm:entry-point")
+//class RegexCallDemo {
+//  @pragma("vm:entry-point")
+//  RegexCallDemo();
 //
+//  @Call("package:example\\/.+\\.dart", ".*", "-.+", isRegex: true)
+//  @pragma("vm:entry-point")
+//  dynamic instanceUniversalHook(PointCut pointcut) {
+//    print('[KWLM4]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//    dynamic obj = pointcut.proceed();
+//    return obj;
+//  }
+//
+//  @Call("package:example\\/.+\\.dart", ".*", "+^(?!main\$).*\$", isRegex: true)
+//  @pragma("vm:entry-point")
+//  static dynamic staticUniversalHook(PointCut pointcut) {
+//    print('[KWLM5]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//    dynamic obj = pointcut.proceed();
+//    return obj;
+//  }
+//}
+
 //@Aspect()
 //@pragma("vm:entry-point")
 //class RegularExecuteDemo {
@@ -41,7 +64,7 @@ import 'package:aspectd/aspectd.dart';
 //  @pragma("vm:entry-point")
 //  dynamic _incrementCounter(PointCut pointcut) {
 //    dynamic obj = pointcut.proceed();
-//    print('[KWLM]4:${pointcut.sourceInfos}:${pointcut.target}:${pointcut.function}!');
+//    print('[KWLM]6:${pointcut.sourceInfos}:${pointcut.target}:${pointcut.function}!');
 //    return obj;
 //  }
 //
@@ -49,14 +72,14 @@ import 'package:aspectd/aspectd.dart';
 //      "GestureRecognizer", "-invokeCallback")
 //  @pragma("vm:entry-point")
 //  dynamic hookinvokeCallback(PointCut pointcut) {
-//    print("[KWLM]5: invokeCallback");
+//    print("[KWLM]7: invokeCallback");
 //    return pointcut.proceed();
 //  }
 //
 //  @Execute("dart:math", "Random", "-next.*", isRegex: true)
 //  @pragma("vm:entry-point")
 //  static dynamic randomNext(PointCut pointcut) {
-//    print('[KWLM]6:randomNext!');
+//    print('[KWLM]8:randomNext!');
 //    return 10;
 //  }
 //}
@@ -70,15 +93,15 @@ class RegexExecuteDemo {
   @Execute("package:example\\/.+\\.dart", ".*", "-.+", isRegex: true)
   @pragma("vm:entry-point")
   dynamic instanceUniversalHook(PointCut pointcut) {
-    print('[KWLM7]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+    print('[KWLM9]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
     dynamic obj = pointcut.proceed();
     return obj;
   }
 
   @Execute("package:example\\/.+\\.dart", ".*", "+.+", isRegex: true)
   @pragma("vm:entry-point")
-  dynamic staticUniversalHook(PointCut pointcut) {
-    print('[KWLM8]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+  static dynamic staticUniversalHook(PointCut pointcut) {
+    print('[KWLM10]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
     dynamic obj = pointcut.proceed();
     return obj;
   }

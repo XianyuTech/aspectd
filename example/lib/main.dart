@@ -51,6 +51,7 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
   static int getTag() => 1;
   static int getTag2() => 2;
+  getTag3()=>3;
 
   final String title;
 
@@ -58,6 +59,7 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() {
     print('[KWLM]:${getTag()}');
     print('[KWLM]:${getTag2()}');
+    print('[KWLM]:${getTag3()}');
     return _MyHomePageState();
   }
 }
@@ -128,8 +130,12 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
-            GestureDetector(child: Text('onPluginDemo',style: TextStyle(fontSize: 30)), onTap: onPluginDemo),
-            GestureDetector(child: Text('Random Demo', style: TextStyle(fontSize: 30)), onTap: onRandomDemo)
+            GestureDetector(child: Text('onPluginDemo',style: TextStyle(fontSize: 30)), onTap: (){
+              onPluginDemo();
+            }),
+            GestureDetector(child: Text('Random Demo', style: TextStyle(fontSize: 30)), onTap: (){
+              onRandomDemo();
+            })
           ],
         ),
       ),

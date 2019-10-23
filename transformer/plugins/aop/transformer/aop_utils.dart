@@ -171,8 +171,8 @@ class AopUtils {
     return null;
   }
 
-  static void concatArgumentsForAopMethod(Map<String, String> sourceInfo,Arguments redirectArguments,AopItemInfo aopItemInfo, Expression targetExpression, Member member,Arguments invocationArguments) {
-    String stubMethodName = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
+  static void concatArgumentsForAopMethod(Map<String, String> sourceInfo,Arguments redirectArguments, String stubKey, Expression targetExpression, Member member,Arguments invocationArguments) {
+    String stubKeyDefault = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
     //重定向到AOP的函数体中去
     Arguments pointCutConstructorArguments = Arguments.empty();
     List<MapEntry> sourceInfos = List<MapEntry>();
@@ -186,7 +186,7 @@ class AopUtils {
       memberName = AopUtils.nameForConstructor(member);
     }
     pointCutConstructorArguments.positional.add(StringLiteral(memberName));
-    pointCutConstructorArguments.positional.add(StringLiteral(aopItemInfo.stubKey??stubMethodName));
+    pointCutConstructorArguments.positional.add(StringLiteral(stubKey??stubKeyDefault));
     pointCutConstructorArguments.positional.add(ListLiteral(List<Expression>()..addAll(invocationArguments.positional)));
     List<MapEntry> entries = <MapEntry>[];
     for (NamedExpression namedExpression in invocationArguments.named) {
@@ -228,7 +228,7 @@ class AopUtils {
     String methodName = procedure.name.name;
     MethodInvocation methodInvocation = MethodInvocation(ThisExpression(), Name(methodName), Arguments.empty());
     List<Statement> statements = block.statements;
-    statements.insert(statements.length-1,IfStatement(MethodInvocation(PropertyGet(ThisExpression(), Name('stubId')), Name('=='), Arguments([StringLiteral(methodName)])),
+    statements.insert(statements.length-1,IfStatement(MethodInvocation(PropertyGet(ThisExpression(), Name('stubKey')), Name('=='), Arguments([StringLiteral(methodName)])),
         Block(<Statement>[(shouldReturn?ReturnStatement(methodInvocation):ExpressionStatement(methodInvocation))]),
         null));
   }

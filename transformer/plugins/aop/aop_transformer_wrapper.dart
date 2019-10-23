@@ -8,7 +8,7 @@ import 'transformer/aop_mode.dart';
 import 'transformer/aop_utils.dart';
 
 class AopWrapperTransformer {
-  Map<String,AopItemInfo> aopInfoMap = Map<String, AopItemInfo>();
+  List<AopItemInfo> aopItemInfoList = List<AopItemInfo>();
   Component platformStrongComponent;
 
   AopWrapperTransformer({this.platformStrongComponent});
@@ -73,16 +73,16 @@ class AopWrapperTransformer {
         }
       }
     }
-    Map<String,AopItemInfo> callInfoMap = Map<String, AopItemInfo>();
-    Map<String,AopItemInfo> executeInfoMap = Map<String, AopItemInfo>();
-    Map<String,AopItemInfo> injectInfoMap = Map<String, AopItemInfo>();
-    aopInfoMap.forEach((String key, AopItemInfo aopItemInfo) {
+    List<AopItemInfo> callInfoList = List<AopItemInfo>();
+    List<AopItemInfo> executeInfoList = List<AopItemInfo>();
+    List<AopItemInfo> injectInfoList = List<AopItemInfo>();
+    aopItemInfoList.forEach((AopItemInfo aopItemInfo) {
       if (aopItemInfo.mode == AopMode.Call) {
-        callInfoMap.putIfAbsent(key, ()=>aopItemInfo);
+        callInfoList.add(aopItemInfo);
       } else if (aopItemInfo.mode == AopMode.Execute) {
-        executeInfoMap.putIfAbsent(key, ()=>aopItemInfo);
+        executeInfoList.add(aopItemInfo);
       } else if (aopItemInfo.mode == AopMode.Inject) {
-        injectInfoMap.putIfAbsent(key, ()=>aopItemInfo);
+        injectInfoList.add(aopItemInfo);
       }
     });
 
@@ -92,10 +92,10 @@ class AopWrapperTransformer {
     AopUtils.platformStrongComponent = platformStrongComponent;
 
     // Aop call transformer
-    if (callInfoMap.keys.length > 0) {
+    if (callInfoList.length > 0) {
       final AopCallImplTransformer aopCallImplTransformer =
       AopCallImplTransformer(
-        callInfoMap,
+        callInfoList,
         libraryMap,
         concatUriToSource,
       );
@@ -108,16 +108,16 @@ class AopWrapperTransformer {
       }
     }
     // Aop execute transformer
-    if (executeInfoMap.keys.length > 0) {
+    if (executeInfoList.length > 0) {
       AopExecuteImplTransformer(
-          executeInfoMap,
+          executeInfoList,
           libraryMap
       )..aopTransform();
     }
     // Aop inject transformer
-    if (injectInfoMap.keys.length > 0) {
+    if (injectInfoList.length > 0) {
       AopInjectImplTransformer(
-          injectInfoMap,
+          injectInfoList,
           libraryMap,
           concatUriToSource
       )..aopTransform();
@@ -138,8 +138,7 @@ class AopWrapperTransformer {
           }
           AopItemInfo aopItemInfo =  _processAopMember(member);
           if (aopItemInfo != null) {
-            String uniqueKeyForMethod = AopItemInfo.uniqueKeyForMethod(aopItemInfo.importUri, aopItemInfo.clsName, aopItemInfo.methodName, aopItemInfo.isStatic, aopItemInfo.lineNum);
-            aopInfoMap.putIfAbsent(uniqueKeyForMethod,()=>aopItemInfo);
+            aopItemInfoList.add(aopItemInfo);
           }
         }
       }

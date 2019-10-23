@@ -12,8 +12,7 @@ class AopItemInfo {
   final bool isRegex;
   final Member aopMember;
   final int lineNum;
-  String stubKey;
-  static String uniqueKeyForMethod(String importUri, String clsName, String methodName, bool isStatic, int lineNum) {
+  static String uniqueKeyForMethod(String importUri, String clsName, String methodName, bool isStatic, {int lineNum}) {
     return (importUri??"")+AopUtils.kAopUniqueKeySeperator
         +(clsName??"")+AopUtils.kAopUniqueKeySeperator
         +(methodName??"")+AopUtils.kAopUniqueKeySeperator

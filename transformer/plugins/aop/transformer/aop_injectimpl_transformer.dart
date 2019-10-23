@@ -20,7 +20,7 @@ class AopStatementsInsertInfo {
 }
 
 class AopInjectImplTransformer extends Transformer{
-  Map<String,AopItemInfo> _aopInfoMap;
+  List<AopItemInfo> _aopItemInfoList;
   Map<String,Library> _libraryMap;
   Map<Uri, Source> _uriToSource;
   Set<VariableDeclaration> _mockedVariableDeclaration = Set();
@@ -30,7 +30,7 @@ class AopInjectImplTransformer extends Transformer{
   Library _curAopLibrary;
   AopStatementsInsertInfo _curAopStatementsInsertInfo;
 
-  AopInjectImplTransformer(this._aopInfoMap, this._libraryMap,this._uriToSource);
+  AopInjectImplTransformer(this._aopItemInfoList, this._libraryMap,this._uriToSource);
 
   @override
   VariableDeclaration visitVariableDeclaration(VariableDeclaration node) {
@@ -112,7 +112,7 @@ class AopInjectImplTransformer extends Transformer{
   }
 
   void aopTransform() {
-    _aopInfoMap?.forEach((String uniqueKey, AopItemInfo aopItemInfo) {
+    _aopItemInfoList?.forEach((AopItemInfo aopItemInfo) {
       Library aopAnnoLibrary = _libraryMap[aopItemInfo.importUri];
       String clsName = aopItemInfo.clsName;
       if (aopAnnoLibrary == null) {
