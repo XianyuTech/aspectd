@@ -1,13 +1,14 @@
-From 03c682f6feb5e2d2a66d0e1d0a8ffd971d509098 Mon Sep 17 00:00:00 2001
+From fc8531e903ab667f32150adfe8e37091b30fed7d Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Tue, 15 Oct 2019 23:20:13 +0800
+Date: Wed, 23 Oct 2019 18:23:24 +0800
 Subject: [PATCH] aspectd
 
 ---
  packages/flutter_tools/lib/src/aspectd.dart   | 305 ++++++++++++++++++
  .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- 3 files changed, 316 insertions(+)
+ packages/flutter_tools/lib/src/compile.dart   |   4 +
+ 4 files changed, 320 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
@@ -345,7 +346,7 @@ index e0e3dd060..3db289fa0 100644
        if (platform == TargetPlatform.ios) {
          // Determine which iOS architectures to build for.
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index a65803a8a..3e04ba094 100644
+index 72e9be51c..d6850c897 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -356,9 +357,9 @@ index a65803a8a..3e04ba094 100644
  import '../base/common.dart';
  import '../base/file_system.dart';
  import '../build_info.dart';
-@@ -140,6 +141,11 @@ class BuildBundleCommand extends BuildSubCommand {
+@@ -139,6 +140,11 @@ class BuildBundleCommand extends BuildSubCommand {
+       fileSystemScheme: argResults['filesystem-scheme'],
        fileSystemRoots: argResults['filesystem-root'],
-       shouldBuildWithAssemble: true,
      );
 +
 +    if (await AspectdHook.isAspectdEnabled()) {
@@ -368,6 +369,27 @@ index a65803a8a..3e04ba094 100644
      return null;
    }
  }
+diff --git a/packages/flutter_tools/lib/src/compile.dart b/packages/flutter_tools/lib/src/compile.dart
+index f44dce594..a7f0118ce 100644
+--- a/packages/flutter_tools/lib/src/compile.dart
++++ b/packages/flutter_tools/lib/src/compile.dart
+@@ -258,12 +258,16 @@ List<String> _buildModeOptions(BuildMode mode) {
+         '-Ddart.vm.profile=true',
+         '-Ddart.vm.product=false',
+         '--bytecode-options=source-positions',
++        '--no-drop-ast',
++        '--no-gen-bytecode',
+       ];
+     case BuildMode.release:
+       return <String>[
+         '-Ddart.vm.profile=false',
+         '-Ddart.vm.product=true',
+         '--bytecode-options=source-positions',
++        '--no-drop-ast',
++        '--no-gen-bytecode',
+       ];
+   }
+   throw Exception('Unknown BuildMode: $mode');
 -- 
 2.21.0 (Apple Git-122)
 
