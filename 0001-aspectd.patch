@@ -1,22 +1,23 @@
-From fc8531e903ab667f32150adfe8e37091b30fed7d Mon Sep 17 00:00:00 2001
+From 6b849b45203a756259b5e4a72a31b2be97e72e82 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Wed, 23 Oct 2019 18:23:24 +0800
+Date: Thu, 31 Oct 2019 19:57:08 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 305 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 374 ++++++++++++++++++
+ .../lib/src/build_system/targets/dart.dart    |   5 +
  .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
  packages/flutter_tools/lib/src/compile.dart   |   4 +
- 4 files changed, 320 insertions(+)
+ 5 files changed, 394 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..1d35fab08
+index 000000000..a39e77f46
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,374 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -31,11 +32,16 @@ index 000000000..1d35fab08
 +import 'base/file_system.dart';
 +import 'base/process_manager.dart';
 +import 'build_info.dart';
++import 'build_system/build_system.dart';
++import 'build_system/exceptions.dart';
++import 'build_system/targets/dart.dart';
 +import 'bundle.dart';
 +import 'cache.dart';
++import 'compile.dart';
 +import 'dart/package_map.dart';
 +import 'dart/sdk.dart';
 +import 'globals.dart';
++import 'project.dart';
 +import 'runner/flutter_command.dart';
 +
 +const String unmatchDartKernelBinaryErrMsg =
@@ -44,7 +50,6 @@ index 000000000..1d35fab08
 +const String aspectdImplPackageName = 'aspectd_impl';
 +
 +class AspectdHook {
-+  static bool _isAspectdEnabled;
 +  static String aspectdTransformerSnapshot;
 +  static Directory getAspectdDirectory(Directory rootProjectDir) {
 +    return fs.directory(fs.path.normalize(fs.path.join(rootProjectDir.path,
@@ -148,9 +153,6 @@ index 000000000..1d35fab08
 +  }
 +
 +  static Future<bool> isAspectdEnabled() async {
-+    if (_isAspectdEnabled != null) {
-+      return _isAspectdEnabled;
-+    }
 +    final Directory aspectdDirectory = getAspectdDirectory(fs.currentDirectory);
 +    if (!(aspectdDirectory.existsSync() &&
 +        fs.file(fs.path.join(aspectdDirectory.path, 'pubspec.yaml')).existsSync() &&
@@ -158,17 +160,15 @@ index 000000000..1d35fab08
 +            .existsSync() &&
 +        fs.file(fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart'))
 +            .existsSync())) {
-+      _isAspectdEnabled = false;
-+      return _isAspectdEnabled;
++      return false;
 +    }
 +    await checkAspectdTransformerSnapshot();
 +    if (aspectdTransformerSnapshot == null ||
 +        !fs.file(aspectdTransformerSnapshot).existsSync()) {
-+      _isAspectdEnabled = false;
++      return false;
 +    } else {
-+      _isAspectdEnabled = true;
++      return true;
 +    }
-+    return _isAspectdEnabled;
 +  }
 +
 +  Future<FlutterCommandResult> runBuildBundleDillCommand(
@@ -183,71 +183,51 @@ index 000000000..1d35fab08
 +    final BuildMode buildMode = flutterCommand.getBuildMode();
 +    final Directory mainDirectory = fs.currentDirectory;
 +    final Directory aspectdDirectory = getAspectdDirectory(fs.currentDirectory);
-+    final String defaultKernelFilePath = fs.path.join(mainDirectory.path,
-+        getDefaultApplicationKernelPath(trackWidgetCreation: false));
-+    final String aspectdKernelFilePath =
-+        fs.path.join(aspectdDirectory.path, 'build', 'app.dill');
-+    final String aspectdTransformedKernelFilePath =
-+        fs.path.join(aspectdDirectory.path, 'build', 'app.aspectd.dill');
-+    final String asssetsDir = argResults['asset-dir']
++    final String origAssetsDir = argResults['asset-dir'];
++    final String originKernelBlob = fs.path.join(origAssetsDir, 'kernel_blob.bin');
++    final String assetsDir = origAssetsDir
 +        .replaceAll(mainDirectory.path, aspectdDirectory.path);
-+    final String mainPath =
-+        fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart');
++    final String assetKernelBlob = fs.path.join(assetsDir, 'kernel_blob.bin');
++    final String mainPath = fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart');
++    final String aspectdTransformedKernelFilePath =
++        fs.path.join(assetsDir, 'app.aspectd.dill');
 +    fs.currentDirectory = aspectdDirectory;
-+    await BundleBuilder().build(
-+        platform: platform,
-+        buildMode: buildMode,
-+        mainPath: mainPath,
-+        manifestPath: argResults['manifest'],
-+        depfilePath: argResults['depfile'],
-+        privateKeyPath: argResults['private-key'],
-+        assetDirPath: asssetsDir,
-+        precompiledSnapshot: argResults['precompiled'],
-+        reportLicensedPackages: argResults['report-licensed-packages'],
-+        trackWidgetCreation: argResults['track-widget-creation'],
-+        extraFrontEndOptions: argResults[FlutterOptions.kExtraFrontEndOptions],
-+        extraGenSnapshotOptions:
-+            argResults[FlutterOptions.kExtraGenSnapshotOptions],
-+        fileSystemScheme: argResults['filesystem-scheme'],
-+        fileSystemRoots: argResults['filesystem-root'],
-+        applicationKernelFilePath: aspectdKernelFilePath);
 +
-+    if (!fs.file(aspectdKernelFilePath).existsSync()) {
++    await BundleBuilder().build(
++      platform: platform,
++      buildMode: buildMode,
++      mainPath: mainPath,
++      manifestPath: argResults['manifest'],
++      depfilePath: argResults['depfile'],
++      privateKeyPath: argResults['private-key'],
++      assetDirPath: assetsDir,
++      precompiledSnapshot: argResults['precompiled'],
++      reportLicensedPackages: argResults['report-licensed-packages'],
++      trackWidgetCreation: argResults['track-widget-creation'],
++      extraFrontEndOptions: argResults[FlutterOptions.kExtraFrontEndOptions],
++      extraGenSnapshotOptions: argResults[FlutterOptions.kExtraGenSnapshotOptions],
++      fileSystemScheme: argResults['filesystem-scheme'],
++      fileSystemRoots: argResults['filesystem-root'],
++    );
++
++    if (!fs.file(assetKernelBlob).existsSync()) {
 +      fs.currentDirectory = mainDirectory;
 +      return null;
 +    }
 +
-+    final List<String> command = <String>[
-+      artifacts.getArtifactPath(Artifact.engineDartBinary),
-+      aspectdTransformerSnapshot,
-+      '--input',
-+      aspectdKernelFilePath,
-+      '--sdk-root',
-+      fs.file(artifacts.getArtifactPath(Artifact.platformKernelDill)).parent
-+          .path + fs.path.separator,
-+      '--output',
-+      aspectdTransformedKernelFilePath
-+    ];
-+
-+    final ProcessResult result = await processManager.run(command);
++    final ProcessResult result = await transformDill(buildMode, assetKernelBlob, aspectdTransformedKernelFilePath);
 +    if (result.exitCode != 0) {
 +      fs.currentDirectory = mainDirectory;
 +      throwToolExit('Transformer terminated unexpectedly.');
 +      return null;
 +    }
 +
-+    final File defaultKernelFile = fs.file(defaultKernelFilePath);
-+    if (defaultKernelFile.existsSync()) {
-+      defaultKernelFile.deleteSync();
++    final File originKernelFile = fs.file(originKernelBlob);
++    if (originKernelFile.existsSync()) {
++      originKernelFile.deleteSync();
 +    }
 +
-+    fs.file(aspectdTransformedKernelFilePath).copySync(defaultKernelFilePath);
-+    final File assetsBlob =
-+        fs.file(fs.path.join(argResults['asset-dir'], 'kernel_blob.bin'));
-+    if (assetsBlob.existsSync()) {
-+      assetsBlob.deleteSync();
-+    }
-+    fs.file(defaultKernelFilePath).copySync(assetsBlob.path);
++    fs.file(aspectdTransformedKernelFilePath).copySync(originKernelBlob);
 +    fs.currentDirectory = mainDirectory;
 +    return null;
 +  }
@@ -297,16 +277,7 @@ index 000000000..1d35fab08
 +    final String defaultKernelFilePath =
 +        mainPath.replaceAll(aspectdDirectory.path, mainDirectory.path);
 +
-+    final List<String> command = <String>[
-+      artifacts.getArtifactPath(Artifact.engineDartBinary),
-+      aspectdTransformerSnapshot,
-+      '--input',
-+      mainPath,
-+      '--output',
-+      aspectdTransformedKernelFilePath
-+    ];
-+
-+    final ProcessResult result = await processManager.run(command);
++    final ProcessResult result = await transformDill(buildMode, mainPath, aspectdTransformedKernelFilePath);
 +    if (result.exitCode != 0) {
 +      fs.currentDirectory = mainDirectory;
 +      throwToolExit('Transformer terminated unexpectedly.');
@@ -321,9 +292,131 @@ index 000000000..1d35fab08
 +    fs.currentDirectory = mainDirectory;
 +    return null;
 +  }
++
++  Future<void> runKernelDillSnapshotCommand(
++      KernelSnapshot kernelSnapshot, Environment originalEnvironment,
++      String originalDill) async {
++    final Directory mainDirectory = fs.currentDirectory;
++    final Directory aspectdDirectory = getAspectdDirectory(mainDirectory);
++    fs.currentDirectory = aspectdDirectory;
++
++    final String outputDir =
++    (originalEnvironment.outputDir.absolute.path ?? getAotBuildDirectory())
++        .replaceAll(mainDirectory.path, aspectdDirectory.path);
++
++    final FlutterProject flutterProject = FlutterProject.current();
++    final Environment environment = Environment(
++        projectDir: flutterProject.directory,
++        outputDir: fs.directory(outputDir),
++        buildDir: flutterProject.directory
++            .childDirectory('.dart_tool')
++            .childDirectory('flutter_build'),
++        defines: Map<String, String>.from(originalEnvironment.defines)
++    );
++
++    final KernelCompiler compiler = await kernelCompilerFactory.create(
++      FlutterProject.fromDirectory(aspectdDirectory),
++    );
++    if (environment.defines[kBuildMode] == null) {
++      throw MissingDefineException(kBuildMode, 'kernel_snapshot');
++    }
++    if (environment.defines[kTargetPlatform] == null) {
++      throw MissingDefineException(kTargetPlatform, 'kernel_snapshot');
++    }
++    final BuildMode buildMode = getBuildModeForName(environment.defines[kBuildMode]);
++    final String targetFile = fs.path.join(aspectdDirectory.path, 'lib', aspectdImplPackageName + '.dart');
++    final String packagesPath = aspectdDirectory.childFile('.packages').path;
++    final String targetFileAbsolute = fs.file(targetFile).absolute.path;
++    // everything besides 'false' is considered to be enabled.
++    final bool trackWidgetCreation = environment.defines[kTrackWidgetCreation] != 'false';
++    final TargetPlatform targetPlatform = getTargetPlatformForName(environment.defines[kTargetPlatform]);
++
++    TargetModel targetModel = TargetModel.flutter;
++    if (targetPlatform == TargetPlatform.fuchsia_x64 ||
++        targetPlatform == TargetPlatform.fuchsia_arm64) {
++      targetModel = TargetModel.flutterRunner;
++    }
++
++    final CompilerOutput output = await compiler.compile(
++      sdkRoot: artifacts.getArtifactPath(
++        Artifact.flutterPatchedSdkPath,
++        platform: targetPlatform,
++        mode: buildMode,
++      ),
++      aot: buildMode != BuildMode.debug,
++      buildMode: buildMode,
++      trackWidgetCreation: trackWidgetCreation && buildMode == BuildMode.debug,
++      targetModel: targetModel,
++      outputFilePath: environment.buildDir.childFile('app.dill').path,
++      packagesPath: packagesPath,
++      linkPlatformKernelIn: buildMode == BuildMode.release,
++      mainPath: targetFileAbsolute,
++      depFilePath: environment.buildDir.childFile('kernel_snapshot.d').path,
++    );
++
++    if (output == null || output.errorCount != 0) {
++      fs.currentDirectory = mainDirectory;
++      throwToolExit('Compiler terminated unexpectedly.');
++      return Future<void>((){});
++    }
++
++    final String aspectdTransformedKernelFilePath =  output.outputFilename+'.aspectd.dill';
++    final ProcessResult result = await transformDill(buildMode, output.outputFilename, aspectdTransformedKernelFilePath);
++    if (result.exitCode != 0) {
++      fs.currentDirectory = mainDirectory;
++      throwToolExit('Transformer terminated unexpectedly.');
++      return Future<void>((){});
++    }
++
++    final File originalDillFile = fs.file(originalDill);
++    if (originalDillFile.existsSync()) {
++      originalDillFile.renameSync(originalDill+'.bak');
++    }
++    fs.file(aspectdTransformedKernelFilePath).copySync(originalDill);
++
++    fs.currentDirectory = mainDirectory;
++  }
++
++  Future<ProcessResult> transformDill(BuildMode buildMode, String inputDill, String outputDill) async {
++    final List<String> command = <String>[
++      artifacts.getArtifactPath(Artifact.engineDartBinary),
++      aspectdTransformerSnapshot,
++      '--input',
++      inputDill,
++      if (buildMode == BuildMode.debug )...<String>['--sdk-root',fs.file(artifacts.getArtifactPath(Artifact.platformKernelDill)).parent
++          .path + fs.path.separator],
++      '--output',
++      outputDill
++    ];
++
++    return processManager.run(command);
++  }
 +}
+diff --git a/packages/flutter_tools/lib/src/build_system/targets/dart.dart b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
+index d801daddd..385231208 100644
+--- a/packages/flutter_tools/lib/src/build_system/targets/dart.dart
++++ b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
+@@ -5,6 +5,7 @@
+ import 'package:pool/pool.dart';
+ 
+ import '../../artifacts.dart';
++import '../../aspectd.dart';
+ import '../../asset.dart';
+ import '../../base/build.dart';
+ import '../../base/file_system.dart';
+@@ -242,6 +243,10 @@ class KernelSnapshot extends Target {
+     );
+     if (output == null || output.errorCount != 0) {
+       throw Exception('Errors during snapshot creation: $output');
++    } else {
++      if (await AspectdHook.isAspectdEnabled()) {
++        await AspectdHook().runKernelDillSnapshotCommand(this, environment, output.outputFilename);
++      }
+     }
+   }
+ }
 diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index e0e3dd060..3db289fa0 100644
+index 18567feb1..b62ebbef2 100644
 --- a/packages/flutter_tools/lib/src/commands/build_aot.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
 @@ -5,6 +5,7 @@
@@ -334,7 +427,7 @@ index e0e3dd060..3db289fa0 100644
  import '../base/build.dart';
  import '../base/common.dart';
  import '../base/context.dart';
-@@ -117,6 +118,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
+@@ -129,6 +130,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
          return null;
        }
  
@@ -370,7 +463,7 @@ index 72e9be51c..d6850c897 100644
    }
  }
 diff --git a/packages/flutter_tools/lib/src/compile.dart b/packages/flutter_tools/lib/src/compile.dart
-index f44dce594..a7f0118ce 100644
+index b74fcc37d..0272d7b9c 100644
 --- a/packages/flutter_tools/lib/src/compile.dart
 +++ b/packages/flutter_tools/lib/src/compile.dart
 @@ -258,12 +258,16 @@ List<String> _buildModeOptions(BuildMode mode) {
