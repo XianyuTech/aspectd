@@ -1,15 +1,15 @@
-From 6b849b45203a756259b5e4a72a31b2be97e72e82 Mon Sep 17 00:00:00 2001
+From 7a57010516d772f29ad15899d38b23c6fd45ece5 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Thu, 31 Oct 2019 19:57:08 +0800
+Date: Tue, 5 Nov 2019 17:55:50 +0800
 Subject: [PATCH] aspectd
 
 ---
  packages/flutter_tools/lib/src/aspectd.dart   | 374 ++++++++++++++++++
- .../lib/src/build_system/targets/dart.dart    |   5 +
+ .../lib/src/build_system/targets/dart.dart    |   6 +
  .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
  packages/flutter_tools/lib/src/compile.dart   |   4 +
- 5 files changed, 394 insertions(+)
+ 5 files changed, 395 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
@@ -393,18 +393,19 @@ index 000000000..a39e77f46
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/dart.dart b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
-index d801daddd..385231208 100644
+index d3f482b2d..da20e0b5f 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/dart.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
-@@ -5,6 +5,7 @@
- import 'package:pool/pool.dart';
+@@ -3,6 +3,8 @@
+ // found in the LICENSE file.
  
  import '../../artifacts.dart';
 +import '../../aspectd.dart';
- import '../../asset.dart';
++import '../../asset.dart';
  import '../../base/build.dart';
  import '../../base/file_system.dart';
-@@ -242,6 +243,10 @@ class KernelSnapshot extends Target {
+ import '../../build_info.dart';
+@@ -180,6 +182,10 @@ class KernelSnapshot extends Target {
      );
      if (output == null || output.errorCount != 0) {
        throw Exception('Errors during snapshot creation: $output');
