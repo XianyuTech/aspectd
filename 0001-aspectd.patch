@@ -1,23 +1,44 @@
-From 7a57010516d772f29ad15899d38b23c6fd45ece5 Mon Sep 17 00:00:00 2001
+From cb435cc89cd36464422b151dce6832a03b3bffb1 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Tue, 5 Nov 2019 17:55:50 +0800
+Date: Thu, 7 Nov 2019 20:21:18 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 374 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aot.dart       |   3 +
+ packages/flutter_tools/lib/src/aspectd.dart   | 375 ++++++++++++++++++
  .../lib/src/build_system/targets/dart.dart    |   6 +
- .../lib/src/commands/build_aot.dart           |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
- packages/flutter_tools/lib/src/compile.dart   |   4 +
- 5 files changed, 395 insertions(+)
+ packages/flutter_tools/lib/src/compile.dart   |   2 +
+ 5 files changed, 392 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
+diff --git a/packages/flutter_tools/lib/src/aot.dart b/packages/flutter_tools/lib/src/aot.dart
+index 71e15587e..5f02feda5 100644
+--- a/packages/flutter_tools/lib/src/aot.dart
++++ b/packages/flutter_tools/lib/src/aot.dart
+@@ -6,6 +6,7 @@ import 'dart:async';
+ 
+ import 'package:meta/meta.dart';
+ 
++import 'aspectd.dart';
+ import 'base/build.dart';
+ import 'base/common.dart';
+ import 'base/file_system.dart';
+@@ -82,6 +83,8 @@ class AotBuilder {
+       if (kernelOut == null) {
+         throwToolExit('Compiler terminated unexpectedly.');
+         return;
++      } else if (await AspectdHook.isAspectdEnabled()) {
++        await AspectdHook().runBuildAOTDillCommand(platform, outputPath, buildMode, extraFrontEndOptions);
+       }
+ 
+       // Build AOT snapshot.
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..a39e77f46
+index 000000000..9427e6034
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,374 @@
+@@ -0,0 +1,375 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -185,6 +206,10 @@ index 000000000..a39e77f46
 +    final Directory aspectdDirectory = getAspectdDirectory(fs.currentDirectory);
 +    final String origAssetsDir = argResults['asset-dir'];
 +    final String originKernelBlob = fs.path.join(origAssetsDir, 'kernel_blob.bin');
++    if (!fs.file(originKernelBlob).existsSync()) {
++      return null;
++    }
++
 +    final String assetsDir = origAssetsDir
 +        .replaceAll(mainDirectory.path, aspectdDirectory.path);
 +    final String assetKernelBlob = fs.path.join(assetsDir, 'kernel_blob.bin');
@@ -233,15 +258,12 @@ index 000000000..a39e77f46
 +  }
 +
 +  Future<FlutterCommandResult> runBuildAOTDillCommand(
-+      FlutterCommand flutterCommand) async {
-+    final ArgResults argResults = flutterCommand.argResults;
-+    final String targetPlatform = argResults['target-platform'];
-+    final TargetPlatform platform = getTargetPlatformForName(targetPlatform);
++      TargetPlatform platform, String outputDir, BuildMode buildMode,
++      List<String> extraFrontEndOptions) async {
 +    if (platform == null) {
-+      throwToolExit('Unknown platform: $targetPlatform');
++      throwToolExit('Unknown platform: $platform');
 +    }
 +
-+    final BuildMode buildMode = flutterCommand.getBuildMode();
 +    final Directory mainDirectory = fs.currentDirectory;
 +    final Directory aspectdDirectory = getAspectdDirectory(mainDirectory);
 +    String mainPath =
@@ -249,7 +271,7 @@ index 000000000..a39e77f46
 +    fs.currentDirectory = aspectdDirectory;
 +    final AOTSnapshotter snapshotter = AOTSnapshotter();
 +    final String outputPath =
-+        (argResults['output-dir'] ?? getAotBuildDirectory())
++        (outputDir ?? getAotBuildDirectory())
 +            .replaceAll(mainDirectory.path, aspectdDirectory.path);
 +
 +    // Compile to kernel.
@@ -260,7 +282,7 @@ index 000000000..a39e77f46
 +      packagesPath: PackageMap.globalPackagesPath,
 +      trackWidgetCreation: false,
 +      outputPath: outputPath,
-+      extraFrontEndOptions: argResults[FlutterOptions.kExtraFrontEndOptions],
++      extraFrontEndOptions: extraFrontEndOptions,
 +    );
 +
 +    if (mainPath == null) {
@@ -383,7 +405,7 @@ index 000000000..a39e77f46
 +      aspectdTransformerSnapshot,
 +      '--input',
 +      inputDill,
-+      if (buildMode == BuildMode.debug )...<String>['--sdk-root',fs.file(artifacts.getArtifactPath(Artifact.platformKernelDill)).parent
++      if (buildMode != BuildMode.release )...<String>['--sdk-root',fs.file(artifacts.getArtifactPath(Artifact.platformKernelDill)).parent
 +          .path + fs.path.separator],
 +      '--output',
 +      outputDill
@@ -393,7 +415,7 @@ index 000000000..a39e77f46
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/dart.dart b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
-index d3f482b2d..da20e0b5f 100644
+index 4a0497223..1b775d73d 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/dart.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
 @@ -3,6 +3,8 @@
@@ -416,29 +438,6 @@ index d3f482b2d..da20e0b5f 100644
      }
    }
  }
-diff --git a/packages/flutter_tools/lib/src/commands/build_aot.dart b/packages/flutter_tools/lib/src/commands/build_aot.dart
-index 18567feb1..b62ebbef2 100644
---- a/packages/flutter_tools/lib/src/commands/build_aot.dart
-+++ b/packages/flutter_tools/lib/src/commands/build_aot.dart
-@@ -5,6 +5,7 @@
- import 'dart:async';
- 
- import '../artifacts.dart';
-+import '../aspectd.dart';
- import '../base/build.dart';
- import '../base/common.dart';
- import '../base/context.dart';
-@@ -129,6 +130,10 @@ class BuildAotCommand extends BuildSubCommand with TargetPlatformBasedDevelopmen
-         return null;
-       }
- 
-+      if (await AspectdHook.isAspectdEnabled()) {
-+        await AspectdHook().runBuildAOTDillCommand(this);
-+      }
-+
-       // Build AOT snapshot.
-       if (platform == TargetPlatform.ios) {
-         // Determine which iOS architectures to build for.
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 index 72e9be51c..d6850c897 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
@@ -464,15 +463,14 @@ index 72e9be51c..d6850c897 100644
    }
  }
 diff --git a/packages/flutter_tools/lib/src/compile.dart b/packages/flutter_tools/lib/src/compile.dart
-index b74fcc37d..0272d7b9c 100644
+index 49a66aeed..753691e45 100644
 --- a/packages/flutter_tools/lib/src/compile.dart
 +++ b/packages/flutter_tools/lib/src/compile.dart
-@@ -258,12 +258,16 @@ List<String> _buildModeOptions(BuildMode mode) {
+@@ -258,12 +258,14 @@ List<String> _buildModeOptions(BuildMode mode) {
          '-Ddart.vm.profile=true',
          '-Ddart.vm.product=false',
          '--bytecode-options=source-positions',
 +        '--no-drop-ast',
-+        '--no-gen-bytecode',
        ];
      case BuildMode.release:
        return <String>[
@@ -480,10 +478,9 @@ index b74fcc37d..0272d7b9c 100644
          '-Ddart.vm.product=true',
          '--bytecode-options=source-positions',
 +        '--no-drop-ast',
-+        '--no-gen-bytecode',
        ];
    }
    throw Exception('Unknown BuildMode: $mode');
 -- 
-2.21.0 (Apple Git-122)
+2.21.0 (Apple Git-122.2)
 
