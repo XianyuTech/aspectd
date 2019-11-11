@@ -1,19 +1,19 @@
-From cb435cc89cd36464422b151dce6832a03b3bffb1 Mon Sep 17 00:00:00 2001
+From 07d1176ddd097a53b3f91e7283c22eff7622b171 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Thu, 7 Nov 2019 20:21:18 +0800
+Date: Mon, 11 Nov 2019 12:20:07 +0800
 Subject: [PATCH] aspectd
 
 ---
  packages/flutter_tools/lib/src/aot.dart       |   3 +
- packages/flutter_tools/lib/src/aspectd.dart   | 375 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 377 ++++++++++++++++++
  .../lib/src/build_system/targets/dart.dart    |   6 +
  .../lib/src/commands/build_bundle.dart        |   6 +
  packages/flutter_tools/lib/src/compile.dart   |   2 +
- 5 files changed, 392 insertions(+)
+ 5 files changed, 394 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aot.dart b/packages/flutter_tools/lib/src/aot.dart
-index 71e15587e..5f02feda5 100644
+index 50be74598..00556adec 100644
 --- a/packages/flutter_tools/lib/src/aot.dart
 +++ b/packages/flutter_tools/lib/src/aot.dart
 @@ -6,6 +6,7 @@ import 'dart:async';
@@ -24,21 +24,21 @@ index 71e15587e..5f02feda5 100644
  import 'base/build.dart';
  import 'base/common.dart';
  import 'base/file_system.dart';
-@@ -82,6 +83,8 @@ class AotBuilder {
+@@ -84,6 +85,8 @@ class AotBuilder {
        if (kernelOut == null) {
          throwToolExit('Compiler terminated unexpectedly.');
          return;
 +      } else if (await AspectdHook.isAspectdEnabled()) {
-+        await AspectdHook().runBuildAOTDillCommand(platform, outputPath, buildMode, extraFrontEndOptions);
++        await AspectdHook().runBuildAOTDillCommand(platform, outputPath, buildMode, extraFrontEndOptions, dartDefines);
        }
  
        // Build AOT snapshot.
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..9427e6034
+index 000000000..1e5f7044f
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,375 @@
+@@ -0,0 +1,377 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -259,7 +259,7 @@ index 000000000..9427e6034
 +
 +  Future<FlutterCommandResult> runBuildAOTDillCommand(
 +      TargetPlatform platform, String outputDir, BuildMode buildMode,
-+      List<String> extraFrontEndOptions) async {
++      List<String> extraFrontEndOptions, List<String> dartDefines) async {
 +    if (platform == null) {
 +      throwToolExit('Unknown platform: $platform');
 +    }
@@ -283,6 +283,7 @@ index 000000000..9427e6034
 +      trackWidgetCreation: false,
 +      outputPath: outputPath,
 +      extraFrontEndOptions: extraFrontEndOptions,
++      dartDefines: dartDefines
 +    );
 +
 +    if (mainPath == null) {
@@ -371,9 +372,10 @@ index 000000000..9427e6034
 +      targetModel: targetModel,
 +      outputFilePath: environment.buildDir.childFile('app.dill').path,
 +      packagesPath: packagesPath,
-+      linkPlatformKernelIn: buildMode == BuildMode.release,
++      linkPlatformKernelIn: buildMode != BuildMode.debug,
 +      mainPath: targetFileAbsolute,
 +      depFilePath: environment.buildDir.childFile('kernel_snapshot.d').path,
++      dartDefines: parseDartDefines(environment),
 +    );
 +
 +    if (output == null || output.errorCount != 0) {
@@ -415,7 +417,7 @@ index 000000000..9427e6034
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/dart.dart b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
-index 4a0497223..1b775d73d 100644
+index 392cc340e..3a03ecb3b 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/dart.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
 @@ -3,6 +3,8 @@
@@ -427,7 +429,7 @@ index 4a0497223..1b775d73d 100644
  import '../../base/build.dart';
  import '../../base/file_system.dart';
  import '../../build_info.dart';
-@@ -180,6 +182,10 @@ class KernelSnapshot extends Target {
+@@ -216,6 +218,10 @@ class KernelSnapshot extends Target {
      );
      if (output == null || output.errorCount != 0) {
        throw Exception('Errors during snapshot creation: $output');
@@ -463,10 +465,10 @@ index 72e9be51c..d6850c897 100644
    }
  }
 diff --git a/packages/flutter_tools/lib/src/compile.dart b/packages/flutter_tools/lib/src/compile.dart
-index 49a66aeed..753691e45 100644
+index d31d1d05d..b8569ea86 100644
 --- a/packages/flutter_tools/lib/src/compile.dart
 +++ b/packages/flutter_tools/lib/src/compile.dart
-@@ -258,12 +258,14 @@ List<String> _buildModeOptions(BuildMode mode) {
+@@ -257,12 +257,14 @@ List<String> _buildModeOptions(BuildMode mode) {
          '-Ddart.vm.profile=true',
          '-Ddart.vm.product=false',
          '--bytecode-options=source-positions',

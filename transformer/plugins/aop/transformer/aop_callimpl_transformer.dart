@@ -342,7 +342,7 @@ class AopCallImplTransformer extends Transformer {
   bool insertInstanceMethod4Pointcut(AopItemInfo aopItemInfo, String stubKey, Class pointCutClass, Class procedureImpl, Procedure originalProcedure) {
     //Add library dependency
     //Add new Procedure
-    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(procedureImpl)), originalProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure));
+    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(procedureImpl, Nullability.legacy)), originalProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure));
     bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
     createPointcutStubProcedure(aopItemInfo, stubKey, pointCutClass, AopUtils.createProcedureBodyWithExpression(mockedInvocation, !(originalProcedure.function.returnType is VoidType)), shouldReturn);
     return true;

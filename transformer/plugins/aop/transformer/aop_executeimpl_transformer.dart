@@ -291,7 +291,7 @@ class AopExecuteImplTransformer extends Transformer{
     Class pointcutClass = AopUtils.pointCutProceedProcedure.parent as Class;
     AopUtils.insertLibraryDependency(pointcutLibrary, originalLibrary);
 
-    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(originalClass)), originalStubProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure));
+    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(originalClass, Nullability.legacy)), originalStubProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure));
 
     Procedure stubProcedureNew = AopUtils.createStubProcedure(Name(stubKey,AopUtils.pointCutProceedProcedure.name.library) ,aopItemInfo, AopUtils.pointCutProceedProcedure, AopUtils.createProcedureBodyWithExpression(mockedInvocation, shouldReturn), shouldReturn);
     pointcutClass.addMember(stubProcedureNew);

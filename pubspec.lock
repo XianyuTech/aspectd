@@ -5,8 +5,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "pkg/_fe_analyzer_shared"
-      ref: bdd9e74afc1681ca7e43945e3547641321486ab7
-      resolved-ref: bdd9e74afc1681ca7e43945e3547641321486ab7
+      ref: d45c3d15cb3cea0104a87697c085259666eec528
+      resolved-ref: d45c3d15cb3cea0104a87697c085259666eec528
       url: "https://github.com/dart-lang/sdk.git"
     source: git
     version: "1.0.0"
@@ -35,20 +35,20 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/front_end"
-      ref: bdd9e74afc1681ca7e43945e3547641321486ab7
-      resolved-ref: bdd9e74afc1681ca7e43945e3547641321486ab7
+      ref: d45c3d15cb3cea0104a87697c085259666eec528
+      resolved-ref: d45c3d15cb3cea0104a87697c085259666eec528
       url: "https://github.com/dart-lang/sdk.git"
     source: git
-    version: "0.1.28"
+    version: "0.1.29"
   kernel:
     dependency: "direct dev"
     description:
       path: "pkg/kernel"
-      ref: bdd9e74afc1681ca7e43945e3547641321486ab7
-      resolved-ref: bdd9e74afc1681ca7e43945e3547641321486ab7
+      ref: d45c3d15cb3cea0104a87697c085259666eec528
+      resolved-ref: d45c3d15cb3cea0104a87697c085259666eec528
       url: "https://github.com/dart-lang/sdk.git"
     source: git
-    version: "0.3.27"
+    version: "0.3.29"
   meta:
     dependency: transitive
     description:
