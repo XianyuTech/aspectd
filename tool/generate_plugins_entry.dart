@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import "package:path/path.dart" as p;
+import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
-RegExp pluginNameExp = RegExp(r"^[a-zA-Z_][a-zA-Z0-9_]*$",);
+RegExp pluginNameExp = RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$');
 
 /// This function is used to generate plugins based on configurations specified
 /// in lib/src/plugins/config.yaml.
@@ -12,7 +12,7 @@ int main(List<String> args) {
   final String pluginsFolder = p.join(curDir.parent.parent.path, 'lib', 'src', 'plugins');
   final String configYamlPath = p.join(curDir.parent.parent.path, 'config.yaml');
   final File configYamlFile = File(configYamlPath);
-  List<String> pluginsList = [];
+  final List<String> pluginsList = <String>[];
   if (configYamlFile.existsSync()) {
     final dynamic pubspec = loadYaml(configYamlFile.readAsStringSync());
     if (pubspec == null)
@@ -21,7 +21,7 @@ int main(List<String> args) {
     for (YamlNode yamlNode in pluginsNode.nodes) {
       if (yamlNode.value == null)
         continue;
-      String pluginName = yamlNode.value.toString();
+      final String pluginName = yamlNode.value.toString();
       if (!pluginNameExp.hasMatch(pluginName))
         continue;
       pluginsList.add(pluginName);
@@ -41,7 +41,7 @@ int main(List<String> args) {
     for (int i = 0; i < pluginCnt; i++) {
       final String pluginItem = pluginsList[i];
       aspectdContent =
-      '${aspectdContent}export \'package:aspectd/src/plugins/${pluginItem}/${pluginItem}.dart\';\n';
+      '${aspectdContent}export \'package:aspectd/src/plugins/$pluginItem/$pluginItem.dart\';\n';
     }
 
     // Generate transformer_wrapper.dart as an export file
@@ -51,13 +51,13 @@ int main(List<String> args) {
       final String pluginItem = pluginsList[i];
       final String firstUpPluginItem = pluginItem[0].toUpperCase()+(pluginItem.length==1?'':pluginItem.substring(1));
       transformerWrapperImport =
-      '${transformerWrapperImport}import \'package:aspectd/src/plugins/${pluginItem}/${pluginItem}_transformer_wrapper.dart\';\n';
+      '${transformerWrapperImport}import \'package:aspectd/src/plugins/$pluginItem/${pluginItem}_transformer_wrapper.dart\';\n';
       transformerWrapperCallTransform =
-      '${transformerWrapperCallTransform}${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n\n    ';
+      '$transformerWrapperCallTransform${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n\n    ';
     }
-    String transformerWrapperContent = '''
+    final String transformerWrapperContent = '''
 import 'package:kernel/ast.dart';
-${transformerWrapperImport}
+$transformerWrapperImport
 class TransformerWrapper{
   Component platformStrongComponent;
   
@@ -88,7 +88,7 @@ class TransformerWrapper{
 bool checkIfGeneratePlugin(String pluginsDir, String pluginName) {
   final String firstUpPluginItem = pluginName[0].toUpperCase()+(pluginName.length==1?'':pluginName.substring(1));
   final String pluginFolder = p.join(pluginsDir, pluginName);
-  final File pluginExportFile = File(p.join(pluginFolder, '${pluginName}.dart'));
+  final File pluginExportFile = File(p.join(pluginFolder, '$pluginName.dart'));
   final File pluginTransformerFile = File(p.join(pluginFolder, '${pluginName}_transformer_wrapper.dart'));
   if (pluginExportFile.existsSync() || pluginTransformerFile.existsSync()) {
     return false;

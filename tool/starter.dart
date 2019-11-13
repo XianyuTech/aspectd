@@ -8,7 +8,7 @@ import '../util/dill_ops.dart';
 const String _kOptionInput = 'input';
 const String _kOptionOutput = 'output';
 const String _kOptionSdkRoot = 'sdk-root';
-Map<String,Library> libraryAbbrMap = Map<String, Library>();
+Map<String,Library> libraryAbbrMap = <String, Library>{};
 
 int main(List<String> args) {
   final ArgParser parser = ArgParser()
@@ -19,9 +19,9 @@ int main(List<String> args) {
   final String outputDill = argResults[_kOptionOutput];
   final String sdkRoot = argResults[_kOptionSdkRoot];
 
-  DillOps dillOps = DillOps();
-  Component component = dillOps.readComponentFromDill(intputDill);
-  Component platformStrongComponent = null;
+  final DillOps dillOps = DillOps();
+  final Component component = dillOps.readComponentFromDill(intputDill);
+  Component platformStrongComponent;
   if (sdkRoot != null) {
     platformStrongComponent = dillOps.readComponentFromDill(sdkRoot+'platform_strong.dill');
     for (Library library in platformStrongComponent.libraries) {
@@ -40,7 +40,7 @@ int main(List<String> args) {
     }
   }
 
-  TransformerWrapper transformerWrapper = TransformerWrapper(platformStrongComponent);
+  final TransformerWrapper transformerWrapper = TransformerWrapper(platformStrongComponent);
   transformerWrapper.transform(component);
 
   dillOps.writeDillFile(component, outputDill);

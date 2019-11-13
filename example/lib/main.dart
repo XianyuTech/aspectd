@@ -1,11 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-void appInit() async{
+Future<void> appInit() async{
 
 }
 
-void appInit2() async{
+Future<void> appInit2() async{
 
 }
 
@@ -33,13 +33,13 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -51,7 +51,7 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
   static int getTag() => 1;
   static int getTag2() => 2;
-  getTag3()=>3;
+  int getTag3()=>3;
 
   final String title;
 
@@ -72,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onRandomDemo() {
-    Random random = Random();
+    final Random random = Random();
     print('[KWLM]nextInt:${random.nextInt(100)}');
     print('[KWLM]nextDouble:${random.nextDouble()}');
     print('[KWLM]nextBool:${random.nextBool()}');
@@ -123,17 +123,17 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
+            const Text(
               'You have pushed the button this many times:',
             ),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
-            GestureDetector(child: Text('onPluginDemo',style: TextStyle(fontSize: 30)), onTap: (){
+            GestureDetector(child: const Text('onPluginDemo',style: TextStyle(fontSize: 30)), onTap: (){
               onPluginDemo();
             }),
-            GestureDetector(child: Text('Random Demo', style: TextStyle(fontSize: 30)), onTap: (){
+            GestureDetector(child: const Text('Random Demo', style: TextStyle(fontSize: 30)), onTap: (){
               onRandomDemo();
             })
           ],

@@ -6,6 +6,6 @@ class Call extends AnnotationInfo {
       Call._;
 
   @pragma('vm:entry-point')
-  const Call._(importUri, clsName, methodName, {bool isRegex})
+  const Call._(String importUri, String clsName, String methodName, {bool isRegex})
       : super(importUri: importUri, clsName: clsName, methodName: methodName, isRegex: isRegex);
 }

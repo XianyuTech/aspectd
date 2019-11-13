@@ -6,7 +6,7 @@ class Execute extends AnnotationInfo {
       {bool isRegex}) = Execute._;
 
   @pragma('vm:entry-point')
-  const Execute._(importUri, clsName, methodName, {bool isRegex})
+  const Execute._(String importUri, String clsName, String methodName, {bool isRegex})
       : super(
             importUri: importUri,
             clsName: clsName,

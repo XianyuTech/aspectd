@@ -9,6 +9,8 @@ import 'aop_iteminfo.dart';
 import 'aop_utils.dart';
 
 class AopStatementsInsertInfo {
+  AopStatementsInsertInfo({this.library,this.source,this.constructor,this.procedure,this.node,this.aopItemInfo, this.aopInsertStatements});
+
   final Library library;
   final Source source;
   final Constructor constructor;
@@ -16,17 +18,16 @@ class AopStatementsInsertInfo {
   final Node node;
   final AopItemInfo aopItemInfo;
   final List<Statement> aopInsertStatements;
-  AopStatementsInsertInfo({this.library,this.source,this.constructor,this.procedure,this.node,this.aopItemInfo, this.aopInsertStatements});
 }
 
 class AopExecuteImplTransformer extends Transformer{
-  List<AopItemInfo> _aopItemInfoList;
-  Map<String,Library> _libraryMap;
-
   AopExecuteImplTransformer(this._aopItemInfoList, this._libraryMap);
 
+  final List<AopItemInfo> _aopItemInfoList;
+  final Map<String,Library> _libraryMap;
+
   Set<Library> _filterLibraryWithAopItemInfo (Map<String,Library> libraryMap, AopItemInfo aopItemInfo) {
-    final Set<Library> filteredLibraries = Set<Library>();
+    final Set<Library> filteredLibraries = <Library>{};
     if (aopItemInfo.isRegex) {
       for (String libraryName in libraryMap.keys) {
         if (RegExp(aopItemInfo.importUri).hasMatch(libraryName)) {
@@ -34,7 +35,7 @@ class AopExecuteImplTransformer extends Transformer{
         }
       }
     } else {
-      Library library = libraryMap[aopItemInfo.importUri];
+      final Library library = libraryMap[aopItemInfo.importUri];
       if (library != null) {
         filteredLibraries.add(library);
       }
@@ -44,9 +45,9 @@ class AopExecuteImplTransformer extends Transformer{
 
   Member _filterFirstMatchPatchClassMember(Map<String,Library> libraryMap, Member expectMember, AopItemInfo aopItemInfo) {
     Member filteredMember;
-    Class expectedCls = expectMember.parent;
+    final Class expectedCls = expectMember.parent;
     for (String importUri in libraryMap.keys) {
-      Library lib = libraryMap[importUri];
+      final Library lib = libraryMap[importUri];
       if (lib != expectedCls.parent) {
         continue;
       }
@@ -56,7 +57,7 @@ class AopExecuteImplTransformer extends Transformer{
           matches = true;
         } else {
           for (int i=0;i<mightPatchCls.implementedTypes.length && matches == false;i++) {
-            Supertype supertype = mightPatchCls.implementedTypes[i];
+            final Supertype supertype = mightPatchCls.implementedTypes[i];
             if (supertype.className.node == expectedCls && mightPatchCls.parent == expectedCls.parent && mightPatchCls.name == '_'+expectedCls.name) {
               matches = true;
             }
@@ -76,7 +77,7 @@ class AopExecuteImplTransformer extends Transformer{
   }
 
   Set<Procedure> _filterLibraryProcedureWithAopItemInfo (Library library, AopItemInfo aopItemInfo) {
-    final Set<Procedure> filteredProcedures = Set<Procedure>();
+    final Set<Procedure> filteredProcedures = <Procedure>{};
     //Check Procedures
     for (Procedure procedure in library.procedures) {
       if (procedure.isStatic == aopItemInfo.isStatic && procedure.function.body != null) {
@@ -96,7 +97,7 @@ class AopExecuteImplTransformer extends Transformer{
 
   Set<Class> _filterClassWithAopItemInfo (Library library, AopItemInfo aopItemInfo) {
     assert((aopItemInfo.clsName?.length ?? 0)>0);
-    final Set<Class> filteredClasses = Set<Class>();
+    final Set<Class> filteredClasses = <Class>{};
     for (Class cls in library.classes) {
       if (aopItemInfo.isRegex) {
         if (RegExp(aopItemInfo.clsName).hasMatch(cls.name)) {
@@ -112,10 +113,10 @@ class AopExecuteImplTransformer extends Transformer{
   }
 
   Set<Member> _filterClassMemberWithAopItemInfo (Class cls, AopItemInfo aopItemInfo) {
-    final Set<Member> filteredMembers = Set<Member>();
+    final Set<Member> filteredMembers = <Member>{};
     //Check Constructors
     for (Constructor constructor in cls.constructors) {
-      String functionName = AopUtils.nameForConstructor(constructor);
+      final String functionName = AopUtils.nameForConstructor(constructor);
       if (true == aopItemInfo.isStatic) { //&& constructor.function.body != null
         if (aopItemInfo.isRegex) {
           if (RegExp(aopItemInfo.methodName).hasMatch(functionName)) {
@@ -146,38 +147,38 @@ class AopExecuteImplTransformer extends Transformer{
   }
 
   void aopTransform() {
-    _aopItemInfoList?.forEach((AopItemInfo aopItemInfo) {
-      Set<Library> filteredLibraries = _filterLibraryWithAopItemInfo(_libraryMap, aopItemInfo);
+    for (AopItemInfo aopItemInfo in _aopItemInfoList) {
+      final Set<Library> filteredLibraries = _filterLibraryWithAopItemInfo(_libraryMap, aopItemInfo);
       for (Library filteredLibrary in filteredLibraries) {
-        String clsName = aopItemInfo.clsName;
+        final String clsName = aopItemInfo.clsName;
         //库静态方法
-        bool isLibraryMethodNotRegex = (clsName?.length ?? 0) == 0 && !aopItemInfo.isRegex;
-        bool isLibraryMethodAndRegex = RegExp(clsName).hasMatch('') && aopItemInfo.isRegex;
+        final bool isLibraryMethodNotRegex = (clsName?.length ?? 0) == 0 && !aopItemInfo.isRegex;
+        final bool isLibraryMethodAndRegex = RegExp(clsName).hasMatch('') && aopItemInfo.isRegex;
         if (isLibraryMethodNotRegex || isLibraryMethodAndRegex) {
-          Set<Procedure> filteredProcedures = _filterLibraryProcedureWithAopItemInfo(filteredLibrary, aopItemInfo);
+          final Set<Procedure> filteredProcedures = _filterLibraryProcedureWithAopItemInfo(filteredLibrary, aopItemInfo);
           for (Procedure procedure in filteredProcedures) {
             transformMethodProcedure(filteredLibrary, procedure, aopItemInfo);
           }
         }
         //类静态/实例方法
         if ((clsName?.length ?? 0) > 0) {
-          Set<Class> filteredLibraryClses = _filterClassWithAopItemInfo(filteredLibrary, aopItemInfo);
-            for (Class filteredCls in filteredLibraryClses) {
-              Set<Member> filteredMembers = _filterClassMemberWithAopItemInfo(filteredCls, aopItemInfo);
-              for (Member filteredMember in filteredMembers) {
-                if (filteredMember is Constructor) {
-                 transformConstructor(filteredLibrary, filteredMember, aopItemInfo);
-               } else if (filteredMember is Procedure) {
-                 if (filteredMember.function.body == null) {
-                   filteredMember = _filterFirstMatchPatchClassMember(_libraryMap, filteredMember, aopItemInfo);
-                 }
-                 transformMethodProcedure(filteredLibrary, filteredMember, aopItemInfo);
+          final Set<Class> filteredLibraryClses = _filterClassWithAopItemInfo(filteredLibrary, aopItemInfo);
+          for (Class filteredCls in filteredLibraryClses) {
+            final Set<Member> filteredMembers = _filterClassMemberWithAopItemInfo(filteredCls, aopItemInfo);
+            for (Member filteredMember in filteredMembers) {
+              if (filteredMember is Constructor) {
+                transformConstructor(filteredLibrary, filteredMember, aopItemInfo);
+              } else if (filteredMember is Procedure) {
+                if (filteredMember.function.body == null) {
+                  filteredMember = _filterFirstMatchPatchClassMember(_libraryMap, filteredMember, aopItemInfo);
+                }
+                transformMethodProcedure(filteredLibrary, filteredMember, aopItemInfo);
               }
             }
           }
         }
       }
-    });
+    }
   }
 
   void transformConstructor(Library originalLibrary, Constructor constructor, AopItemInfo aopItemInfo) {
@@ -187,18 +188,18 @@ class AopExecuteImplTransformer extends Transformer{
     if (!AopUtils.canOperateLibrary(originalLibrary)) {
       return;
     }
-    FunctionNode functionNode = constructor.function;
-    Statement body = functionNode.body;
-    bool shouldReturn = !(constructor.function.returnType is VoidType);
+    final FunctionNode functionNode = constructor.function;
+    final Statement body = functionNode.body;
+    final bool shouldReturn = !(constructor.function.returnType is VoidType);
 
-    String stubKey = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
+    final String stubKey = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
     AopUtils.kPrimaryKeyAopMethod++;
 
-    String constructorName = AopUtils.nameForConstructor(constructor);
+    final String constructorName = AopUtils.nameForConstructor(constructor);
 
     //目标新建stub函数，方便完成目标->aopstub->目标stub链路
-    Member originalStubConstructor = AopUtils.createStubConstructor(Name(constructorName+'_'+stubKey, constructor.parent.parent), aopItemInfo, constructor, body, shouldReturn);
-    Node parent = constructor.parent;
+    final Member originalStubConstructor = AopUtils.createStubConstructor(Name(constructorName+'_'+stubKey, constructor.parent.parent), aopItemInfo, constructor, body, shouldReturn);
+    final Node parent = constructor.parent;
     if (parent is Library) {
       parent.addMember(originalStubConstructor);
     } else if (parent is Class) {
@@ -208,12 +209,12 @@ class AopExecuteImplTransformer extends Transformer{
     functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, stubKey, StringLiteral(constructorName), constructor, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
 
     //Pointcut类中新增stub，并且添加调用
-    Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent as Library;
-    Class pointcutClass = AopUtils.pointCutProceedProcedure.parent as Class;
+    final Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent;
+    final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent;
     AopUtils.insertLibraryDependency(pointcutLibrary, originalLibrary);
 
-    ConstructorInvocation constructorInvocation = ConstructorInvocation(originalStubConstructor, AopUtils.concatArguments4PointcutStubCall(constructor), isConst: originalStubConstructor.isConst);
-    Procedure stubProcedureNew = AopUtils.createStubProcedure(Name(stubKey,AopUtils.pointCutProceedProcedure.name.library) ,aopItemInfo, AopUtils.pointCutProceedProcedure, AopUtils.createProcedureBodyWithExpression(constructorInvocation, shouldReturn), shouldReturn);
+    final ConstructorInvocation constructorInvocation = ConstructorInvocation(originalStubConstructor, AopUtils.concatArguments4PointcutStubCall(constructor), isConst: originalStubConstructor.isConst);
+    final Procedure stubProcedureNew = AopUtils.createStubProcedure(Name(stubKey,AopUtils.pointCutProceedProcedure.name.library) ,aopItemInfo, AopUtils.pointCutProceedProcedure, AopUtils.createProcedureBodyWithExpression(constructorInvocation, shouldReturn), shouldReturn);
     pointcutClass.addMember(stubProcedureNew);
     AopUtils.insertProceedBranch(stubProcedureNew, shouldReturn);
   }
@@ -237,16 +238,16 @@ class AopExecuteImplTransformer extends Transformer{
   }
 
   void transformStaticMethodProcedure(Library originalLibrary,AopItemInfo aopItemInfo,Procedure originalProcedure) {
-      FunctionNode functionNode = originalProcedure.function;
-      Statement body = functionNode.body;
-      bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
+      final FunctionNode functionNode = originalProcedure.function;
+      final Statement body = functionNode.body;
+      final bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
 
-      String stubKey = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
+      final String stubKey = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
       AopUtils.kPrimaryKeyAopMethod++;
 
       //目标新建stub函数，方便完成目标->aopstub->目标stub链路
-      Procedure originalStubProcedure = AopUtils.createStubProcedure(Name(originalProcedure.name.name+'_'+stubKey,originalProcedure.name.library), aopItemInfo, originalProcedure,body, shouldReturn);
-      Node parent = originalProcedure.parent;
+      final Procedure originalStubProcedure = AopUtils.createStubProcedure(Name(originalProcedure.name.name+'_'+stubKey,originalProcedure.name.library), aopItemInfo, originalProcedure,body, shouldReturn);
+      final Node parent = originalProcedure.parent;
       String parentIdentifier;
       if (parent is Library) {
         parent.addMember(originalStubProcedure);
@@ -258,57 +259,58 @@ class AopExecuteImplTransformer extends Transformer{
       functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, stubKey, StringLiteral(parentIdentifier), originalProcedure, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
 
       //Pointcut类中新增stub，并且添加调用
-      Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent as Library;
-      Class pointcutClass = AopUtils.pointCutProceedProcedure.parent as Class;
+      final Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent;
+      final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent;
       AopUtils.insertLibraryDependency(pointcutLibrary, originalLibrary);
 
-      StaticInvocation staticInvocation = StaticInvocation(originalStubProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure), isConst: originalStubProcedure.isConst);
+      final StaticInvocation staticInvocation = StaticInvocation(originalStubProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure), isConst: originalStubProcedure.isConst);
 
-      Procedure stubProcedureNew = AopUtils.createStubProcedure(Name(stubKey, AopUtils.pointCutProceedProcedure.name.library) ,aopItemInfo, AopUtils.pointCutProceedProcedure, AopUtils.createProcedureBodyWithExpression(staticInvocation, shouldReturn), shouldReturn);
+      final Procedure stubProcedureNew = AopUtils.createStubProcedure(Name(stubKey, AopUtils.pointCutProceedProcedure.name.library) ,aopItemInfo, AopUtils.pointCutProceedProcedure, AopUtils.createProcedureBodyWithExpression(staticInvocation, shouldReturn), shouldReturn);
       pointcutClass.addMember(stubProcedureNew);
       AopUtils.insertProceedBranch(stubProcedureNew, shouldReturn);
   }
 
   void transformInstanceMethodProcedure(Library originalLibrary,AopItemInfo aopItemInfo,Procedure originalProcedure) {
-    FunctionNode functionNode = originalProcedure.function;
-    Class originalClass = (originalProcedure.parent as Class);
-    Statement body = functionNode.body;
+    final FunctionNode functionNode = originalProcedure.function;
+    final Class originalClass = originalProcedure.parent;
+    final Statement body = functionNode.body;
     if (body == null) {
       return;
     }
-    bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
+    final bool shouldReturn = !(originalProcedure.function.returnType is VoidType);
 
-    String stubKey = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
+    final String stubKey = '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
     AopUtils.kPrimaryKeyAopMethod++;
 
     //目标新建stub函数，方便完成目标->aopstub->目标stub链路
-    Procedure originalStubProcedure = AopUtils.createStubProcedure(Name(originalProcedure.name.name+'_'+stubKey,originalProcedure.name.library), aopItemInfo, originalProcedure,body, shouldReturn);
+    final Procedure originalStubProcedure = AopUtils.createStubProcedure(Name(originalProcedure.name.name+'_'+stubKey,originalProcedure.name.library), aopItemInfo, originalProcedure,body, shouldReturn);
     originalClass.addMember(originalStubProcedure);
     functionNode.body = createPointcutCallFromOriginal(originalLibrary,aopItemInfo, stubKey, ThisExpression(), originalProcedure, AopUtils.argumentsFromFunctionNode(functionNode) ,shouldReturn);
 
     //Pointcut类中新增stub，并且添加调用
-    Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent as Library;
-    Class pointcutClass = AopUtils.pointCutProceedProcedure.parent as Class;
+    final Library pointcutLibrary = AopUtils.pointCutProceedProcedure.parent.parent;
+    final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent;
     AopUtils.insertLibraryDependency(pointcutLibrary, originalLibrary);
 
-    DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(originalClass, Nullability.legacy)), originalStubProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure));
+    final DirectMethodInvocation mockedInvocation = DirectMethodInvocation(AsExpression(PropertyGet(ThisExpression(),Name('target')), InterfaceType(originalClass, Nullability.legacy)), originalStubProcedure, AopUtils.concatArguments4PointcutStubCall(originalProcedure));
 
-    Procedure stubProcedureNew = AopUtils.createStubProcedure(Name(stubKey,AopUtils.pointCutProceedProcedure.name.library) ,aopItemInfo, AopUtils.pointCutProceedProcedure, AopUtils.createProcedureBodyWithExpression(mockedInvocation, shouldReturn), shouldReturn);
+    final Procedure stubProcedureNew = AopUtils.createStubProcedure(Name(stubKey,AopUtils.pointCutProceedProcedure.name.library) ,aopItemInfo, AopUtils.pointCutProceedProcedure, AopUtils.createProcedureBodyWithExpression(mockedInvocation, shouldReturn), shouldReturn);
     pointcutClass.addMember(stubProcedureNew);
     AopUtils.insertProceedBranch(stubProcedureNew, shouldReturn);
   }
 
   Block createPointcutCallFromOriginal(Library library, AopItemInfo aopItemInfo, String stubKey, Expression targetExpression, Member member, Arguments arguments,bool shouldReturn) {
     AopUtils.insertLibraryDependency(library, aopItemInfo.aopMember.parent.parent);
-    Arguments redirectArguments = Arguments.empty();
+    final Arguments redirectArguments = Arguments.empty();
     AopUtils.concatArgumentsForAopMethod(null,redirectArguments, stubKey, targetExpression, member, arguments);
-    Expression callExpression = null;
+    Expression callExpression;
     if (aopItemInfo.aopMember is Procedure) {
-      Procedure procedure = aopItemInfo.aopMember;
+      final Procedure procedure = aopItemInfo.aopMember;
       if (procedure.isStatic) {
         callExpression = StaticInvocation(aopItemInfo.aopMember, redirectArguments);
       } else {
-        ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference((aopItemInfo.aopMember.parent as Class).constructors.first.reference, Arguments([]));
+        final Class aopItemMemberCls = aopItemInfo.aopMember.parent;
+        final ConstructorInvocation redirectConstructorInvocation = ConstructorInvocation.byReference(aopItemMemberCls.constructors.first.reference, Arguments(<Expression>[]));
         callExpression = MethodInvocation(redirectConstructorInvocation, aopItemInfo.aopMember.name, redirectArguments);
       }
     }

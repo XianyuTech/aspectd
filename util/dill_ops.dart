@@ -29,22 +29,23 @@ class DillOps {
     return component;
   }
 
-  writeDillFile(Component component, String filename,
-      {bool filterExternal: false}) async {
+  Future<void> writeDillFile(Component component, String filename,
+      {bool filterExternal = false}) async {
     final IOSink sink = File(filename).openWrite();
     final BinaryPrinter printer = filterExternal
         ? LimitedBinaryPrinter(
-        sink, (lib) => !lib.isExternal, true /* excludeUriToSource */)
+        // ignore: DEPRECATED_MEMBER_USE
+        sink, (Library lib) => !lib.isExternal, true /* excludeUriToSource */)
         : printerFactory.newBinaryPrinter(sink);
 
     component.libraries.sort((Library l1, Library l2) {
-      return "${l1.fileUri}".compareTo("${l2.fileUri}");
+      return '${l1.fileUri}'.compareTo('${l2.fileUri}');
     });
 
     component.computeCanonicalNames();
     for (Library library in component.libraries) {
       library.additionalExports.sort((Reference r1, Reference r2) {
-        return "${r1.canonicalName}".compareTo("${r2.canonicalName}");
+        return '${r1.canonicalName}'.compareTo('${r2.canonicalName}');
       });
     }
 

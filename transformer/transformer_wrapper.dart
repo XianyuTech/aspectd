@@ -3,15 +3,15 @@ import 'plugins/aop/aop_transformer_wrapper.dart';
 import 'plugins/pluginDemo/pluginDemo_transformer_wrapper.dart';
 
 class TransformerWrapper{
+  TransformerWrapper(this.platformStrongComponent);
+
   Component platformStrongComponent;
   
-  TransformerWrapper(this.platformStrongComponent);
-  
   bool transform(Component component) {
-    AopWrapperTransformer aopWrapperTransformer = AopWrapperTransformer(platformStrongComponent: this.platformStrongComponent);
+    final AopWrapperTransformer aopWrapperTransformer = AopWrapperTransformer(platformStrongComponent: platformStrongComponent);
     aopWrapperTransformer.transform(component);
 
-    PluginDemoWrapperTransformer pluginDemoWrapperTransformer = PluginDemoWrapperTransformer(platformStrongComponent: this.platformStrongComponent);
+    final PluginDemoWrapperTransformer pluginDemoWrapperTransformer = PluginDemoWrapperTransformer(platformStrongComponent: platformStrongComponent);
     pluginDemoWrapperTransformer.transform(component);
 
     return true;

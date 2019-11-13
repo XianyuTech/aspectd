@@ -85,24 +85,24 @@ import 'package:aspectd/aspectd.dart';
 //}
 
 @Aspect()
-@pragma("vm:entry-point")
+@pragma('vm:entry-point')
 class RegexExecuteDemo {
-  @pragma("vm:entry-point")
+  @pragma('vm:entry-point')
   RegexExecuteDemo();
 
-  @Execute("package:example\\/.+\\.dart", ".*", "-.+", isRegex: true)
-  @pragma("vm:entry-point")
+  @Execute('package:example\\/.+\\.dart', '.*', '-.+', isRegex: true)
+  @pragma('vm:entry-point')
   dynamic instanceUniversalHook(PointCut pointcut) {
     print('[KWLM9]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
-    dynamic obj = pointcut.proceed();
+    final dynamic obj = pointcut.proceed();
     return obj;
   }
 
-  @Execute("package:example\\/.+\\.dart", ".*", "+.+", isRegex: true)
-  @pragma("vm:entry-point")
+  @Execute('package:example\\/.+\\.dart', '.*', '+.+', isRegex: true)
+  @pragma('vm:entry-point')
   static dynamic staticUniversalHook(PointCut pointcut) {
     print('[KWLM10]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
-    dynamic obj = pointcut.proceed();
+    final dynamic obj = pointcut.proceed();
     return obj;
   }
 }
