@@ -29,3 +29,9 @@
 * Add MIT license
 * Add better demo and README
 * Keep compatible with latest dart-sdk as it has breaking changes in TypeParameterType.
+
+## [0.9.7]
+
+* Add regex support
+* Add documentation
+* Add linter
