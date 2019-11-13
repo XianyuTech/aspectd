@@ -4,7 +4,15 @@ import 'aop_mode.dart';
 import 'aop_utils.dart';
 
 class AopItemInfo {
-  AopItemInfo({this.mode,this.importUri,this.clsName,this.methodName,this.isStatic,this.aopMember,this.isRegex,this.lineNum});
+  AopItemInfo(
+      {this.mode,
+      this.importUri,
+      this.clsName,
+      this.methodName,
+      this.isStatic,
+      this.aopMember,
+      this.isRegex,
+      this.lineNum});
 
   final AopMode mode;
   final String importUri;
@@ -14,11 +22,16 @@ class AopItemInfo {
   final bool isRegex;
   final Member aopMember;
   final int lineNum;
-  static String uniqueKeyForMethod(String importUri, String clsName, String methodName, bool isStatic, {int lineNum}) {
-    return (importUri??'')+AopUtils.kAopUniqueKeySeperator
-        +(clsName??'')+AopUtils.kAopUniqueKeySeperator
-        +(methodName??'')+AopUtils.kAopUniqueKeySeperator
-        +(isStatic==true?'+':'-')
-        +(lineNum!=null?(AopUtils.kAopUniqueKeySeperator+'$lineNum'):'');
+  static String uniqueKeyForMethod(
+      String importUri, String clsName, String methodName, bool isStatic,
+      {int lineNum}) {
+    return (importUri ?? '') +
+        AopUtils.kAopUniqueKeySeperator +
+        (clsName ?? '') +
+        AopUtils.kAopUniqueKeySeperator +
+        (methodName ?? '') +
+        AopUtils.kAopUniqueKeySeperator +
+        (isStatic == true ? '+' : '-') +
+        (lineNum != null ? (AopUtils.kAopUniqueKeySeperator + '$lineNum') : '');
   }
 }

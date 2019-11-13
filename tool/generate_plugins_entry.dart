@@ -9,29 +9,29 @@ RegExp pluginNameExp = RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$');
 /// in lib/src/plugins/config.yaml.
 int main(List<String> args) {
   final Directory curDir = Directory(Platform.script.toFilePath());
-  final String pluginsFolder = p.join(curDir.parent.parent.path, 'lib', 'src', 'plugins');
-  final String configYamlPath = p.join(curDir.parent.parent.path, 'config.yaml');
+  final String pluginsFolder =
+      p.join(curDir.parent.parent.path, 'lib', 'src', 'plugins');
+  final String configYamlPath =
+      p.join(curDir.parent.parent.path, 'config.yaml');
   final File configYamlFile = File(configYamlPath);
   final List<String> pluginsList = <String>[];
   if (configYamlFile.existsSync()) {
     final dynamic pubspec = loadYaml(configYamlFile.readAsStringSync());
-    if (pubspec == null)
-      return null;
+    if (pubspec == null) return null;
     final YamlList pluginsNode = pubspec['plugins'];
     for (YamlNode yamlNode in pluginsNode.nodes) {
-      if (yamlNode.value == null)
-        continue;
+      if (yamlNode.value == null) continue;
       final String pluginName = yamlNode.value.toString();
-      if (!pluginNameExp.hasMatch(pluginName))
-        continue;
+      if (!pluginNameExp.hasMatch(pluginName)) continue;
       pluginsList.add(pluginName);
     }
   }
 
   bool needRegenerate = false;
   final int pluginCnt = pluginsList.length;
-  for (int i=0; i<pluginCnt; i++) {
-    final bool itemRegenerate = checkIfGeneratePlugin(pluginsFolder, pluginsList[i]);
+  for (int i = 0; i < pluginCnt; i++) {
+    final bool itemRegenerate =
+        checkIfGeneratePlugin(pluginsFolder, pluginsList[i]);
     needRegenerate = needRegenerate || itemRegenerate;
   }
 
@@ -41,7 +41,7 @@ int main(List<String> args) {
     for (int i = 0; i < pluginCnt; i++) {
       final String pluginItem = pluginsList[i];
       aspectdContent =
-      '${aspectdContent}export \'package:aspectd/src/plugins/$pluginItem/$pluginItem.dart\';\n';
+          '${aspectdContent}export \'package:aspectd/src/plugins/$pluginItem/$pluginItem.dart\';\n';
     }
 
     // Generate transformer_wrapper.dart as an export file
@@ -49,11 +49,12 @@ int main(List<String> args) {
     String transformerWrapperCallTransform = '';
     for (int i = 0; i < pluginCnt; i++) {
       final String pluginItem = pluginsList[i];
-      final String firstUpPluginItem = pluginItem[0].toUpperCase()+(pluginItem.length==1?'':pluginItem.substring(1));
+      final String firstUpPluginItem = pluginItem[0].toUpperCase() +
+          (pluginItem.length == 1 ? '' : pluginItem.substring(1));
       transformerWrapperImport =
-      '${transformerWrapperImport}import \'package:aspectd/src/plugins/$pluginItem/${pluginItem}_transformer_wrapper.dart\';\n';
+          '${transformerWrapperImport}import \'package:aspectd/src/plugins/$pluginItem/${pluginItem}_transformer_wrapper.dart\';\n';
       transformerWrapperCallTransform =
-      '$transformerWrapperCallTransform${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n\n    ';
+          '$transformerWrapperCallTransform${firstUpPluginItem}WrapperTransformer ${pluginItem}WrapperTransformer = ${firstUpPluginItem}WrapperTransformer(platformStrongComponent: this.platformStrongComponent);\n    ${pluginItem}WrapperTransformer.transform(component);\n\n    ';
     }
     final String transformerWrapperContent = '''
 import 'package:kernel/ast.dart';
@@ -67,13 +68,16 @@ class TransformerWrapper{
     ${transformerWrapperCallTransform}return true;
   }
 }''';
-    final File aspectdFile = File(p.join(Directory(pluginsFolder).parent.parent.path, 'aspectd.dart'));
+    final File aspectdFile = File(
+        p.join(Directory(pluginsFolder).parent.parent.path, 'aspectd.dart'));
     if (!aspectdFile.existsSync()) {
       aspectdFile.createSync();
     }
     aspectdFile.writeAsStringSync(aspectdContent);
 
-    final File transformerWrapperFile = File(p.join(Directory(pluginsFolder).parent.parent.path, 'transformer_wrapper.dart'));
+    final File transformerWrapperFile = File(p.join(
+        Directory(pluginsFolder).parent.parent.path,
+        'transformer_wrapper.dart'));
     if (!transformerWrapperFile.existsSync()) {
       transformerWrapperFile.createSync();
     }
@@ -86,10 +90,12 @@ class TransformerWrapper{
 /// corresponding folders, files will be created.
 /// When needed to generate a plugin, return true, false otherwise.
 bool checkIfGeneratePlugin(String pluginsDir, String pluginName) {
-  final String firstUpPluginItem = pluginName[0].toUpperCase()+(pluginName.length==1?'':pluginName.substring(1));
+  final String firstUpPluginItem = pluginName[0].toUpperCase() +
+      (pluginName.length == 1 ? '' : pluginName.substring(1));
   final String pluginFolder = p.join(pluginsDir, pluginName);
   final File pluginExportFile = File(p.join(pluginFolder, '$pluginName.dart'));
-  final File pluginTransformerFile = File(p.join(pluginFolder, '${pluginName}_transformer_wrapper.dart'));
+  final File pluginTransformerFile =
+      File(p.join(pluginFolder, '${pluginName}_transformer_wrapper.dart'));
   if (pluginExportFile.existsSync() || pluginTransformerFile.existsSync()) {
     return false;
   }
@@ -114,6 +120,7 @@ class ${firstUpPluginItem}WrapperTransformer {
   }
 }
 ''';
-  pluginTransformerFile.writeAsStringSync(pluginTransformerTemplate, flush: true);
+  pluginTransformerFile.writeAsStringSync(pluginTransformerTemplate,
+      flush: true);
   return true;
 }

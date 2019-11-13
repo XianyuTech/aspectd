@@ -1,13 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-Future<void> appInit() async{
+Future<void> appInit() async {}
 
-}
-
-Future<void> appInit2() async{
-
-}
+Future<void> appInit2() async {}
 
 void main() {
   appInit();
@@ -51,7 +47,7 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
   static int getTag() => 1;
   static int getTag2() => 2;
-  int getTag3()=>3;
+  int getTag3() => 3;
 
   final String title;
 
@@ -130,12 +126,18 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
-            GestureDetector(child: const Text('onPluginDemo',style: TextStyle(fontSize: 30)), onTap: (){
-              onPluginDemo();
-            }),
-            GestureDetector(child: const Text('Random Demo', style: TextStyle(fontSize: 30)), onTap: (){
-              onRandomDemo();
-            })
+            GestureDetector(
+                child:
+                    const Text('onPluginDemo', style: TextStyle(fontSize: 30)),
+                onTap: () {
+                  onPluginDemo();
+                }),
+            GestureDetector(
+                child:
+                    const Text('Random Demo', style: TextStyle(fontSize: 30)),
+                onTap: () {
+                  onRandomDemo();
+                })
           ],
         ),
       ),

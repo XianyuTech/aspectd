@@ -1,5 +1,1 @@
-enum AopMode{
-  Call,
-  Execute,
-  Inject
-}
+enum AopMode { Call, Execute, Inject }

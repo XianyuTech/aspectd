@@ -13,7 +13,6 @@ class AopWrapperTransformer {
   List<AopItemInfo> aopItemInfoList = <AopItemInfo>[];
   Component platformStrongComponent;
 
-
   void transform(Component program) {
     final List<Library> libraries = program.libraries;
 
@@ -36,25 +35,32 @@ class AopWrapperTransformer {
     //Search the PointCut class first
     final List<Library> concatLibraries = <Library>[
       ...libraries,
-      ...platformStrongComponent!=null?platformStrongComponent.libraries:<Library>[]
+      ...platformStrongComponent != null
+          ? platformStrongComponent.libraries
+          : <Library>[]
     ];
-    final  Map<Uri, Source> concatUriToSource = <Uri, Source>{}
+    final Map<Uri, Source> concatUriToSource = <Uri, Source>{}
       ..addAll(program.uriToSource)
-      ..addAll(platformStrongComponent!=null?platformStrongComponent.uriToSource:<Uri, Source>{});
+      ..addAll(platformStrongComponent != null
+          ? platformStrongComponent.uriToSource
+          : <Uri, Source>{});
     final Map<String, Library> libraryMap = <String, Library>{};
     for (Library library in concatLibraries) {
       // ignore: DEPRECATED_MEMBER_USE
       if (library.isExternal) {
         continue;
       }
-      libraryMap.putIfAbsent(library.importUri.toString(), ()=>library);
-      if (pointCutProceedProcedure != null && listGetProcedure != null && mapGetProcedure != null) {
+      libraryMap.putIfAbsent(library.importUri.toString(), () => library);
+      if (pointCutProceedProcedure != null &&
+          listGetProcedure != null &&
+          mapGetProcedure != null) {
         continue;
       }
       final Uri importUri = library.importUri;
       for (Class cls in library.classes) {
         final String clsName = cls.name;
-        if (clsName == AopUtils.kAopAnnotationClassPointCut && importUri.toString() == AopUtils.kImportUriPointCut) {
+        if (clsName == AopUtils.kAopAnnotationClassPointCut &&
+            importUri.toString() == AopUtils.kImportUriPointCut) {
           for (Procedure procedure in cls.procedures) {
             if (procedure.name.name == AopUtils.kAopPointcutProcessName) {
               pointCutProceedProcedure = procedure;
@@ -98,7 +104,7 @@ class AopWrapperTransformer {
     // Aop call transformer
     if (callInfoList.isNotEmpty) {
       final AopCallImplTransformer aopCallImplTransformer =
-      AopCallImplTransformer(
+          AopCallImplTransformer(
         callInfoList,
         libraryMap,
         concatUriToSource,
@@ -114,18 +120,12 @@ class AopWrapperTransformer {
     }
     // Aop execute transformer
     if (executeInfoList.isNotEmpty) {
-      AopExecuteImplTransformer(
-          executeInfoList,
-          libraryMap
-      )..aopTransform();
+      AopExecuteImplTransformer(executeInfoList, libraryMap)..aopTransform();
     }
     // Aop inject transformer
     if (injectInfoList.isNotEmpty) {
-      AopInjectImplTransformer(
-          injectInfoList,
-          libraryMap,
-          concatUriToSource
-      )..aopTransform();
+      AopInjectImplTransformer(injectInfoList, libraryMap, concatUriToSource)
+        ..aopTransform();
     }
   }
 
@@ -133,7 +133,8 @@ class AopWrapperTransformer {
     for (Library library in libraries) {
       final List<Class> classes = library.classes;
       for (Class cls in classes) {
-        final bool aspectdEnabled = AopUtils.checkIfClassEnableAspectd(cls.annotations);
+        final bool aspectdEnabled =
+            AopUtils.checkIfClassEnableAspectd(cls.annotations);
         if (!aspectdEnabled) {
           continue;
         }
@@ -141,7 +142,7 @@ class AopWrapperTransformer {
           if (!(member is Member)) {
             continue;
           }
-          final AopItemInfo aopItemInfo =  _processAopMember(member);
+          final AopItemInfo aopItemInfo = _processAopMember(member);
           if (aopItemInfo != null) {
             aopItemInfoList.add(aopItemInfo);
           }
@@ -158,8 +159,10 @@ class AopWrapperTransformer {
         final Constant constant = constantExpression.constant;
         if (constant is InstanceConstant) {
           final InstanceConstant instanceConstant = constant;
-          final CanonicalName canonicalName =  instanceConstant.classReference.canonicalName;
-          final AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(canonicalName.name,canonicalName?.parent?.name);
+          final CanonicalName canonicalName =
+              instanceConstant.classReference.canonicalName;
+          final AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(
+              canonicalName.name, canonicalName?.parent?.name);
           if (aopMode == null) {
             continue;
           }
@@ -168,38 +171,56 @@ class AopWrapperTransformer {
           String methodName;
           bool isRegex;
           int lineNum;
-          instanceConstant.fieldValues.forEach((Reference reference,Constant constant) {
+          instanceConstant.fieldValues
+              .forEach((Reference reference, Constant constant) {
             if (constant is StringConstant) {
               final String value = constant.value;
-              if (reference?.canonicalName?.name == AopUtils.kAopAnnotationImportUri) {
+              if (reference?.canonicalName?.name ==
+                  AopUtils.kAopAnnotationImportUri) {
                 importUri = value;
-              } else if (reference?.canonicalName?.name == AopUtils.kAopAnnotationClsName) {
+              } else if (reference?.canonicalName?.name ==
+                  AopUtils.kAopAnnotationClsName) {
                 clsName = value;
-              } else if (reference?.canonicalName?.name == AopUtils.kAopAnnotationMethodName) {
+              } else if (reference?.canonicalName?.name ==
+                  AopUtils.kAopAnnotationMethodName) {
                 methodName = value;
               }
             }
             if (constant is IntConstant) {
               final int value = constant.value;
-              if (reference?.canonicalName?.name == AopUtils.kAopAnnotationLineNum) {
-                lineNum = value-1;
+              if (reference?.canonicalName?.name ==
+                  AopUtils.kAopAnnotationLineNum) {
+                lineNum = value - 1;
               }
             }
             if (constant is BoolConstant) {
               final bool value = constant.value;
-              if (reference?.canonicalName?.name == AopUtils.kAopAnnotationIsRegex) {
+              if (reference?.canonicalName?.name ==
+                  AopUtils.kAopAnnotationIsRegex) {
                 isRegex = value;
               }
             }
           });
           bool isStatic = false;
-          if (methodName.startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
-            methodName = methodName.substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
-          } else if (methodName.startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)) {
-            methodName = methodName.substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
+          if (methodName
+              .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
+            methodName = methodName
+                .substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
+          } else if (methodName
+              .startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)) {
+            methodName = methodName
+                .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
             isStatic = true;
           }
-          return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic, aopMember: member, mode: aopMode, isRegex: isRegex, lineNum: lineNum);
+          return AopItemInfo(
+              importUri: importUri,
+              clsName: clsName,
+              methodName: methodName,
+              isStatic: isStatic,
+              aopMember: member,
+              mode: aopMode,
+              isRegex: isRegex,
+              lineNum: lineNum);
         }
       }
       //Debug Mode
@@ -207,19 +228,24 @@ class AopWrapperTransformer {
         final ConstructorInvocation constructorInvocation = annotation;
         final Class cls = constructorInvocation?.targetReference?.node?.parent;
         final Library clsParentLib = cls?.parent;
-        final AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(cls?.name,clsParentLib?.importUri?.toString());
+        final AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(
+            cls?.name, clsParentLib?.importUri?.toString());
         if (aopMode == null) {
           continue;
         }
-        final StringLiteral stringLiteral0 = constructorInvocation.arguments.positional[0];
+        final StringLiteral stringLiteral0 =
+            constructorInvocation.arguments.positional[0];
         final String importUri = stringLiteral0.value;
-        final StringLiteral stringLiteral1 = constructorInvocation.arguments.positional[1];
+        final StringLiteral stringLiteral1 =
+            constructorInvocation.arguments.positional[1];
         final String clsName = stringLiteral1.value;
-        final StringLiteral stringLiteral2 = constructorInvocation.arguments.positional[2];
+        final StringLiteral stringLiteral2 =
+            constructorInvocation.arguments.positional[2];
         String methodName = stringLiteral2.value;
         bool isRegex;
         int lineNum;
-        for (NamedExpression namedExpression in constructorInvocation.arguments.named) {
+        for (NamedExpression namedExpression
+            in constructorInvocation.arguments.named) {
           if (namedExpression.name == AopUtils.kAopAnnotationLineNum) {
             final IntLiteral intLiteral = namedExpression.value;
             lineNum = intLiteral.value - 1;
@@ -231,13 +257,25 @@ class AopWrapperTransformer {
         }
 
         bool isStatic = false;
-        if (methodName.startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
-          methodName = methodName.substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
-        } else if (methodName.startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)) {
-          methodName = methodName.substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
+        if (methodName
+            .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
+          methodName = methodName
+              .substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
+        } else if (methodName
+            .startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)) {
+          methodName = methodName
+              .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
           isStatic = true;
         }
-        return AopItemInfo(importUri: importUri,clsName: clsName,methodName: methodName, isStatic: isStatic, aopMember: member,mode: aopMode, isRegex: isRegex, lineNum: lineNum);
+        return AopItemInfo(
+            importUri: importUri,
+            clsName: clsName,
+            methodName: methodName,
+            isStatic: isStatic,
+            aopMember: member,
+            mode: aopMode,
+            isRegex: isRegex,
+            lineNum: lineNum);
       }
     }
     return null;

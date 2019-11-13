@@ -34,8 +34,10 @@ class DillOps {
     final IOSink sink = File(filename).openWrite();
     final BinaryPrinter printer = filterExternal
         ? LimitedBinaryPrinter(
-        // ignore: DEPRECATED_MEMBER_USE
-        sink, (Library lib) => !lib.isExternal, true /* excludeUriToSource */)
+            // ignore: DEPRECATED_MEMBER_USE
+            sink,
+            (Library lib) => !lib.isExternal,
+            true /* excludeUriToSource */)
         : printerFactory.newBinaryPrinter(sink);
 
     component.libraries.sort((Library l1, Library l2) {

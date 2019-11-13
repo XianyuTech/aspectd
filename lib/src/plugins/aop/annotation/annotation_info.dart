@@ -2,7 +2,11 @@
 class AnnotationInfo {
   @pragma('vm:entry-point')
   const AnnotationInfo(
-      {this.importUri, this.clsName, this.methodName, this.lineNum, this.isRegex = false});
+      {this.importUri,
+      this.clsName,
+      this.methodName,
+      this.lineNum,
+      this.isRegex = false});
 
   final String importUri;
   final String clsName;

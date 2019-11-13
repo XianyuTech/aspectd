@@ -8,12 +8,13 @@ import '../util/dill_ops.dart';
 const String _kOptionInput = 'input';
 const String _kOptionOutput = 'output';
 const String _kOptionSdkRoot = 'sdk-root';
-Map<String,Library> libraryAbbrMap = <String, Library>{};
+Map<String, Library> libraryAbbrMap = <String, Library>{};
 
 int main(List<String> args) {
   final ArgParser parser = ArgParser()
-    ..addOption(_kOptionInput, help: 'Input dill file')..addOption(
-        _kOptionOutput, help: 'Output dill file')..addOption(_kOptionSdkRoot, help: 'Sdk root path');
+    ..addOption(_kOptionInput, help: 'Input dill file')
+    ..addOption(_kOptionOutput, help: 'Output dill file')
+    ..addOption(_kOptionSdkRoot, help: 'Sdk root path');
   final ArgResults argResults = parser.parse(args);
   final String intputDill = argResults[_kOptionInput];
   final String outputDill = argResults[_kOptionOutput];
@@ -23,9 +24,10 @@ int main(List<String> args) {
   final Component component = dillOps.readComponentFromDill(intputDill);
   Component platformStrongComponent;
   if (sdkRoot != null) {
-    platformStrongComponent = dillOps.readComponentFromDill(sdkRoot+'platform_strong.dill');
+    platformStrongComponent =
+        dillOps.readComponentFromDill(sdkRoot + 'platform_strong.dill');
     for (Library library in platformStrongComponent.libraries) {
-      libraryAbbrMap.putIfAbsent(library.name, ()=>library.reference.node);
+      libraryAbbrMap.putIfAbsent(library.name, () => library.reference.node);
     }
   }
 
@@ -34,13 +36,14 @@ int main(List<String> args) {
     library ??= libraryAbbrMap[canonicalName.name.replaceAll(':', '.')];
     if (canonicalName.reference == null) {
       canonicalName.reference = Reference()..node = library;
-    }
-    else if (canonicalName.reference.canonicalName != null && canonicalName.reference.node==null) {
+    } else if (canonicalName.reference.canonicalName != null &&
+        canonicalName.reference.node == null) {
       canonicalName.reference.node = library;
     }
   }
 
-  final TransformerWrapper transformerWrapper = TransformerWrapper(platformStrongComponent);
+  final TransformerWrapper transformerWrapper =
+      TransformerWrapper(platformStrongComponent);
   transformerWrapper.transform(component);
 
   dillOps.writeDillFile(component, outputDill);

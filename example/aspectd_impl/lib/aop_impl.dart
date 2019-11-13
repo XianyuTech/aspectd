@@ -93,7 +93,8 @@ class RegexExecuteDemo {
   @Execute('package:example\\/.+\\.dart', '.*', '-.+', isRegex: true)
   @pragma('vm:entry-point')
   dynamic instanceUniversalHook(PointCut pointcut) {
-    print('[KWLM9]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+    print(
+        '[KWLM9]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
     final dynamic obj = pointcut.proceed();
     return obj;
   }
@@ -101,7 +102,8 @@ class RegexExecuteDemo {
   @Execute('package:example\\/.+\\.dart', '.*', '+.+', isRegex: true)
   @pragma('vm:entry-point')
   static dynamic staticUniversalHook(PointCut pointcut) {
-    print('[KWLM10]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+    print(
+        '[KWLM10]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
     final dynamic obj = pointcut.proceed();
     return obj;
   }
