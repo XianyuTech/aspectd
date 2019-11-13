@@ -2,7 +2,6 @@
 /// call the original implementation.
 @pragma('vm:entry-point')
 class PointCut {
-
   /// PointCut default constructor.
   @pragma('vm:entry-point')
   PointCut(this.sourceInfos, this.target, this.function, this.stubKey,

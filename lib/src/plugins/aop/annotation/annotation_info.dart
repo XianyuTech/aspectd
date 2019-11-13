@@ -1,7 +1,6 @@
 /// Indicating which (library, cls, method) pair to operate on.
 @pragma('vm:entry-point')
 class AnnotationInfo {
-
   /// AnnotationInfo default constructor.
   @pragma('vm:entry-point')
   const AnnotationInfo(
