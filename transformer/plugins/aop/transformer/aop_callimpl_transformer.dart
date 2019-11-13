@@ -358,9 +358,13 @@ class AopCallImplTransformer extends Transformer {
         if (methodClass.flags & Class.FlagAbstract != 0) {
           bool matches = false;
           for (Supertype superType in cls.implementedTypes) {
-            if (superType.className.node == methodClass) matches = true;
+            if (superType.className.node == methodClass) {
+              matches = true;
+            }
           }
-          if (!matches || (clsName != '_${methodClass.name}')) continue;
+          if (!matches || (clsName != '_${methodClass.name}')) {
+            continue;
+          }
         } else if (clsName != methodClass.name) {
           continue;
         }

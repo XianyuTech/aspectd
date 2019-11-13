@@ -34,8 +34,8 @@ class DillOps {
     final IOSink sink = File(filename).openWrite();
     final BinaryPrinter printer = filterExternal
         ? LimitedBinaryPrinter(
-            // ignore: DEPRECATED_MEMBER_USE
             sink,
+            // ignore: DEPRECATED_MEMBER_USE
             (Library lib) => !lib.isExternal,
             true /* excludeUriToSource */)
         : printerFactory.newBinaryPrinter(sink);

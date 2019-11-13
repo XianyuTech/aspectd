@@ -17,12 +17,18 @@ int main(List<String> args) {
   final List<String> pluginsList = <String>[];
   if (configYamlFile.existsSync()) {
     final dynamic pubspec = loadYaml(configYamlFile.readAsStringSync());
-    if (pubspec == null) return null;
+    if (pubspec == null) {
+      return null;
+    }
     final YamlList pluginsNode = pubspec['plugins'];
     for (YamlNode yamlNode in pluginsNode.nodes) {
-      if (yamlNode.value == null) continue;
+      if (yamlNode.value == null) {
+        continue;
+      }
       final String pluginName = yamlNode.value.toString();
-      if (!pluginNameExp.hasMatch(pluginName)) continue;
+      if (!pluginNameExp.hasMatch(pluginName)) {
+        continue;
+      }
       pluginsList.add(pluginName);
     }
   }

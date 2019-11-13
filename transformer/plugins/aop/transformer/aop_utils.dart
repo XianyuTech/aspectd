@@ -456,7 +456,9 @@ class AopUtils {
       );
     }
     if (node is TypeParameterType) {
-      if (isReturnType || ignoreGenerics) return const DynamicType();
+      if (isReturnType || ignoreGenerics) {
+        return const DynamicType();
+      }
       return TypeParameterType(
           deepCopyASTNode(node.parameter), deepCopyASTNode(node.promotedBound));
     }
@@ -484,7 +486,9 @@ class AopUtils {
     for (T node in nodes) {
       final dynamic newNode =
           deepCopyASTNode(node, ignoreGenerics: ignoreGeneric);
-      if (newNode != null) newNodes.add(newNode);
+      if (newNode != null) {
+        newNodes.add(newNode);
+      }
     }
     return newNodes;
   }
