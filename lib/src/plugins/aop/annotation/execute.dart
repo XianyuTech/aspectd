@@ -5,6 +5,7 @@ import 'annotation_info.dart';
 /// native method.
 @pragma('vm:entry-point')
 class Execute extends AnnotationInfo {
+
   /// Execute grammar default constructor.
   const factory Execute(String importUri, String clsName, String methodName,
       {bool isRegex}) = Execute._;

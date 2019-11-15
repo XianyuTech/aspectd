@@ -169,7 +169,7 @@ class AopWrapperTransformer {
           String importUri;
           String clsName;
           String methodName;
-          bool isRegex;
+          bool isRegex = false;
           int lineNum;
           instanceConstant.fieldValues
               .forEach((Reference reference, Constant constant) {
@@ -242,7 +242,7 @@ class AopWrapperTransformer {
         final StringLiteral stringLiteral2 =
             constructorInvocation.arguments.positional[2];
         String methodName = stringLiteral2.value;
-        bool isRegex;
+        bool isRegex = false;
         int lineNum;
         for (NamedExpression namedExpression
             in constructorInvocation.arguments.named) {
