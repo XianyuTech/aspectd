@@ -3,7 +3,6 @@ import 'annotation_info.dart';
 /// Call grammar is working on those callsites for the annotated method.
 @pragma('vm:entry-point')
 class Call extends AnnotationInfo {
-
   /// Call grammar default constructor.
   const factory Call(String importUri, String clsName, String methodName,
       {bool isRegex}) = Call._;

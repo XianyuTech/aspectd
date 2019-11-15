@@ -2,7 +2,6 @@
 /// when searching for aspectd implementations like AOP.
 @pragma('vm:entry-point')
 class Aspect {
-
   /// Aspect default constructor
   const factory Aspect() = Aspect._;
 
