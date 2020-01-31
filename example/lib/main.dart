@@ -8,6 +8,7 @@ Future<void> appInit2() async {}
 void main() {
   appInit();
   appInit2();
+  KKKKC()..kkkkfa();
   runApp(MyApp());
 }
 
@@ -147,5 +148,23 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.add),
       ),
     );
+  }
+}
+
+class KKKKA {
+  void kkkkfa(){
+    print('HAHAKKKKA:kkkkfa');
+  }
+}
+
+class KKKKB {
+  void kkkkfb() {
+    print('KKKKB:kkkkfb');
+  }
+}
+
+class KKKKC with KKKKA,KKKKB {
+  void kkkkfc(){
+    print('KKKKC&KKKKA&KKKKB:kkkkfc');
   }
 }
