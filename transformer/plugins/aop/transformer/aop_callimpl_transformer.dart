@@ -130,11 +130,6 @@ class AopCallImplTransformer extends Transformer {
   MethodInvocation visitMethodInvocation(MethodInvocation methodInvocation) {
     methodInvocation.transformChildren(this);
     final Node node = methodInvocation.interfaceTargetReference?.node;
-    if (node is Procedure) {
-      final String nodeName = node.name.name;
-      print(nodeName);
-    }
-
     String importUri, clsName, methodName;
     if (node is Procedure || node == null) {
       if (node is Procedure) {
@@ -150,9 +145,6 @@ class AopCallImplTransformer extends Transformer {
             ?.interfaceTargetReference?.canonicalName?.parent?.parent?.name;
         methodName =
             methodInvocation?.interfaceTargetReference?.canonicalName?.name;
-      }
-      if (importUri?.contains('example') ?? false) {
-        print('');
       }
       final AopItemInfo aopItemInfo = _filterAopItemInfo(
           _aopItemInfoList, importUri, clsName, methodName, false);

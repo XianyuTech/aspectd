@@ -8,7 +8,7 @@ Future<void> appInit2() async {}
 void main() {
   appInit();
   appInit2();
-  KKKKC()..kkkkfa();
+  C()..fa();
   runApp(MyApp());
 }
 
@@ -151,20 +151,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class KKKKA {
-  void kkkkfa(){
-    print('HAHAKKKKA:kkkkfa');
+class A {
+  void fa(){}
+}
+
+class B {
+  void fb() {
+
   }
 }
 
-class KKKKB {
-  void kkkkfb() {
-    print('KKKKB:kkkkfb');
-  }
-}
+class C with A,B {
+  void fc() {
 
-class KKKKC with KKKKA,KKKKB {
-  void kkkkfc(){
-    print('KKKKC&KKKKA&KKKKB:kkkkfc');
   }
 }

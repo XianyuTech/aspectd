@@ -37,17 +37,10 @@ class RegexCallDemo {
   @pragma("vm:entry-point")
   RegexCallDemo();
 
-  @Call("package:example\\/.+\\.dart", ".*", "-.+", isRegex: true)
-  @pragma("vm:entry-point")
-  dynamic instanceUniversalHook(PointCut pointcut) {
-    print('[KWLM4]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
-    dynamic obj = pointcut.proceed();
-    return obj;
-  }
-//  @Call('package:example\\/.+\\.dart', '.*KKKKA', '-kkkkfa', isRegex: true)
+//  @Call("package:example\\/.+\\.dart", ".*", "-.+", isRegex: true)
 //  @pragma("vm:entry-point")
 //  dynamic instanceUniversalHook(PointCut pointcut) {
-//    print('[KWLM5]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//    print('[KWLM4]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
 //    dynamic obj = pointcut.proceed();
 //    return obj;
 //  }
@@ -55,8 +48,25 @@ class RegexCallDemo {
 //  @Call("package:example\\/.+\\.dart", ".*", "+^(?!main\$).*\$", isRegex: true)
 //  @pragma("vm:entry-point")
 //  static dynamic staticUniversalHook(PointCut pointcut) {
+//    print('[KWLM5]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//    dynamic obj = pointcut.proceed();
+//    return obj;
+//  }
+
+//  @Call('package:example\\/.+\\.dart', '.*A', '-fa', isRegex: true)
+//  @pragma("vm:entry-point")
+//  dynamic instanceUniversalHookCustomMixin(PointCut pointcut) {
 //    print('[KWLM6]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
 //    dynamic obj = pointcut.proceed();
+//    return obj;
+//  }
+//
+//  @Call('package:flutter\\/.+\\.dart', '.*', '-^dispatchEvent\$', isRegex: true)
+//  @pragma('vm:entry-point')
+//  dynamic instanceUniversalHookFlutterMixin(PointCut pointcut) {
+//    print(
+//        '[KWLM7]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//    final dynamic obj = pointcut.proceed();
 //    return obj;
 //  }
 }
@@ -71,7 +81,7 @@ class RegexCallDemo {
 //  @pragma("vm:entry-point")
 //  dynamic _incrementCounter(PointCut pointcut) {
 //    dynamic obj = pointcut.proceed();
-//    print('[KWLM7]:${pointcut.sourceInfos}:${pointcut.target}:${pointcut.function}!');
+//    print('[KWLM8]:${pointcut.sourceInfos}:${pointcut.target}:${pointcut.function}!');
 //    return obj;
 //  }
 //
@@ -79,14 +89,14 @@ class RegexCallDemo {
 //      "GestureRecognizer", "-invokeCallback")
 //  @pragma("vm:entry-point")
 //  dynamic hookinvokeCallback(PointCut pointcut) {
-//    print("[KWLM8]: invokeCallback");
+//    print("[KWLM9]: invokeCallback");
 //    return pointcut.proceed();
 //  }
 //
 //  @Execute("dart:math", "Random", "-next.*", isRegex: true)
 //  @pragma("vm:entry-point")
 //  static dynamic randomNext(PointCut pointcut) {
-//    print('[KWLM9]:randomNext!');
+//    print('[KWLM10]:randomNext!');
 //    return 10;
 //  }
 //}
@@ -101,7 +111,7 @@ class RegexExecuteDemo {
 //  @pragma('vm:entry-point')
 //  dynamic instanceUniversalHook(PointCut pointcut) {
 //    print(
-//        '[KWLM10]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//        '[KWLM11]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
 //    final dynamic obj = pointcut.proceed();
 //    return obj;
 //  }
@@ -110,17 +120,26 @@ class RegexExecuteDemo {
 //  @pragma('vm:entry-point')
 //  static dynamic staticUniversalHook(PointCut pointcut) {
 //    print(
-//        '[KWLM11]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
-//    final dynamic obj = pointcut.proceed();
-//    return obj;
-//  }
-
-//  @Execute('package:example\\/.+\\.dart', '.*KKKKA', '-kkkkfa', isRegex: true)
-//  @pragma('vm:entry-point')
-//  dynamic instanceUniversalHook(PointCut pointcut) {
-//    print(
 //        '[KWLM12]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
 //    final dynamic obj = pointcut.proceed();
 //    return obj;
 //  }
+
+  @Execute('package:example\\/.+\\.dart', '.*A', '-fa', isRegex: true)
+  @pragma('vm:entry-point')
+  dynamic instanceUniversalHookCustomMixin(PointCut pointcut) {
+    print(
+        '[KWLM13]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+    final dynamic obj = pointcut.proceed();
+    return obj;
+  }
+
+  @Execute('package:flutter\\/.+\\.dart', '_([^&]*&)*GestureBinding([^&]*&)*', '-^dispatchEvent\$', isRegex: true)
+  @pragma('vm:entry-point')
+  dynamic instanceUniversalHookFlutterMixin(PointCut pointcut) {
+    print(
+        '[KWLM14]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+    final dynamic obj = pointcut.proceed();
+    return obj;
+  }
 }
