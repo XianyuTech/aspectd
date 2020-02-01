@@ -1,19 +1,19 @@
-From 07d1176ddd097a53b3f91e7283c22eff7622b171 Mon Sep 17 00:00:00 2001
+From 97856855446bab0bd8e49bd2c5a589ab5383f83c Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Mon, 11 Nov 2019 12:20:07 +0800
+Date: Sat, 1 Feb 2020 22:46:29 +0800
 Subject: [PATCH] aspectd
 
 ---
  packages/flutter_tools/lib/src/aot.dart       |   3 +
- packages/flutter_tools/lib/src/aspectd.dart   | 377 ++++++++++++++++++
- .../lib/src/build_system/targets/dart.dart    |   6 +
+ packages/flutter_tools/lib/src/aspectd.dart   | 378 ++++++++++++++++++
+ .../lib/src/build_system/targets/dart.dart    |   5 +
  .../lib/src/commands/build_bundle.dart        |   6 +
  packages/flutter_tools/lib/src/compile.dart   |   2 +
  5 files changed, 394 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aot.dart b/packages/flutter_tools/lib/src/aot.dart
-index 50be74598..00556adec 100644
+index 750d20d25..3e4e383ee 100644
 --- a/packages/flutter_tools/lib/src/aot.dart
 +++ b/packages/flutter_tools/lib/src/aot.dart
 @@ -6,6 +6,7 @@ import 'dart:async';
@@ -23,8 +23,8 @@ index 50be74598..00556adec 100644
 +import 'aspectd.dart';
  import 'base/build.dart';
  import 'base/common.dart';
- import 'base/file_system.dart';
-@@ -84,6 +85,8 @@ class AotBuilder {
+ import 'base/io.dart';
+@@ -88,6 +89,8 @@ class AotBuilder {
        if (kernelOut == null) {
          throwToolExit('Compiler terminated unexpectedly.');
          return;
@@ -35,10 +35,10 @@ index 50be74598..00556adec 100644
        // Build AOT snapshot.
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 000000000..1e5f7044f
+index 000000000..f5c2edaa2
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,377 @@
+@@ -0,0 +1,378 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -51,7 +51,6 @@ index 000000000..1e5f7044f
 +import 'base/build.dart';
 +import 'base/common.dart';
 +import 'base/file_system.dart';
-+import 'base/process_manager.dart';
 +import 'build_info.dart';
 +import 'build_system/build_system.dart';
 +import 'build_system/exceptions.dart';
@@ -195,7 +194,7 @@ index 000000000..1e5f7044f
 +  Future<FlutterCommandResult> runBuildBundleDillCommand(
 +      FlutterCommand flutterCommand) async {
 +    final ArgResults argResults = flutterCommand.argResults;
-+    final String targetPlatform = argResults['target-platform'];
++    final String targetPlatform = argResults['target-platform'] as String;
 +    final TargetPlatform platform = getTargetPlatformForName(targetPlatform);
 +    if (platform == null) {
 +      throwToolExit('Unknown platform: $targetPlatform');
@@ -204,7 +203,7 @@ index 000000000..1e5f7044f
 +    final BuildMode buildMode = flutterCommand.getBuildMode();
 +    final Directory mainDirectory = fs.currentDirectory;
 +    final Directory aspectdDirectory = getAspectdDirectory(fs.currentDirectory);
-+    final String origAssetsDir = argResults['asset-dir'];
++    final String origAssetsDir = argResults['asset-dir'] as String;
 +    final String originKernelBlob = fs.path.join(origAssetsDir, 'kernel_blob.bin');
 +    if (!fs.file(originKernelBlob).existsSync()) {
 +      return null;
@@ -222,17 +221,17 @@ index 000000000..1e5f7044f
 +      platform: platform,
 +      buildMode: buildMode,
 +      mainPath: mainPath,
-+      manifestPath: argResults['manifest'],
-+      depfilePath: argResults['depfile'],
-+      privateKeyPath: argResults['private-key'],
++      manifestPath: argResults['manifest'] as String,
++      depfilePath: argResults['depfile'] as String,
++      privateKeyPath: argResults['private-key'] as String,
 +      assetDirPath: assetsDir,
-+      precompiledSnapshot: argResults['precompiled'],
-+      reportLicensedPackages: argResults['report-licensed-packages'],
-+      trackWidgetCreation: argResults['track-widget-creation'],
-+      extraFrontEndOptions: argResults[FlutterOptions.kExtraFrontEndOptions],
-+      extraGenSnapshotOptions: argResults[FlutterOptions.kExtraGenSnapshotOptions],
-+      fileSystemScheme: argResults['filesystem-scheme'],
-+      fileSystemRoots: argResults['filesystem-root'],
++      precompiledSnapshot: argResults['precompiled'] as bool,
++      reportLicensedPackages: argResults['report-licensed-packages'] as bool,
++      trackWidgetCreation: argResults['track-widget-creation'] as bool,
++      extraFrontEndOptions: argResults[FlutterOptions.kExtraFrontEndOptions] as List<String>,
++      extraGenSnapshotOptions: argResults[FlutterOptions.kExtraGenSnapshotOptions] as List<String>,
++      fileSystemScheme: argResults['filesystem-scheme'] as String,
++      fileSystemRoots: argResults['filesystem-root'] as List<String>,
 +    );
 +
 +    if (!fs.file(assetKernelBlob).existsSync()) {
@@ -331,6 +330,8 @@ index 000000000..1e5f7044f
 +    final Environment environment = Environment(
 +        projectDir: flutterProject.directory,
 +        outputDir: fs.directory(outputDir),
++        cacheDir: cache.getRoot(),
++        flutterRootDir: fs.directory(Cache.flutterRoot),
 +        buildDir: flutterProject.directory
 +            .childDirectory('.dart_tool')
 +            .childDirectory('flutter_build'),
@@ -417,19 +418,18 @@ index 000000000..1e5f7044f
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/dart.dart b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
-index 392cc340e..3a03ecb3b 100644
+index 8472cf573..ba315488a 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/dart.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
-@@ -3,6 +3,8 @@
+@@ -3,6 +3,7 @@
  // found in the LICENSE file.
  
  import '../../artifacts.dart';
 +import '../../aspectd.dart';
-+import '../../asset.dart';
  import '../../base/build.dart';
  import '../../base/file_system.dart';
  import '../../build_info.dart';
-@@ -216,6 +218,10 @@ class KernelSnapshot extends Target {
+@@ -235,6 +236,10 @@ class KernelSnapshot extends Target {
      );
      if (output == null || output.errorCount != 0) {
        throw Exception('Errors during snapshot creation: $output');
@@ -441,7 +441,7 @@ index 392cc340e..3a03ecb3b 100644
    }
  }
 diff --git a/packages/flutter_tools/lib/src/commands/build_bundle.dart b/packages/flutter_tools/lib/src/commands/build_bundle.dart
-index 72e9be51c..d6850c897 100644
+index 582cd4300..5b19d8129 100644
 --- a/packages/flutter_tools/lib/src/commands/build_bundle.dart
 +++ b/packages/flutter_tools/lib/src/commands/build_bundle.dart
 @@ -4,6 +4,7 @@
@@ -450,25 +450,25 @@ index 72e9be51c..d6850c897 100644
  
 +import '../aspectd.dart';
  import '../base/common.dart';
- import '../base/file_system.dart';
  import '../build_info.dart';
+ import '../bundle.dart';
 @@ -139,6 +140,11 @@ class BuildBundleCommand extends BuildSubCommand {
-       fileSystemScheme: argResults['filesystem-scheme'],
-       fileSystemRoots: argResults['filesystem-root'],
+       fileSystemScheme: stringArg('filesystem-scheme'),
+       fileSystemRoots: stringsArg('filesystem-root'),
      );
 +
 +    if (await AspectdHook.isAspectdEnabled()) {
 +      await AspectdHook().runBuildBundleDillCommand(this);
 +    }
 +
-     return null;
+     return FlutterCommandResult.success();
    }
  }
 diff --git a/packages/flutter_tools/lib/src/compile.dart b/packages/flutter_tools/lib/src/compile.dart
-index d31d1d05d..b8569ea86 100644
+index c00182118..21be733e4 100644
 --- a/packages/flutter_tools/lib/src/compile.dart
 +++ b/packages/flutter_tools/lib/src/compile.dart
-@@ -257,12 +257,14 @@ List<String> _buildModeOptions(BuildMode mode) {
+@@ -254,12 +254,14 @@ List<String> _buildModeOptions(BuildMode mode) {
          '-Ddart.vm.profile=true',
          '-Ddart.vm.product=false',
          '--bytecode-options=source-positions',
@@ -484,5 +484,5 @@ index d31d1d05d..b8569ea86 100644
    }
    throw Exception('Unknown BuildMode: $mode');
 -- 
-2.21.0 (Apple Git-122.2)
+2.21.1 (Apple Git-122.3)
 

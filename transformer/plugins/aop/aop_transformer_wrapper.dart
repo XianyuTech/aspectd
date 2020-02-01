@@ -22,13 +22,6 @@ class AopWrapperTransformer {
 
     _resolveAopProcedures(libraries);
 
-    for (Library library in libraries) {
-      // ignore: DEPRECATED_MEMBER_USE
-      if (library.isExternal) {
-        continue;
-      }
-    }
-
     Procedure pointCutProceedProcedure;
     Procedure listGetProcedure;
     Procedure mapGetProcedure;
@@ -46,10 +39,6 @@ class AopWrapperTransformer {
           : <Uri, Source>{});
     final Map<String, Library> libraryMap = <String, Library>{};
     for (Library library in concatLibraries) {
-      // ignore: DEPRECATED_MEMBER_USE
-      if (library.isExternal) {
-        continue;
-      }
       libraryMap.putIfAbsent(library.importUri.toString(), () => library);
       if (pointCutProceedProcedure != null &&
           listGetProcedure != null &&
@@ -110,13 +99,7 @@ class AopWrapperTransformer {
         concatUriToSource,
       );
 
-      for (Library library in libraries) {
-        // ignore: DEPRECATED_MEMBER_USE
-        if (library.isExternal) {
-          continue;
-        }
-        aopCallImplTransformer.visitLibrary(library);
-      }
+      libraries.forEach(aopCallImplTransformer.visitLibrary);
     }
     // Aop execute transformer
     if (executeInfoList.isNotEmpty) {

@@ -36,7 +36,7 @@ class DillOps {
         ? LimitedBinaryPrinter(
             sink,
             // ignore: DEPRECATED_MEMBER_USE
-            (Library lib) => !lib.isExternal,
+            (Library lib) => true,
             true /* excludeUriToSource */)
         : printerFactory.newBinaryPrinter(sink);
 
