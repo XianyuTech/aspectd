@@ -125,21 +125,57 @@ class RegexExecuteDemo {
 //    return obj;
 //  }
 
-  @Execute('package:example\\/.+\\.dart', '.*A', '-fa', isRegex: true)
-  @pragma('vm:entry-point')
-  dynamic instanceUniversalHookCustomMixin(PointCut pointcut) {
-    print(
-        '[KWLM13]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
-    final dynamic obj = pointcut.proceed();
-    return obj;
-  }
+//  @Execute('package:example\\/.+\\.dart', '.*A', '-fa', isRegex: true)
+//  @pragma('vm:entry-point')
+//  dynamic instanceUniversalHookCustomMixin(PointCut pointcut) {
+//    print(
+//        '[KWLM13]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//    final dynamic obj = pointcut.proceed();
+//    return obj;
+//  }
+//
+//  @Execute('package:flutter\\/.+\\.dart', '_([^&]*&)*GestureBinding([^&]*&)*', '-^dispatchEvent\$', isRegex: true)
+//  @pragma('vm:entry-point')
+//  dynamic instanceUniversalHookFlutterMixin(PointCut pointcut) {
+//    print(
+//        '[KWLM14]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
+//    final dynamic obj = pointcut.proceed();
+//    return obj;
+//  }
+}
 
-  @Execute('package:flutter\\/.+\\.dart', '_([^&]*&)*GestureBinding([^&]*&)*', '-^dispatchEvent\$', isRegex: true)
-  @pragma('vm:entry-point')
-  dynamic instanceUniversalHookFlutterMixin(PointCut pointcut) {
-    print(
-        '[KWLM14]Before:${pointcut.target}-${pointcut.function}-${pointcut.namedParams}-${pointcut.positionalParams}');
-    final dynamic obj = pointcut.proceed();
-    return obj;
+@Aspect()
+@pragma("vm:entry-point")
+class InjectDemo{
+//  @Inject("package:flutter/src/widgets/gesture_detector.dart","GestureDetector","-build", lineNum:452)
+//  @pragma("vm:entry-point")
+//  static void onTapBuild() {
+//    Object instance; //Aspectd Ignore
+//    Object context; //Aspectd Ignore
+//    print(instance);
+//    print(context);
+//    print('Aspectd:KWLM20');
+//  }
+//  @Inject("package:example/main.dart","","+injectDemo", lineNum:15)
+//  @pragma("vm:entry-point")
+//  static void onInjectDemoHook1() {
+//    print('Aspectd:KWLM21');
+//  }
+
+//  @Inject("package:example/main.dart","","+injectDemo", lineNum:16)
+//  @pragma("vm:entry-point")
+//  static void onInjectDemoHook2() {
+//    print('Aspectd:KWLM22');
+//  }
+
+//  @Inject("package:example/main.dart","","+injectDemo", lineNum:26)
+//  @pragma("vm:entry-point")
+//  static void onInjectDemoHook3() {
+//    print('Aspectd:KWLM23');
+//  }
+  @Inject("package:example/main.dart","","+injectDemo", lineNum:28)
+  @pragma("vm:entry-point")
+  static void onInjectDemoHook3() {
+    print('Aspectd:KWLM24');
   }
 }

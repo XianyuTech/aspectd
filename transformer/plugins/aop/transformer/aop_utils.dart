@@ -183,6 +183,12 @@ class AopUtils {
     if (statement is IfStatement) {
       return statement.then;
     }
+    if (statement is ForInStatement) {
+      return statement.body;
+    }
+    if (statement is ForStatement) {
+      return statement.body;
+    }
     return null;
   }
 
