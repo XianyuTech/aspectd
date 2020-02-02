@@ -11,9 +11,13 @@ class AopWrapperTransformer {
   AopWrapperTransformer({this.platformStrongComponent});
 
   List<AopItemInfo> aopItemInfoList = <AopItemInfo>[];
+  Map<String, Library> componentLibraryMap = <String, Library>{};
   Component platformStrongComponent;
 
   void transform(Component program) {
+    for (Library library in program.libraries) {
+      componentLibraryMap.putIfAbsent(library.importUri.toString(), () => library);
+    }
     final List<Library> libraries = program.libraries;
 
     if (libraries.isEmpty) {
@@ -136,7 +140,6 @@ class AopWrapperTransformer {
 
   AopItemInfo _processAopMember(Member member) {
     for (Expression annotation in member.annotations) {
-      //Release mode
       if (annotation is ConstantExpression) {
         final ConstantExpression constantExpression = annotation;
         final Constant constant = constantExpression.constant;
@@ -144,6 +147,10 @@ class AopWrapperTransformer {
           final InstanceConstant instanceConstant = constant;
           final CanonicalName canonicalName =
               instanceConstant.classReference.canonicalName;
+          constant.classReference.node ??= AopUtils.getNodeFromCanonicalName(componentLibraryMap, canonicalName);
+          constant.fieldValues.forEach((Reference reference, Constant constant) {
+            reference.node ??= AopUtils.getNodeFromCanonicalName(componentLibraryMap, reference?.canonicalName);
+          });
           final AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(
               canonicalName.name, canonicalName?.parent?.name);
           if (aopMode == null) {
@@ -206,7 +213,6 @@ class AopWrapperTransformer {
               lineNum: lineNum);
         }
       }
-      //Debug Mode
       else if (annotation is ConstructorInvocation) {
         final ConstructorInvocation constructorInvocation = annotation;
         final Class cls = constructorInvocation?.targetReference?.node?.parent;

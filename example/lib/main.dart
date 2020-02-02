@@ -36,6 +36,7 @@ void main() {
   injectDemo([]);
   C()..fa();
   runApp(MyApp());
+//  print('Hello, Flutter!');
 }
 
 class MyApp extends StatelessWidget {
