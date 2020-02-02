@@ -16,7 +16,8 @@ class AopWrapperTransformer {
 
   void transform(Component program) {
     for (Library library in program.libraries) {
-      componentLibraryMap.putIfAbsent(library.importUri.toString(), () => library);
+      componentLibraryMap.putIfAbsent(
+          library.importUri.toString(), () => library);
     }
     final List<Library> libraries = program.libraries;
 
@@ -147,9 +148,12 @@ class AopWrapperTransformer {
           final InstanceConstant instanceConstant = constant;
           final CanonicalName canonicalName =
               instanceConstant.classReference.canonicalName;
-          constant.classReference.node ??= AopUtils.getNodeFromCanonicalName(componentLibraryMap, canonicalName);
-          constant.fieldValues.forEach((Reference reference, Constant constant) {
-            reference.node ??= AopUtils.getNodeFromCanonicalName(componentLibraryMap, reference?.canonicalName);
+          constant.classReference.node ??= AopUtils.getNodeFromCanonicalName(
+              componentLibraryMap, canonicalName);
+          constant.fieldValues
+              .forEach((Reference reference, Constant constant) {
+            reference.node ??= AopUtils.getNodeFromCanonicalName(
+                componentLibraryMap, reference?.canonicalName);
           });
           final AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(
               canonicalName.name, canonicalName?.parent?.name);
@@ -212,8 +216,7 @@ class AopWrapperTransformer {
               isRegex: isRegex,
               lineNum: lineNum);
         }
-      }
-      else if (annotation is ConstructorInvocation) {
+      } else if (annotation is ConstructorInvocation) {
         final ConstructorInvocation constructorInvocation = annotation;
         final Class cls = constructorInvocation?.targetReference?.node?.parent;
         final Library clsParentLib = cls?.parent;

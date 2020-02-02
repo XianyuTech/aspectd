@@ -5,11 +5,11 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/_fe_analyzer_shared"
-      ref: dc35290111c03b29f309029f499f08fbd9e667e4
-      resolved-ref: dc35290111c03b29f309029f499f08fbd9e667e4
+      ref: "5ae5aff6406addf8356aae649e626d262de624cb"
+      resolved-ref: "5ae5aff6406addf8356aae649e626d262de624cb"
       url: "https://github.com/dart-lang/sdk.git"
     source: git
-    version: "1.0.0"
+    version: "1.0.3"
   args:
     dependency: "direct dev"
     description:
@@ -35,8 +35,8 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/front_end"
-      ref: dc35290111c03b29f309029f499f08fbd9e667e4
-      resolved-ref: dc35290111c03b29f309029f499f08fbd9e667e4
+      ref: "5ae5aff6406addf8356aae649e626d262de624cb"
+      resolved-ref: "5ae5aff6406addf8356aae649e626d262de624cb"
       url: "https://github.com/dart-lang/sdk.git"
     source: git
     version: "0.1.29"
@@ -44,8 +44,8 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/kernel"
-      ref: dc35290111c03b29f309029f499f08fbd9e667e4
-      resolved-ref: dc35290111c03b29f309029f499f08fbd9e667e4
+      ref: "5ae5aff6406addf8356aae649e626d262de624cb"
+      resolved-ref: "5ae5aff6406addf8356aae649e626d262de624cb"
       url: "https://github.com/dart-lang/sdk.git"
     source: git
     version: "0.3.29"
@@ -76,7 +76,7 @@ packages:
       name: source_span
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.5.5"
+    version: "1.6.0"
   string_scanner:
     dependency: transitive
     description:

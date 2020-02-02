@@ -442,23 +442,23 @@ class AopInjectImplTransformer extends Transformer {
         if ((lineNum2Insert >= lineStart && lineNum2Insert < lineEnds) ||
             (lineEnds < lineStart && lineEnds != -1) ||
             lineStart == -1) {
-            if (nodeToVisitRecursively != null) {
-              _curAopStatementsInsertInfo = AopStatementsInsertInfo(
-                  library: library,
-                  source: source,
-                  constructor: null,
-                  procedure: null,
-                  node: nodeToVisitRecursively,
-                  aopItemInfo: aopItemInfo,
-                  aopInsertStatements: aopInsertStatements);
-              visitNode(nodeToVisitRecursively);
-            }
-            continue;
+          if (nodeToVisitRecursively != null) {
+            _curAopStatementsInsertInfo = AopStatementsInsertInfo(
+                library: library,
+                source: source,
+                constructor: null,
+                procedure: null,
+                node: nodeToVisitRecursively,
+                aopItemInfo: aopItemInfo,
+                aopInsertStatements: aopInsertStatements);
+            visitNode(nodeToVisitRecursively);
+          }
+          continue;
         }
-        if (lineNum2Insert == lineStart-1 || lineNum2Insert == lineStart) {
+        if (lineNum2Insert == lineStart - 1 || lineNum2Insert == lineStart) {
           statement2InsertPos = i;
-        } else if (lineEnds != -1 && lineNum2Insert == lineEnds+1) {
-          statement2InsertPos = i+1;
+        } else if (lineEnds != -1 && lineNum2Insert == lineEnds + 1) {
+          statement2InsertPos = i + 1;
         } else if (lineNum2Insert >= lineEnds && i == len - 1) {
           statement2InsertPos = len;
         }

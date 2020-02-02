@@ -21,7 +21,7 @@ int main(List<String> args) {
   final String intputDill = argResults[_kOptionInput];
   final String outputDill = argResults[_kOptionOutput];
   final String sdkRoot = argResults[_kOptionSdkRoot];
-  final String transformerMode = argResults[_kOptionMode]??'flutter';
+  final String transformerMode = argResults[_kOptionMode] ?? 'flutter';
 
   final DillOps dillOps = DillOps();
   final Component component = dillOps.readComponentFromDill(intputDill);
@@ -60,9 +60,11 @@ int main(List<String> args) {
 void completeDartComponent(Component component) {
   final Map<String, Library> componentLibraryMap = <String, Library>{};
   for (Library library in component.libraries) {
-    componentLibraryMap.putIfAbsent(library.importUri.toString(), () => library);
+    componentLibraryMap.putIfAbsent(
+        library.importUri.toString(), () => library);
   }
-  for (CanonicalName canonicalName in List<CanonicalName>.from(component.root.children.toList())) {
+  for (CanonicalName canonicalName
+      in List<CanonicalName>.from(component.root.children.toList())) {
     if (!componentLibraryMap.containsKey(canonicalName.name)) {
       Library library = libraryAbbrMap[canonicalName.name];
       library ??= libraryAbbrMap[canonicalName.name.replaceAll(':', '.')];

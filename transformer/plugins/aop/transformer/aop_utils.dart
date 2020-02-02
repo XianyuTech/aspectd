@@ -523,10 +523,11 @@ class AopUtils {
     return constructorName;
   }
 
-  static NamedNode getNodeFromCanonicalName(Map<String, Library> libraryMap, CanonicalName canonicalName) {
+  static NamedNode getNodeFromCanonicalName(
+      Map<String, Library> libraryMap, CanonicalName canonicalName) {
     final List<CanonicalName> chainCanoniousNames = <CanonicalName>[];
     CanonicalName tmpCanonicalName = canonicalName;
-    while(tmpCanonicalName != null) {
+    while (tmpCanonicalName != null) {
       final CanonicalName parentName = tmpCanonicalName.parent;
       if (parentName != null && tmpCanonicalName.name != '@fields') {
         chainCanoniousNames.insert(0, tmpCanonicalName);
@@ -534,19 +535,21 @@ class AopUtils {
       tmpCanonicalName = parentName;
     }
     final List<NamedNode> namedNodes = <NamedNode>[];
-    for (int i=0; i<chainCanoniousNames.length; i++) {
+    for (int i = 0; i < chainCanoniousNames.length; i++) {
       final CanonicalName name = chainCanoniousNames[i];
       if (i == 0) {
         namedNodes.add(libraryMap[name.name]);
       } else if (i == 1) {
-        final NamedNode library = namedNodes[i-1];
+        final NamedNode library = namedNodes[i - 1];
         if (library is Library) {
-          namedNodes.add(library.classes.firstWhere((Class element) => element.name ==name.name));
+          namedNodes.add(library.classes
+              .firstWhere((Class element) => element.name == name.name));
         }
       } else if (i == 2) {
-        final NamedNode cls = namedNodes[i-1];
+        final NamedNode cls = namedNodes[i - 1];
         if (cls is Class) {
-          namedNodes.add(cls.fields.firstWhere((Field element) => element.name.name ==name.name));
+          namedNodes.add(cls.fields
+              .firstWhere((Field element) => element.name.name == name.name));
         }
       }
     }

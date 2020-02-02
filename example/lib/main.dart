@@ -6,9 +6,7 @@ Future<void> appInit() async {}
 Future<void> appInit2() async {}
 
 class Observer {
-  void onChanged(){
-
-  }
+  void onChanged() {}
 }
 
 void injectDemo(List<Observer> observers) {
@@ -178,17 +176,13 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class A {
-  void fa(){}
+  void fa() {}
 }
 
 class B {
-  void fb() {
-
-  }
+  void fb() {}
 }
 
-class C with A,B {
-  void fc() {
-
-  }
+class C with A, B {
+  void fc() {}
 }

@@ -97,7 +97,8 @@ class AopExecuteImplTransformer extends Transformer {
     for (Procedure procedure in library.procedures) {
       if (procedure.isStatic == aopItemInfo.isStatic &&
           procedure.function.body != null &&
-          procedure.function.typeParameters.isEmpty) // Generic type annotated procedures can not be manipulated as lack of type information.
+          procedure.function.typeParameters
+              .isEmpty) // Generic type annotated procedures can not be manipulated as lack of type information.
       {
         if (aopItemInfo.isRegex) {
           if (RegExp(aopItemInfo.methodName).hasMatch(procedure.name.name)) {
@@ -138,8 +139,7 @@ class AopExecuteImplTransformer extends Transformer {
     for (Constructor constructor in cls.constructors) {
       final String functionName = AopUtils.nameForConstructor(constructor);
       if (true == aopItemInfo.isStatic &&
-          constructor.function.typeParameters.isEmpty
-      ) {
+          constructor.function.typeParameters.isEmpty) {
         //&& constructor.function.body != null
         if (aopItemInfo.isRegex) {
           if (RegExp(aopItemInfo.methodName).hasMatch(functionName)) {
@@ -155,8 +155,7 @@ class AopExecuteImplTransformer extends Transformer {
     //Check Procedures
     for (Procedure procedure in cls.procedures) {
       if (procedure.isStatic == aopItemInfo.isStatic &&
-          procedure.function.typeParameters.isEmpty
-      ) {
+          procedure.function.typeParameters.isEmpty) {
         //procedure.function.body != null
         if (aopItemInfo.isRegex) {
           if (RegExp(aopItemInfo.methodName).hasMatch(procedure.name.name)) {
