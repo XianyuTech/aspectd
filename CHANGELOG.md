@@ -35,3 +35,7 @@
 * Add regex support
 * Add documentation
 * Add linter
+
+## [0.9.8]
+
+* Add test cases

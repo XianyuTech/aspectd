@@ -11,7 +11,7 @@ packages:
     source: git
     version: "1.0.3"
   analyzer:
-    dependency: "direct overridden"
+    dependency: "direct dev"
     description:
       path: "pkg/analyzer"
       ref: "5ae5aff6406addf8356aae649e626d262de624cb"
