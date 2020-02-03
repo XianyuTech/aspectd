@@ -19,6 +19,7 @@ class AopWrapperTransformer {
       componentLibraryMap.putIfAbsent(
           library.importUri.toString(), () => library);
     }
+    program.libraries.forEach(_checkIfCompleteLibraryReference);
     final List<Library> libraries = program.libraries;
 
     if (libraries.isEmpty) {
@@ -140,6 +141,7 @@ class AopWrapperTransformer {
   }
 
   AopItemInfo _processAopMember(Member member) {
+    AopItemInfo aopItemInfoRet;
     for (Expression annotation in member.annotations) {
       if (annotation is ConstantExpression) {
         final ConstantExpression constantExpression = annotation;
@@ -206,7 +208,7 @@ class AopWrapperTransformer {
                 .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
             isStatic = true;
           }
-          return AopItemInfo(
+          aopItemInfoRet = AopItemInfo(
               importUri: importUri,
               clsName: clsName,
               methodName: methodName,
@@ -259,7 +261,7 @@ class AopWrapperTransformer {
               .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
           isStatic = true;
         }
-        return AopItemInfo(
+        aopItemInfoRet = AopItemInfo(
             importUri: importUri,
             clsName: clsName,
             methodName: methodName,
@@ -270,6 +272,12 @@ class AopWrapperTransformer {
             lineNum: lineNum);
       }
     }
-    return null;
+    return aopItemInfoRet;
+  }
+
+  void _checkIfCompleteLibraryReference(Library library) {
+    for (LibraryDependency libraryDependency in library.dependencies??<LibraryDependency>[]) {
+      libraryDependency.importedLibraryReference.node ??= AopUtils.getNodeFromCanonicalName(componentLibraryMap, libraryDependency.importedLibraryReference.canonicalName);
+    }
   }
 }

@@ -2,6 +2,8 @@ import 'package:kernel/ast.dart';
 import 'plugins/aop/aop_transformer_wrapper.dart';
 import 'plugins/pluginDemo/pluginDemo_transformer_wrapper.dart';
 
+export 'plugins/aop/transformer/aop_utils.dart';
+
 class TransformerWrapper {
   TransformerWrapper(this.platformStrongComponent);
 

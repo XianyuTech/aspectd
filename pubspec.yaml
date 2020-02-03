@@ -4,7 +4,7 @@ version: 0.9.7
 homepage: https://github.com/alibaba-flutter/aspectd
 
 environment:
-  sdk: ">=2.3.0-dev.68.0 <3.0.0"
+  sdk: ">=2.3.0 <3.0.0"
 
 dev_dependencies:
   kernel: any
@@ -13,6 +13,8 @@ dev_dependencies:
   path: any
   yaml: any
   _fe_analyzer_shared: any
+  mockito: 4.1.1
+  test: 1.9.4
 
 dependency_overrides:
   kernel:
@@ -30,7 +32,11 @@ dependency_overrides:
       url: https://github.com/dart-lang/sdk.git
       ref: 5ae5aff6406addf8356aae649e626d262de624cb
       path: pkg/_fe_analyzer_shared
-
+  analyzer:
+    git:
+      url: https://github.com/dart-lang/sdk.git
+      ref: 5ae5aff6406addf8356aae649e626d262de624cb
+      path: pkg/analyzer
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

@@ -37,6 +37,7 @@ class AopUtils {
   static Procedure listGetProcedure;
   static Procedure mapGetProcedure;
   static Component platformStrongComponent;
+  static bool isDartMode = false;
 
   static AopMode getAopModeByNameAndImportUri(String name, String importUri) {
     if (name == kAopAnnotationClassCall && importUri == kImportUriAopCall) {
