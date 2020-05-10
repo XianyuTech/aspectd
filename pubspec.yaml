@@ -21,22 +21,22 @@ dependency_overrides:
   kernel:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: 1.17.0
+      ref: v1.17.0
       path: pkg/kernel
   front_end:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: 1.17.0
+      ref: v1.17.0
       path: pkg/front_end
   _fe_analyzer_shared:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: 1.17.0
+      ref: v1.17.0
       path: pkg/_fe_analyzer_shared
   analyzer:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: 1.17.0
+      ref: v1.17.0
       path: pkg/analyzer
   package_config:
     git:
