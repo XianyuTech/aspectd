@@ -2,25 +2,11 @@ import 'dart:io';
 import 'package:kernel/ast.dart';
 import 'package:kernel/binary/ast_from_binary.dart';
 import 'package:kernel/binary/ast_to_binary.dart';
-import 'package:kernel/binary/limited_ast_to_binary.dart';
-
 import 'package:kernel/kernel.dart' show Component;
 import 'package:kernel/binary/ast_from_binary.dart'
     show BinaryBuilderWithMetadata;
 
-class BinaryPrinterFactory {
-  /// Creates new [BinaryPrinter] to write to [targetSink].
-  BinaryPrinter newBinaryPrinter(Sink<List<int>> targetSink) {
-    return LimitedBinaryPrinter(targetSink, (_) => true /* predicate */,
-        false /* excludeUriToSource */);
-  }
-}
-
 class DillOps {
-  DillOps() {
-    printerFactory = BinaryPrinterFactory();
-  }
-  BinaryPrinterFactory printerFactory;
   Component readComponentFromDill(String dillFile) {
     final Component component = Component();
     final List<int> bytes = File(dillFile).readAsBytesSync();
@@ -32,13 +18,7 @@ class DillOps {
   Future<void> writeDillFile(Component component, String filename,
       {bool filterExternal = false}) async {
     final IOSink sink = File(filename).openWrite();
-    final BinaryPrinter printer = filterExternal
-        ? LimitedBinaryPrinter(
-            sink,
-            // ignore: DEPRECATED_MEMBER_USE
-            (Library lib) => true,
-            true /* excludeUriToSource */)
-        : printerFactory.newBinaryPrinter(sink);
+    final BinaryPrinter printer = BinaryPrinter(sink);
 
     component.libraries.sort((Library l1, Library l2) {
       return '${l1.fileUri}'.compareTo('${l2.fileUri}');
