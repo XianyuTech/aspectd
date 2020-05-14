@@ -5,13 +5,41 @@ import 'package:kernel/binary/ast_to_binary.dart';
 import 'package:kernel/kernel.dart' show Component;
 import 'package:kernel/binary/ast_from_binary.dart'
     show BinaryBuilderWithMetadata;
+import 'package:vm/metadata/bytecode.dart' show BytecodeMetadataRepository;
+import 'package:vm/metadata/direct_call.dart' show DirectCallMetadataRepository;
+import 'package:vm/metadata/inferred_type.dart'
+    show InferredTypeMetadataRepository;
+import 'package:vm/metadata/procedure_attributes.dart'
+    show ProcedureAttributesMetadataRepository;
+import 'package:vm/metadata/table_selector.dart'
+    show TableSelectorMetadataRepository;
+import 'package:vm/metadata/unboxing_info.dart'
+    show UnboxingInfoMetadataRepository;
+import 'package:vm/metadata/unreachable.dart'
+    show UnreachableNodeMetadataRepository;
+import 'package:vm/metadata/call_site_attributes.dart'
+    show CallSiteAttributesMetadataRepository;
+import 'package:vm/metadata/binary_cache.dart'
+    show BinaryCacheMetadataRepository;
+import 'package:vm/metadata/obfuscation_prohibitions.dart'
+    show ObfuscationProhibitionsMetadataRepository;
 
 class DillOps {
   Component readComponentFromDill(String dillFile) {
-    final Component component = Component();
-    final List<int> bytes = File(dillFile).readAsBytesSync();
+    final component = new Component();
 
-    BinaryBuilderWithMetadata(bytes).readComponent(component);
+    // Register VM-specific metadata.
+    component.addMetadataRepository(new DirectCallMetadataRepository());
+    component.addMetadataRepository(new InferredTypeMetadataRepository());
+    component.addMetadataRepository(new ProcedureAttributesMetadataRepository());
+    component.addMetadataRepository(new TableSelectorMetadataRepository());
+    component.addMetadataRepository(new UnboxingInfoMetadataRepository());
+    component.addMetadataRepository(new UnreachableNodeMetadataRepository());
+    component.addMetadataRepository(new BytecodeMetadataRepository());
+    component.addMetadataRepository(new CallSiteAttributesMetadataRepository());
+
+    final List<int> bytes = new File(dillFile).readAsBytesSync();
+    new BinaryBuilderWithMetadata(bytes, disableLazyReading: true).readComponent(component);
     return component;
   }
 

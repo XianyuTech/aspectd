@@ -16,27 +16,33 @@ dev_dependencies:
   analyzer: any
   mockito: 4.1.1
   test: 1.9.4
+  vm: any
 
 dependency_overrides:
   kernel:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.0
+      ref: v1.17.1
       path: pkg/kernel
   front_end:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.0
+      ref: v1.17.1
       path: pkg/front_end
+  vm:
+    git:
+      url: https://github.com/alibaba-flutter/sdk.git
+      ref: v1.17.1
+      path: pkg/vm
   _fe_analyzer_shared:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.0
+      ref: v1.17.1
       path: pkg/_fe_analyzer_shared
   analyzer:
     git:
       url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.0
+      ref: v1.17.1
       path: pkg/analyzer
   package_config:
     git:
