@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-//Future<void> appInit() async {}
-//
+Future<void> appInit() async {}
+
 //Future<void> appInit2() async {}
 //
 //class Observer {
@@ -29,7 +29,7 @@ import 'package:flutter/material.dart';
 //}
 
 void main() {
-//  appInit();
+  appInit();
 //  appInit2();
 //  injectDemo([]);
 //  C()..fa();

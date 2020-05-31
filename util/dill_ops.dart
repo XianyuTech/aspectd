@@ -19,27 +19,23 @@ import 'package:vm/metadata/unreachable.dart'
     show UnreachableNodeMetadataRepository;
 import 'package:vm/metadata/call_site_attributes.dart'
     show CallSiteAttributesMetadataRepository;
-import 'package:vm/metadata/binary_cache.dart'
-    show BinaryCacheMetadataRepository;
-import 'package:vm/metadata/obfuscation_prohibitions.dart'
-    show ObfuscationProhibitionsMetadataRepository;
 
 class DillOps {
   Component readComponentFromDill(String dillFile) {
-    final component = new Component();
+    final Component component = Component();
 
     // Register VM-specific metadata.
-    component.addMetadataRepository(new DirectCallMetadataRepository());
-    component.addMetadataRepository(new InferredTypeMetadataRepository());
-    component.addMetadataRepository(new ProcedureAttributesMetadataRepository());
-    component.addMetadataRepository(new TableSelectorMetadataRepository());
-    component.addMetadataRepository(new UnboxingInfoMetadataRepository());
-    component.addMetadataRepository(new UnreachableNodeMetadataRepository());
-    component.addMetadataRepository(new BytecodeMetadataRepository());
-    component.addMetadataRepository(new CallSiteAttributesMetadataRepository());
+    component.addMetadataRepository(DirectCallMetadataRepository());
+    component.addMetadataRepository(InferredTypeMetadataRepository());
+    component.addMetadataRepository(ProcedureAttributesMetadataRepository());
+    component.addMetadataRepository(TableSelectorMetadataRepository());
+    component.addMetadataRepository(UnboxingInfoMetadataRepository());
+    component.addMetadataRepository(UnreachableNodeMetadataRepository());
+    component.addMetadataRepository(BytecodeMetadataRepository());
+    component.addMetadataRepository(CallSiteAttributesMetadataRepository());
 
-    final List<int> bytes = new File(dillFile).readAsBytesSync();
-    new BinaryBuilderWithMetadata(bytes, disableLazyReading: true).readComponent(component);
+    final List<int> bytes = File(dillFile).readAsBytesSync();
+    BinaryBuilderWithMetadata(bytes, disableLazyReading: true).readComponent(component);
     return component;
   }
 
