@@ -3,39 +3,39 @@ import 'package:flutter/material.dart';
 
 Future<void> appInit() async {}
 
-//Future<void> appInit2() async {}
-//
-//class Observer {
-//  void onChanged() {}
-//}
-//
-//void injectDemo(List<Observer> observers) {
-//  int a = 10;
-//  if (a > 5) {
-//    print('[KWLM]:if1');
-//  }
-//  print('[KWLM]:a');
-//  for (Observer o in observers) {
-//    print('[KWLM]:Observer1');
-//    o.onChanged();
-//    print('[KWLM]:Observer2');
-//  }
-//  print('[KWLM]:b');
-//  for (int i = 0; i < 10; i++) {
-//    print('[KWLM]:for i $i');
-//    print('[KWLM]:for i $i');
-//  }
-//  print('[KWLM]:c');
-//}
+Future<void> appInit2() async {}
+
+class Observer {
+  void onChanged(){
+
+  }
+}
+
+void injectDemo(List<Observer> observers) {
+  int a = 10;
+  if (a > 5) {
+    print('[KWLM]:if1');
+  }
+  print('[KWLM]:a');
+  for (Observer o in observers) {
+    print('[KWLM]:Observer1');
+    o.onChanged();
+    print('[KWLM]:Observer2');
+  }
+  print('[KWLM]:b');
+  for (int i = 0; i < 10; i++) {
+    print('[KWLM]:for i $i');
+    print('[KWLM]:for i $i');
+  }
+  print('[KWLM]:c');
+}
 
 void main() {
   appInit();
-//  appInit2();
-//  injectDemo([]);
-//  C()..fa();
-//    onRandomDemo();
+  appInit2();
+  injectDemo([]);
+  C()..fa();
   runApp(MyApp());
-//  print('Hello, Flutter!');
 }
 
 class MyApp extends StatelessWidget {
@@ -151,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               '$_counter',
+              style: Theme.of(context).textTheme.display1,
             ),
             GestureDetector(
                 child:
@@ -176,14 +177,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-//class A {
-//  void fa() {}
-//}
-//
-//class B {
-//  void fb() {}
-//}
-//
-//class C with A, B {
-//  void fc() {}
-//}
+class A {
+  void fa(){}
+}
+
+class B {
+  void fb() {
+
+  }
+}
+
+class C with A,B {
+  void fc() {
+
+  }
+}

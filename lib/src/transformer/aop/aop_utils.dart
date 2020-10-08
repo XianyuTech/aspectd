@@ -37,7 +37,6 @@ class AopUtils {
   static Procedure listGetProcedure;
   static Procedure mapGetProcedure;
   static Component platformStrongComponent;
-  static bool isDartMode = false;
 
   static AopMode getAopModeByNameAndImportUri(String name, String importUri) {
     if (name == kAopAnnotationClassCall && importUri == kImportUriAopCall) {
@@ -324,10 +323,10 @@ class AopUtils {
         final Constant constant = constantExpression.constant;
         if (constant is InstanceConstant) {
           final InstanceConstant instanceConstant = constant;
-          final CanonicalName canonicalName =
-              instanceConstant.classReference.canonicalName;
-          if (canonicalName.name == AopUtils.kAopAnnotationClassAspect &&
-              canonicalName?.parent?.name == AopUtils.kImportUriAopAspect) {
+          final Class instanceClass =
+              instanceConstant.classReference.node;
+          if (instanceClass.name == AopUtils.kAopAnnotationClassAspect &&
+              AopUtils.kImportUriAopAspect == (instanceClass?.parent as Library)?.importUri.toString()) {
             enabled = true;
             break;
           }
@@ -522,38 +521,5 @@ class AopUtils {
       constructorName += '.${constructor.name.name}';
     }
     return constructorName;
-  }
-
-  static NamedNode getNodeFromCanonicalName(
-      Map<String, Library> libraryMap, CanonicalName canonicalName) {
-    final List<CanonicalName> chainCanoniousNames = <CanonicalName>[];
-    CanonicalName tmpCanonicalName = canonicalName;
-    while (tmpCanonicalName != null) {
-      final CanonicalName parentName = tmpCanonicalName.parent;
-      if (parentName != null && tmpCanonicalName.name != '@fields') {
-        chainCanoniousNames.insert(0, tmpCanonicalName);
-      }
-      tmpCanonicalName = parentName;
-    }
-    final List<NamedNode> namedNodes = <NamedNode>[];
-    for (int i = 0; i < chainCanoniousNames.length; i++) {
-      final CanonicalName name = chainCanoniousNames[i];
-      if (i == 0) {
-        namedNodes.add(libraryMap[name.name]);
-      } else if (i == 1) {
-        final NamedNode library = namedNodes[i - 1];
-        if (library is Library) {
-          namedNodes.add(library.classes
-              .firstWhere((Class element) => element.name == name.name));
-        }
-      } else if (i == 2) {
-        final NamedNode cls = namedNodes[i - 1];
-        if (cls is Class) {
-          namedNodes.add(cls.fields
-              .firstWhere((Field element) => element.name.name == name.name));
-        }
-      }
-    }
-    return namedNodes?.last;
   }
 }

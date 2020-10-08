@@ -273,22 +273,9 @@ Object context; //Aspectd Ignore
 ```
 would be discarded to avoid overring the original one.
 
-## Usage for pure Dart package
-Though you can use aspectd directly for a dart package, I would recommend you to run the flutter demo package first. The reason for this includes two parts:
-1. Generate the right aspectd.dart.snapshot(dart snapshot to do the kernel to kernel transformation).
-2. Fetch the right platform_strong.dill (located in flutter/bin/cache/artifacts/engine/common/flutter_patched_sdk/) which dart sdk is compiled into.
-Then you can use aspectd for dart following steps below:
-```shell
-# Generate the aspectd_impl.dill
-dart --snapshot=example/aspectd_impl.dill example/aspectd_impl/lib/aspectd_impl.dart
-# Do the kernel to kernel transformation
-dart snapshot/aspectd.dart.snapshot --input example/aspectd_impl.dill --mode dart --sdk-root flutter/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --output example/app.dill.aspectd.dill
-# Run the transformed dill
-dart example/app.dill.aspectd.dill
-```
-
 # Compatibility
 Flutter 1.0 and above.
+
 
 # Notice
 Because of the dart compilation implementation, there are several points to pay attention to:

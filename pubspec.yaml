@@ -1,53 +1,21 @@
 name: aspectd
 description: AOP for Flutter. AspectD is an AOP(aspect oriented programming) framework for dart. It provides call&execute&inject grammar.
-version: 0.9.8
+version: 0.9.7
 homepage: https://github.com/alibaba-flutter/aspectd
 
 environment:
-  sdk: ">=2.3.0 <3.0.0"
+  sdk: ">=2.3.0-dev.68.0 <3.0.0"
 
 dev_dependencies:
   kernel: any
-  front_end: any
-  args: any
-  path: any
-  yaml: any
-  _fe_analyzer_shared: any
-  analyzer: any
-  mockito: 4.1.1
-  test: 1.9.4
-  vm: any
 
 dependency_overrides:
   kernel:
     git:
-      url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.1
+      url: git@github.com:alibaba-flutter/sdk.git
+      ref: stable/v1.22.0
       path: pkg/kernel
-  front_end:
-    git:
-      url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.1
-      path: pkg/front_end
-  vm:
-    git:
-      url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.1
-      path: pkg/vm
-  _fe_analyzer_shared:
-    git:
-      url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.1
-      path: pkg/_fe_analyzer_shared
-  analyzer:
-    git:
-      url: https://github.com/alibaba-flutter/sdk.git
-      ref: v1.17.1
-      path: pkg/analyzer
-  package_config:
-    git:
-      url: https://github.com/alibaba-flutter/package_config.git
-      ref: v1.9.2
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

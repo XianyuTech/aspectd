@@ -1,25 +1,19 @@
 import 'package:kernel/ast.dart';
-import 'transformer/aop_callimpl_transformer.dart';
-import 'transformer/aop_executeimpl_transformer.dart';
-import 'transformer/aop_injectimpl_transformer.dart';
+import 'aop_callimpl_transformer.dart';
+import 'aop_executeimpl_transformer.dart';
+import 'aop_injectimpl_transformer.dart';
 
-import 'transformer/aop_iteminfo.dart';
-import 'transformer/aop_mode.dart';
-import 'transformer/aop_utils.dart';
+import 'aop_iteminfo.dart';
+import 'aop_mode.dart';
+import 'aop_utils.dart';
 
 class AopWrapperTransformer {
   AopWrapperTransformer({this.platformStrongComponent});
 
   List<AopItemInfo> aopItemInfoList = <AopItemInfo>[];
-  Map<String, Library> componentLibraryMap = <String, Library>{};
   Component platformStrongComponent;
 
   void transform(Component program) {
-    for (Library library in program.libraries) {
-      componentLibraryMap.putIfAbsent(
-          library.importUri.toString(), () => library);
-    }
-    program.libraries.forEach(_checkIfCompleteLibraryReference);
     final List<Library> libraries = program.libraries;
 
     if (libraries.isEmpty) {
@@ -105,7 +99,9 @@ class AopWrapperTransformer {
         concatUriToSource,
       );
 
-      libraries.forEach(aopCallImplTransformer.visitLibrary);
+      for (Library library in libraries) {
+        aopCallImplTransformer.visitLibrary(library);
+      }
     }
     // Aop execute transformer
     if (executeInfoList.isNotEmpty) {
@@ -141,24 +137,17 @@ class AopWrapperTransformer {
   }
 
   AopItemInfo _processAopMember(Member member) {
-    AopItemInfo aopItemInfoRet;
     for (Expression annotation in member.annotations) {
+      //Release mode
       if (annotation is ConstantExpression) {
         final ConstantExpression constantExpression = annotation;
         final Constant constant = constantExpression.constant;
         if (constant is InstanceConstant) {
           final InstanceConstant instanceConstant = constant;
-          final CanonicalName canonicalName =
-              instanceConstant.classReference.canonicalName;
-          constant.classReference.node ??= AopUtils.getNodeFromCanonicalName(
-              componentLibraryMap, canonicalName);
-          constant.fieldValues
-              .forEach((Reference reference, Constant constant) {
-            reference.node ??= AopUtils.getNodeFromCanonicalName(
-                componentLibraryMap, reference?.canonicalName);
-          });
+          final Class instanceClass =
+              instanceConstant.classReference.node;
           final AopMode aopMode = AopUtils.getAopModeByNameAndImportUri(
-              canonicalName.name, canonicalName?.parent?.name);
+              instanceClass.name, (instanceClass?.parent as Library)?.importUri.toString());
           if (aopMode == null) {
             continue;
           }
@@ -171,27 +160,27 @@ class AopWrapperTransformer {
               .forEach((Reference reference, Constant constant) {
             if (constant is StringConstant) {
               final String value = constant.value;
-              if (reference?.canonicalName?.name ==
+              if ((reference?.node as Field)?.name?.toString() ==
                   AopUtils.kAopAnnotationImportUri) {
                 importUri = value;
-              } else if (reference?.canonicalName?.name ==
+              } else if ((reference?.node as Field)?.name?.toString() ==
                   AopUtils.kAopAnnotationClsName) {
                 clsName = value;
-              } else if (reference?.canonicalName?.name ==
+              } else if ((reference?.node as Field)?.name?.toString() ==
                   AopUtils.kAopAnnotationMethodName) {
                 methodName = value;
               }
             }
             if (constant is IntConstant) {
               final int value = constant.value;
-              if (reference?.canonicalName?.name ==
+              if ((reference?.node as Field)?.name?.toString() ==
                   AopUtils.kAopAnnotationLineNum) {
                 lineNum = value - 1;
               }
             }
             if (constant is BoolConstant) {
               final bool value = constant.value;
-              if (reference?.canonicalName?.name ==
+              if ((reference?.node as Field)?.name?.toString() ==
                   AopUtils.kAopAnnotationIsRegex) {
                 isRegex = value;
               }
@@ -208,7 +197,7 @@ class AopWrapperTransformer {
                 .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
             isStatic = true;
           }
-          aopItemInfoRet = AopItemInfo(
+          return AopItemInfo(
               importUri: importUri,
               clsName: clsName,
               methodName: methodName,
@@ -218,7 +207,9 @@ class AopWrapperTransformer {
               isRegex: isRegex,
               lineNum: lineNum);
         }
-      } else if (annotation is ConstructorInvocation) {
+      }
+      //Debug Mode
+      else if (annotation is ConstructorInvocation) {
         final ConstructorInvocation constructorInvocation = annotation;
         final Class cls = constructorInvocation?.targetReference?.node?.parent;
         final Library clsParentLib = cls?.parent;
@@ -261,7 +252,7 @@ class AopWrapperTransformer {
               .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
           isStatic = true;
         }
-        aopItemInfoRet = AopItemInfo(
+        return AopItemInfo(
             importUri: importUri,
             clsName: clsName,
             methodName: methodName,
@@ -272,12 +263,6 @@ class AopWrapperTransformer {
             lineNum: lineNum);
       }
     }
-    return aopItemInfoRet;
-  }
-
-  void _checkIfCompleteLibraryReference(Library library) {
-    for (LibraryDependency libraryDependency in library.dependencies??<LibraryDependency>[]) {
-      libraryDependency.importedLibraryReference.node ??= AopUtils.getNodeFromCanonicalName(componentLibraryMap, libraryDependency.importedLibraryReference.canonicalName);
-    }
+    return null;
   }
 }
