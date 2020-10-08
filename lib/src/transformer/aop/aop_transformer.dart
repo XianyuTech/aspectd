@@ -47,7 +47,8 @@ class AspectdAopTransformer extends FlutterProgramTransformer {
       component.visitChildren(AspectdAopExecuteVisitor(executeInfoList));
     }
     if (injectInfoList.isNotEmpty) {
-      component.visitChildren(AspectdAopInjectVisitor());
+      component.visitChildren(
+          AspectdAopInjectVisitor(injectInfoList, concatUriToSource));
     }
   }
 
