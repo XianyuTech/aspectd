@@ -89,6 +89,9 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
   void transformStaticMethodProcedure(Library originalLibrary,
       AopItemInfo aopItemInfo, Procedure originalProcedure) {
+    if (AopUtils.manipulatedProcedureSet.contains(originalProcedure)) {
+      return;
+    }
     final FunctionNode functionNode = originalProcedure.function;
     final Statement body = functionNode.body;
     final bool shouldReturn =
@@ -148,6 +151,9 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
   void transformInstanceMethodProcedure(Library originalLibrary,
       AopItemInfo aopItemInfo, Procedure originalProcedure) {
+    if (AopUtils.manipulatedProcedureSet.contains(originalProcedure)) {
+      return;
+    }
     final FunctionNode functionNode = originalProcedure.function;
     final Class originalClass = originalProcedure.parent;
     final Statement body = functionNode.body;

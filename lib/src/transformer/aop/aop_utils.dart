@@ -37,6 +37,7 @@ class AopUtils {
   static Procedure listGetProcedure;
   static Procedure mapGetProcedure;
   static Component platformStrongComponent;
+  static Set<Procedure> manipulatedProcedureSet = {};
 
   static AopMode getAopModeByNameAndImportUri(String name, String importUri) {
     if (name == kAopAnnotationClassCall && importUri == kImportUriAopCall) {
@@ -323,10 +324,10 @@ class AopUtils {
         final Constant constant = constantExpression.constant;
         if (constant is InstanceConstant) {
           final InstanceConstant instanceConstant = constant;
-          final Class instanceClass =
-              instanceConstant.classReference.node;
+          final Class instanceClass = instanceConstant.classReference.node;
           if (instanceClass.name == AopUtils.kAopAnnotationClassAspect &&
-              AopUtils.kImportUriAopAspect == (instanceClass?.parent as Library)?.importUri.toString()) {
+              AopUtils.kImportUriAopAspect ==
+                  (instanceClass?.parent as Library)?.importUri.toString()) {
             enabled = true;
             break;
           }
@@ -406,6 +407,7 @@ class AopUtils {
     procedure.fileOffset = referProcedure.fileOffset;
     procedure.fileEndOffset = referProcedure.fileEndOffset;
     procedure.startFileOffset = referProcedure.startFileOffset;
+    manipulatedProcedureSet.add(procedure);
     return procedure;
   }
 
