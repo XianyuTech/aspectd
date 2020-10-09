@@ -1,6 +1,6 @@
-From 94c2fdf4fb1a53fa2679e85da6354c3d1b20e108 Mon Sep 17 00:00:00 2001
+From 07af8216920897c99c461efb7f540275d3d85bd7 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Thu, 8 Oct 2020 18:03:41 +0800
+Date: Fri, 9 Oct 2020 16:11:50 +0800
 Subject: [PATCH] aspectd
 
 ---
@@ -245,7 +245,7 @@ index 0000000000..069b308798
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/common.dart b/packages/flutter_tools/lib/src/build_system/targets/common.dart
-index c4a8646110..aa71eee603 100644
+index 1ce6e853f5..21ed43417e 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/common.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/common.dart
 @@ -5,6 +5,7 @@
@@ -256,7 +256,7 @@ index c4a8646110..aa71eee603 100644
  import '../../base/build.dart';
  import '../../base/file_system.dart';
  import '../../build_info.dart';
-@@ -193,6 +194,13 @@ class KernelSnapshot extends Target {
+@@ -191,6 +192,13 @@ class KernelSnapshot extends Target {
  
    @override
    Future<void> build(Environment environment) async {
@@ -267,10 +267,10 @@ index c4a8646110..aa71eee603 100644
 +  }
 +
 +  Future<CompilerOutput> buildImpl(Environment environment) async {
-     final KernelCompiler compiler = KernelCompiler(
-       fileSystem: environment.fileSystem,
-       logger: environment.logger,
-@@ -266,6 +274,7 @@ class KernelSnapshot extends Target {
+     final KernelCompiler compiler = await kernelCompilerFactory.create(
+       FlutterProject.fromDirectory(environment.projectDir),
+     );
+@@ -261,6 +269,7 @@ class KernelSnapshot extends Target {
      if (output == null || output.errorCount != 0) {
        throw Exception();
      }
