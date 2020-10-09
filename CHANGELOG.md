@@ -40,6 +40,14 @@
 
 ## [0.9.8]
 
+* Compative with stable/v1.17.5
+
+## [0.9.9]
+
+* Compative with stable/v1.20.4
+
+## [1.0.0]
+
 * Compatible with WidgetTrackCreation logic, make it easy to upgrade later.
 
-* Compative with stable/v1.22.0
+* Compative with stable/v1.22.1

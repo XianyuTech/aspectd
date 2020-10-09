@@ -88,23 +88,6 @@ Step 1~3 are expected to run each time you want to add aspectd_impl to a flutter
 
 If you're using example with an aspectd_impl package not generated locally, remember to run `flutter packages get` in aspectd_impl package to get aspectd and check 4.
 
-## 5. Implement your own transform if needed
-As said above, Aspectd is not only an AOP framework , it also provides a dill transformer container. You can implement your own transformer (say pluginDemo) over Aspectd following steps below:
-
-a. Declare pluginDemo in the plugins section of config.yaml. 
-
-b. Run `dart bin/generate_plugins_entry.dart` to generate a unified folder structure located in lib/src/plugins/pluginDemo.
-
-c. Write your annotations to export in pluginDemo.dart if needed.
-
-d. Write your transformer implementation in PluginDemoWrapperTransformer.transform  located in pluginDemo_transformer_wrapper.dart.
-
-There are two points you need to pay attention to:
-
-a. If you want to implement your own transformers, you'd better import Aspectd by path ref instead of git dependency. Otherwise, your modifications might be overwritten mistakenly.
-
-b. Each time you change the dill transformer implementation, you should delete snapshot/aspectd.dart.snapshot to make your changes take effect.
-
 # Tutorial
 Now AspectD provides three ways to do AOP programming.
 
@@ -275,7 +258,7 @@ Object context; //Aspectd Ignore
 would be discarded to avoid overring the original one.
 
 # Compatibility
-Flutter 1.0 and above.
+Stable version >= 1.0, currently v1.22.1
 
 
 # Notice
