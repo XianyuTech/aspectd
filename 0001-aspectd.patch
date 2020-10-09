@@ -1,34 +1,32 @@
-From 07af8216920897c99c461efb7f540275d3d85bd7 Mon Sep 17 00:00:00 2001
+From 1a368f95e00bb509fcf52e8e190af49af412f3bd Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Fri, 9 Oct 2020 16:11:50 +0800
+Date: Fri, 9 Oct 2020 18:07:12 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 229 ++++++++++++++++++
- .../lib/src/build_system/targets/common.dart  |   9 +
- 2 files changed, 238 insertions(+)
+ packages/flutter_tools/lib/src/aspectd.dart   | 223 ++++++++++++++++++
+ .../lib/src/build_system/targets/dart.dart    |   9 +
+ 2 files changed, 232 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..069b308798
+index 0000000000..d658c7edd2
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,229 @@
+@@ -0,0 +1,223 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
 +
 +import 'dart:io';
 +
-+import 'package:package_config/package_config.dart';
-+
 +import 'artifacts.dart';
 +import 'base/common.dart';
 +import 'base/file_system.dart';
 +import 'build_info.dart';
 +import 'build_system/build_system.dart';
-+import 'build_system/targets/common.dart';
++import 'build_system/targets/dart.dart';
 +import 'cache.dart';
 +import 'compile.dart';
 +import 'dart/package_map.dart';
@@ -50,15 +48,11 @@ index 0000000000..069b308798
 +
 +  static Future<Directory> getPackagePathFromConfig(
 +      String packageConfigPath, String packageName) async {
-+    final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-+      globals.fs.file(packageConfigPath),
-+      logger: globals.logger,
-+    );
-+    if ((packageConfig?.packages?.length ?? 0) > 0) {
-+      final Package aspectdPackage = packageConfig.packages.toList().firstWhere(
-+          (Package element) => element.name == packageName,
-+          orElse: () => null);
-+      return globals.fs.directory(aspectdPackage.root.toFilePath());
++    final PackageMap packageConfig = PackageMap(globals.fs.path.join(packageConfigPath), fileSystem: globals.fs)..load();
++    for (final String key in packageConfig?.map?.keys?.toList() ?? []) {
++      if (key == packageName) {
++        return globals.fs.directory(globals.fs.path.dirname(packageConfig.map[key].toFilePath()));
++      }
 +    }
 +    return null;
 +  }
@@ -77,7 +71,7 @@ index 0000000000..069b308798
 +    final Directory aspectdDirectory =
 +        getAspectdImplDirectory(currentDirectory);
 +    final String aspectdImplPackagesPath = globals.fs.path
-+        .join(aspectdDirectory.absolute.path, globalPackagesPath);
++        .join(aspectdDirectory.absolute.path, kPackagesFileName);
 +    final Directory flutterFrontendServerDirectory =
 +        await getFlutterFrontendServerDirectory(aspectdImplPackagesPath);
 +    if (!(aspectdDirectory.existsSync() &&
@@ -88,7 +82,7 @@ index 0000000000..069b308798
 +            .existsSync() &&
 +        globals.fs
 +            .file(
-+                globals.fs.path.join(aspectdDirectory.path, globalPackagesPath))
++                globals.fs.path.join(aspectdDirectory.path, kPackagesFileName))
 +            .existsSync() &&
 +        globals.fs
 +            .file(globals.fs.path.join(
@@ -116,9 +110,9 @@ index 0000000000..069b308798
 +              .path);
 +
 +      final String frontendServerPackageConfigJsonFile =
-+          '${flutterFrontendServerDirectory.absolute.path}/package_config.json';
++          '${flutterFrontendServerDirectory.absolute.path}/package_config';
 +      final String rebasedFrontendServerPackageConfigJsonFile =
-+          '${flutterFrontendServerDirectory.absolute.path}/rebased_package_config.json';
++          '${flutterFrontendServerDirectory.absolute.path}/rebased_package_config';
 +      String frontendServerPackageConfigJson = globals.fs
 +          .file(frontendServerPackageConfigJsonFile)
 +          .readAsStringSync();
@@ -172,7 +166,7 @@ index 0000000000..069b308798
 +          'Aspectd unexpected error: ${processResult.stderr.toString()}');
 +    }
 +    final Directory kernelDir = await getPackagePathFromConfig(
-+        globals.fs.path.join(aspectdDir, globalPackagesPath), 'kernel');
++        globals.fs.path.join(aspectdDir, kPackagesFileName), 'kernel');
 +    return kernelDir.parent.parent.path;
 +  }
 +
@@ -196,18 +190,18 @@ index 0000000000..069b308798
 +        .join(aspectdDir.path, 'lib', aspectdImplPackageName + '.dart');
 +
 +    final Environment auxEnvironment = Environment(
-+        projectDir: aspectdDir,
 +        outputDir: globals.fs.directory(outputDir),
++        buildDir: globals.fs.directory(buildDir),
++        projectDir: aspectdDir,
++        defines: defines,
 +        cacheDir: environment.cacheDir,
 +        flutterRootDir: environment.flutterRootDir,
++        artifacts: environment.artifacts,
 +        fileSystem: environment.fileSystem,
 +        logger: environment.logger,
-+        artifacts: environment.artifacts,
 +        processManager: environment.processManager,
-+        engineVersion: environment.engineVersion,
-+        buildDir: globals.fs.directory(buildDir),
-+        defines: defines,
-+        inputs: environment.inputs);
++    );
++
 +    const KernelSnapshot auxKernelSnapshot = KernelSnapshot();
 +    final CompilerOutput compilerOutput =
 +        await auxKernelSnapshot.buildImpl(auxEnvironment);
@@ -244,19 +238,19 @@ index 0000000000..069b308798
 +    return globals.processManager.run(command);
 +  }
 +}
-diff --git a/packages/flutter_tools/lib/src/build_system/targets/common.dart b/packages/flutter_tools/lib/src/build_system/targets/common.dart
-index 1ce6e853f5..21ed43417e 100644
---- a/packages/flutter_tools/lib/src/build_system/targets/common.dart
-+++ b/packages/flutter_tools/lib/src/build_system/targets/common.dart
-@@ -5,6 +5,7 @@
- import 'package:package_config/package_config.dart';
+diff --git a/packages/flutter_tools/lib/src/build_system/targets/dart.dart b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
+index 102f63a871..96b8571665 100644
+--- a/packages/flutter_tools/lib/src/build_system/targets/dart.dart
++++ b/packages/flutter_tools/lib/src/build_system/targets/dart.dart
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
  
  import '../../artifacts.dart';
 +import '../../aspectd.dart';
  import '../../base/build.dart';
  import '../../base/file_system.dart';
  import '../../build_info.dart';
-@@ -191,6 +192,13 @@ class KernelSnapshot extends Target {
+@@ -185,6 +186,13 @@ class KernelSnapshot extends Target {
  
    @override
    Future<void> build(Environment environment) async {
@@ -270,9 +264,9 @@ index 1ce6e853f5..21ed43417e 100644
      final KernelCompiler compiler = await kernelCompilerFactory.create(
        FlutterProject.fromDirectory(environment.projectDir),
      );
-@@ -261,6 +269,7 @@ class KernelSnapshot extends Target {
+@@ -252,6 +260,7 @@ class KernelSnapshot extends Target {
      if (output == null || output.errorCount != 0) {
-       throw Exception();
+       throw Exception('Errors during snapshot creation: $output');
      }
 +    return output;
    }
