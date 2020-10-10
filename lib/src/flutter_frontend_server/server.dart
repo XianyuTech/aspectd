@@ -123,7 +123,7 @@ Future<int> starter(
   frontend.argParser.addMultiOption(
     'delete-tostring-package-uri',
     help: 'Replaces implementations of `toString` with `super.toString()` for '
-        'specified package',
+          'specified package',
     valueHelp: 'dart:ui',
     defaultsTo: const <String>[],
   );
@@ -135,8 +135,7 @@ Future<int> starter(
     return 1;
   }
 
-  final Set<String> deleteToStringPackageUris =
-      (options['delete-tostring-package-uri'] as List<String>).toSet();
+  final Set<String> deleteToStringPackageUris = (options['delete-tostring-package-uri'] as List<String>).toSet();
 
   if (options['train'] as bool) {
     if (!options.rest.isNotEmpty) {
@@ -212,24 +211,19 @@ class ToStringVisitor extends RecursiveVisitor<void> {
 
   /// Turn 'dart:ui' into 'dart:ui', or
   /// 'package:flutter/src/semantics_event.dart' into 'package:flutter'.
-  String _importUriToPackage(Uri importUri) =>
-      '${importUri.scheme}:${importUri.pathSegments.first}';
+  String _importUriToPackage(Uri importUri) => '${importUri.scheme}:${importUri.pathSegments.first}';
 
   bool _isInTargetPackage(Procedure node) {
-    return _packageUris
-        .contains(_importUriToPackage(node.enclosingLibrary.importUri));
+    return _packageUris.contains(_importUriToPackage(node.enclosingLibrary.importUri));
   }
 
   bool _hasKeepAnnotation(Procedure node) {
-    for (ConstantExpression expression
-        in node.annotations.whereType<ConstantExpression>()) {
+    for (ConstantExpression expression in node.annotations.whereType<ConstantExpression>()) {
       if (expression.constant is! InstanceConstant) {
         continue;
       }
       final InstanceConstant constant = expression.constant as InstanceConstant;
-      if (constant.classNode.name == '_KeepToString' &&
-          constant.classNode.enclosingLibrary.importUri.toString() ==
-              'dart:ui') {
+      if (constant.classNode.name == '_KeepToString' && constant.classNode.enclosingLibrary.importUri.toString() == 'dart:ui') {
         return true;
       }
     }
@@ -238,14 +232,16 @@ class ToStringVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitProcedure(Procedure node) {
-    if (node.name.name == 'toString' &&
-        node.enclosingClass != null &&
-        node.enclosingLibrary != null &&
-        !node.isStatic &&
-        !node.isAbstract &&
-        !node.enclosingClass.isEnum &&
-        _isInTargetPackage(node) &&
-        !_hasKeepAnnotation(node)) {
+    if (
+      node.name.name        == 'toString' &&
+      node.enclosingClass   != null       &&
+      node.enclosingLibrary != null       &&
+      !node.isStatic                      &&
+      !node.isAbstract                    &&
+      !node.enclosingClass.isEnum         &&
+      _isInTargetPackage(node)            &&
+      !_hasKeepAnnotation(node)
+    ) {
       node.function.body.replaceWith(
         ReturnStatement(
           SuperMethodInvocation(
@@ -265,8 +261,7 @@ class ToStringVisitor extends RecursiveVisitor<void> {
 /// [packageUris].
 class ToStringTransformer extends frontend.ProgramTransformer {
   /// The [packageUris] parameter must not be null, but may be empty.
-  ToStringTransformer(this._child, this._packageUris)
-      : assert(_packageUris != null);
+  ToStringTransformer(this._child, this._packageUris) : assert(_packageUris != null);
 
   final frontend.ProgramTransformer _child;
 

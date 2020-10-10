@@ -32,9 +32,9 @@ dependencies:
   aspectd:
     git:
       url: git@github.com:alibaba-flutter/aspectd.git
-      ref: stable/v1.22.0
+      ref: stable/v1.22.1
   example:
-    path: ../
+    path: ../example
 ```
 Remember to change the branch matching your flutter environment (stable supported currently).
 Fetch package dependency in aspectd_impl package
@@ -80,7 +80,7 @@ As flutter_tools doesn't support hooks now, the aspectd.patch is necessary curre
 If you want to customize the aspectd_impl package, edit aspectdImplPackageRelPath(aspectd_impl package relative path to the example's pubspec.yaml) and aspectdImplPackageName(aspectd_impl package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
 
 ```dart
-const String aspectdImplPackageRelPath = '.';
+const String aspectdImplPackageRelPath = '..';
 const String aspectdImplPackageName = 'aspectd_impl';
 ```
 

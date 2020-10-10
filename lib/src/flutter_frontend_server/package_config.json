@@ -2,6 +2,12 @@
   "configVersion": 2,
   "packages": [
     {
+      "name": "flutter_frontend_server",
+      "rootUri": "../",
+      "packageUri": "lib",
+      "languageVersion": "2.2"
+    },
+    {
       "name": "_fe_analyzer_shared",
       "rootUri": "../../../third_party/dart/pkg/_fe_analyzer_shared",
       "packageUri": "lib",
@@ -167,7 +173,7 @@
       "name": "native_stack_traces",
       "rootUri": "../../../third_party/dart/pkg/native_stack_traces",
       "packageUri": "lib",
-      "languageVersion": "2.8"
+      "languageVersion": "2.10"
     },
     {
       "name": "nnbd_migration",
@@ -245,13 +251,13 @@
       "name": "js_runtime",
       "rootUri": "../../../third_party/dart/sdk/lib/_internal/js_runtime",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.8"
     },
     {
       "name": "sdk_library_metadata",
       "rootUri": "../../../third_party/dart/sdk/lib/_internal/sdk_library_metadata",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.8"
     },
     {
       "name": "args",
