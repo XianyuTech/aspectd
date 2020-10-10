@@ -132,6 +132,7 @@ remote:
 To github.com:alibaba-flutter/sdk.git
  * [new branch]              stable/1.23.0-7.0.pre -> stable/1.23.0-7.0.pre
 ```
+If you don't have permission, file a pull request.
 # Modify aspectd
 ## Edit sdk dependency in pubspec.yaml
 ```yaml
@@ -170,7 +171,7 @@ For changes happens for server.dart and starter.dart from git's angle of view, y
 ![server.dart](http://gw.alicdn.com/mt/TB1j7ybYpY7gK0jSZKzXXaikpXa-3292-1416.png)
 
 # Verify it
-Modify aspectd_impl/pubspec.yaml with contents below:
+## Modify aspectd_impl/pubspec.yaml with contents below:
 ```yaml
 dependencies:
   flutter:
@@ -180,3 +181,15 @@ dependencies:
   example:
     path: ../example
 ```
+## Run commands below for aspectd, example, aspectd_impl.
+```shell
+flutter clean && rm .packages pubspec.lock && flutter packages upgrade
+```
+## Check the cases given in aop_impl.dart
+Check RegularCallDemo, RegexCallDemo, RegularExecuteDemo, RegexExecuteDemo, InjectDemo one by one.
+## Run the example using commands below to verify it.
+```shell
+flutter run --release --verbose
+flutter run --debug --verbose
+```
+If it works fine, the upgrade will be completed.

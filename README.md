@@ -88,6 +88,8 @@ Step 1~3 are expected to run each time you want to add aspectd_impl to a flutter
 
 If you're using example with an aspectd_impl package not generated locally, remember to run `flutter packages get` in aspectd_impl package to get aspectd and check 4.
 
+If the flutter version you want is not supported yet, see [UPGRADE.md](https://github.com/alibaba-flutter/aspectd/blob/master/UPGRADE.md) for more.
+
 # Tutorial
 Now AspectD provides three ways to do AOP programming.
 
