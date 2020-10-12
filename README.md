@@ -32,9 +32,9 @@ dependencies:
   aspectd:
     git:
       url: git@github.com:alibaba-flutter/aspectd.git
-      ref: stable/v1.22.0
+      ref: stable/v1.20.4
   example:
-    path: ../
+    path: ../example
 ```
 Remember to change the branch matching your flutter environment (stable supported currently).
 Fetch package dependency in aspectd_impl package

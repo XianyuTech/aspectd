@@ -102,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _incrementCounter() {
+    C()..fc();
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -155,13 +156,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             GestureDetector(
                 child:
-                    const Text('onPluginDemo', style: TextStyle(fontSize: 30)),
+                const Text('onPluginDemo', style: TextStyle(fontSize: 30)),
                 onTap: () {
                   onPluginDemo();
                 }),
             GestureDetector(
                 child:
-                    const Text('Random Demo', style: TextStyle(fontSize: 30)),
+                const Text('Random Demo', style: TextStyle(fontSize: 30)),
                 onTap: () {
                   onRandomDemo();
                 })
@@ -169,7 +170,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: (){
+          _incrementCounter();
+        },
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ),
@@ -188,6 +191,9 @@ class B {
 }
 
 class C with A,B {
+  C(){
+
+  }
   void fc() {
 
   }
