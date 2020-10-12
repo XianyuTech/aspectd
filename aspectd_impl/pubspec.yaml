@@ -11,9 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   aspectd:
-    path: ../..
-  example:
     path: ../
+  example:
+    path: ../example
 
 dev_dependencies:
   flutter_test:

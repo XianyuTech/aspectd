@@ -1,20 +1,20 @@
-From 94c2fdf4fb1a53fa2679e85da6354c3d1b20e108 Mon Sep 17 00:00:00 2001
+From 0ed11700cacf65616a5158f7c6a0e07dfd25f272 Mon Sep 17 00:00:00 2001
 From: KyleWong <kang.wang1988@gmail.com>
-Date: Thu, 8 Oct 2020 18:03:41 +0800
+Date: Tue, 13 Oct 2020 01:29:48 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 229 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 207 ++++++++++++++++++
  .../lib/src/build_system/targets/common.dart  |   9 +
- 2 files changed, 238 insertions(+)
+ 2 files changed, 216 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..069b308798
+index 0000000000..d5e434ed78
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,229 @@
+@@ -0,0 +1,207 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -220,28 +220,6 @@ index 0000000000..069b308798
 +    }
 +    globals.fs.file(aspectdDill).copySync(originalDillFile.absolute.path);
 +    globals.fs.currentDirectory = previousDirectory;
-+  }
-+
-+  Future<ProcessResult> transformDill(
-+      BuildMode buildMode, String inputDill, String outputDill) async {
-+    final List<String> command = <String>[
-+      globals.artifacts.getArtifactPath(Artifact.engineDartBinary),
-+      aspectdTransformerSnapshot,
-+      '--input',
-+      inputDill,
-+      if (buildMode != BuildMode.release) ...<String>[
-+        '--sdk-root',
-+        globals.fs
-+                .file(globals.artifacts
-+                    .getArtifactPath(Artifact.platformKernelDill))
-+                .parent
-+                .path +
-+            globals.fs.path.separator
-+      ],
-+      '--output',
-+      outputDill
-+    ];
-+    return globals.processManager.run(command);
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/common.dart b/packages/flutter_tools/lib/src/build_system/targets/common.dart
