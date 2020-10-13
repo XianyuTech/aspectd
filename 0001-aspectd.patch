@@ -1,20 +1,20 @@
-From 94c2fdf4fb1a53fa2679e85da6354c3d1b20e108 Mon Sep 17 00:00:00 2001
-From: KyleWong <kang.wang1988@gmail.com>
-Date: Thu, 8 Oct 2020 18:03:41 +0800
-Subject: [PATCH] aspectd
+From a6c48f28c28a056faf14d3484e5929c13ce5dffc Mon Sep 17 00:00:00 2001
+From: wangziyang <457155134@qq.com>
+Date: Tue, 13 Oct 2020 21:00:34 +0800
+Subject: [PATCH] for aspectd.patch
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 229 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 232 ++++++++++++++++++
  .../lib/src/build_system/targets/common.dart  |   9 +
- 2 files changed, 238 insertions(+)
+ 2 files changed, 241 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..069b308798
+index 0000000000..de0a6cbec5
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,229 @@
+@@ -0,0 +1,232 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -76,6 +76,9 @@ index 0000000000..069b308798
 +    final Directory currentDirectory = globals.fs.currentDirectory;
 +    final Directory aspectdDirectory =
 +        getAspectdImplDirectory(currentDirectory);
++    if(!aspectdDirectory.existsSync()){
++      return false;
++    }
 +    final String aspectdImplPackagesPath = globals.fs.path
 +        .join(aspectdDirectory.absolute.path, globalPackagesPath);
 +    final Directory flutterFrontendServerDirectory =
@@ -245,19 +248,19 @@ index 0000000000..069b308798
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/common.dart b/packages/flutter_tools/lib/src/build_system/targets/common.dart
-index c4a8646110..aa71eee603 100644
+index 7c978656cd..de5d3e076f 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/common.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/common.dart
 @@ -5,6 +5,7 @@
  import 'package:package_config/package_config.dart';
- 
+
  import '../../artifacts.dart';
 +import '../../aspectd.dart';
  import '../../base/build.dart';
  import '../../base/file_system.dart';
  import '../../build_info.dart';
 @@ -193,6 +194,13 @@ class KernelSnapshot extends Target {
- 
+
    @override
    Future<void> build(Environment environment) async {
 +    await buildImpl(environment);
@@ -270,14 +273,14 @@ index c4a8646110..aa71eee603 100644
      final KernelCompiler compiler = KernelCompiler(
        fileSystem: environment.fileSystem,
        logger: environment.logger,
-@@ -266,6 +274,7 @@ class KernelSnapshot extends Target {
+@@ -268,6 +276,7 @@ class KernelSnapshot extends Target {
      if (output == null || output.errorCount != 0) {
        throw Exception();
      }
 +    return output;
    }
  }
- 
--- 
-2.24.3 (Apple Git-128)
+
+--
+2.24.2 (Apple Git-127)
 
