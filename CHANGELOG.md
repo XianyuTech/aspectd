@@ -51,3 +51,6 @@
 * Compatible with WidgetTrackCreation logic, make it easy to upgrade later.
 
 * Compative with stable/v1.22.1
+
+## [1.0.1]
+* Compative with stable/v1.22.2
