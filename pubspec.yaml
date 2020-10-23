@@ -13,7 +13,7 @@ dependency_overrides:
   kernel:
     git:
       url: git@github.com:alibaba-flutter/sdk.git
-      ref: stable/1.23.0-7.0.pre
+      ref: stable/v1.22.2
       path: pkg/kernel
 
 
