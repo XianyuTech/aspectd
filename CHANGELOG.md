@@ -54,3 +54,6 @@
 
 ## [1.0.1]
 * Compative with stable/v1.22.2
+
+## [1.0.2]
+* Compative with stable/v1.22.3
