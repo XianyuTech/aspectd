@@ -1,20 +1,20 @@
-From ae3fa866d428bcd96f8f88d2a973316b8be52038 Mon Sep 17 00:00:00 2001
-From: KyleWong <kang.wang1988@gmail.com>
-Date: Mon, 2 Nov 2020 15:08:40 +0800
-Subject: [PATCH] aspectd
+From 2805cd4b4dca3a064c78d3ad6799a25f8b7547ae Mon Sep 17 00:00:00 2001
+From: wangziyang <457155134@qq.com>
+Date: Thu, 5 Nov 2020 20:45:57 +0800
+Subject: [PATCH] for aspectd.patch
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 209 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 207 ++++++++++++++++++
  .../lib/src/build_system/targets/common.dart  |   9 +
- 2 files changed, 218 insertions(+)
+ 2 files changed, 216 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..2203fb4b4f
+index 0000000000..4e412b2530
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,209 @@
+@@ -0,0 +1,207 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -192,8 +192,6 @@ index 0000000000..2203fb4b4f
 +        globals.fs.path.join(aspectdDir.path, '.dart_tool', 'flutter_build');
 +
 +    final Map<String, String> defines = environment.defines;
-+    relativeDir = defines[kTargetFile]
-+        .substring(environment.projectDir.absolute.path.length + 1);
 +    defines[kTargetFile] = globals.fs.path
 +        .join(aspectdDir.path, 'lib', aspectdImplPackageName + '.dart');
 +
@@ -230,14 +228,14 @@ index c4a8646110..aa71eee603 100644
 +++ b/packages/flutter_tools/lib/src/build_system/targets/common.dart
 @@ -5,6 +5,7 @@
  import 'package:package_config/package_config.dart';
- 
+
  import '../../artifacts.dart';
 +import '../../aspectd.dart';
  import '../../base/build.dart';
  import '../../base/file_system.dart';
  import '../../build_info.dart';
 @@ -193,6 +194,13 @@ class KernelSnapshot extends Target {
- 
+
    @override
    Future<void> build(Environment environment) async {
 +    await buildImpl(environment);
@@ -257,7 +255,7 @@ index c4a8646110..aa71eee603 100644
 +    return output;
    }
  }
- 
--- 
-2.24.3 (Apple Git-128)
+
+--
+2.24.2 (Apple Git-127)
 
