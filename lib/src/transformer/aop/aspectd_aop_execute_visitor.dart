@@ -191,10 +191,10 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
     final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent;
     AopUtils.insertLibraryDependency(pointcutLibrary, originalLibrary);
 
-    final DirectMethodInvocation mockedInvocation = DirectMethodInvocation(
+    final MethodInvocation mockedInvocation = MethodInvocation(
         AsExpression(PropertyGet(ThisExpression(), Name('target')),
             InterfaceType(originalClass, Nullability.legacy)),
-        originalStubProcedure,
+        originalStubProcedure.name,
         AopUtils.concatArguments4PointcutStubCall(originalProcedure));
 
     final Procedure stubProcedureNew = AopUtils.createStubProcedure(
