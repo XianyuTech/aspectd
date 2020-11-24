@@ -30,7 +30,6 @@ import 'package:aspectd/aspectd.dart';
 //     return obj;
 //   }
 // }
-//
 
 // @Aspect()
 // @pragma("vm:entry-point")
@@ -54,7 +53,7 @@ import 'package:aspectd/aspectd.dart';
 //    return obj;
 //  }
 // }
-
+//
 // @Aspect()
 // @pragma("vm:entry-point")
 // class RegularExecuteDemo {
@@ -92,19 +91,32 @@ import 'package:aspectd/aspectd.dart';
 //    return obj;
 //  }
 // }
+//
+// @Aspect()
+// @pragma('vm:entry-point')
+// class RegexExecuteDemo {
+//   @pragma('vm:entry-point')
+//   RegexExecuteDemo();
+//
+//   @Execute("package:flutter/src/gestures/recognizer.dart","GestureRecognizer","-invokeCallback")
+//   @pragma("vm:entry-point")
+//   dynamic hookInvokeCallback(PointCut pointCut){
+//     print('Aspectd41');
+//   }
+// }
 
-@Aspect()
-@pragma("vm:entry-point")
-class InjectDemo{
- @Inject("package:example/main.dart","","+injectDemo", lineNum:27)
- @pragma("vm:entry-point")
- static void onInjectDemoHook1() {
-   print('Aspectd:KWLM41');
- }
-
- @Inject("package:example/main.dart","C","+C", lineNum:195)
- @pragma("vm:entry-point")
- static void onInjectDemoHook3() {
-   print('Aspectd:KWLM42');
- }
-}
+// @Aspect()
+// @pragma("vm:entry-point")
+// class InjectDemo{
+//  @Inject("package:example/main.dart","","+injectDemo", lineNum:27)
+//  @pragma("vm:entry-point")
+//  static void onInjectDemoHook1() {
+//    print('Aspectd:KWLM51');
+//  }
+//
+//  @Inject("package:example/main.dart","C","+C", lineNum:195)
+//  @pragma("vm:entry-point")
+//  static void onInjectDemoHook3() {
+//    print('Aspectd:KWLM52');
+//  }
+// }

@@ -329,10 +329,10 @@ class AspectdAopCallVisitor extends Transformer {
       Class pointCutClass, Class procedureImpl, Procedure originalProcedure) {
     //Add library dependency
     //Add new Procedure
-    final DirectMethodInvocation mockedInvocation = DirectMethodInvocation(
+    final MethodInvocation mockedInvocation = MethodInvocation(
         AsExpression(PropertyGet(ThisExpression(), Name('target')),
             InterfaceType(procedureImpl, Nullability.legacy)),
-        originalProcedure,
+        originalProcedure.name,
         AopUtils.concatArguments4PointcutStubCall(originalProcedure));
     final bool shouldReturn =
         !(originalProcedure.function.returnType is VoidType);
