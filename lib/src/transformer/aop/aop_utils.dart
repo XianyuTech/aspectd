@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:kernel/ast.dart';
 
 import 'aop_iteminfo.dart';
@@ -116,8 +118,8 @@ class AopUtils {
       if (lineNum < source.lineStarts.length - 1) {
         charTo = source.lineStarts[lineNum + 1];
       }
-      final List<int> sourceLineChars = source.source.sublist(charFrom, charTo);
-      final String sourceLine = String.fromCharCodes(sourceLineChars).trim();
+      final String sourceString = const Utf8Decoder().convert(source.source);
+      final String sourceLine = sourceString.substring(charFrom, charTo);
       if (sourceLine.endsWith(AopUtils.kAopPointcutIgnoreVariableDeclaration)) {
         return variableDeclaration;
       }
