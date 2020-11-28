@@ -75,6 +75,8 @@ cd path-for-flutter-git-repo
 git apply --3way path-for-aspectd-package/0001-aspectd.patch
 rm bin/cache/flutter_tools.stamp
 ```
+On Windows, use "git am --reject --whitespace=fix aspectd\0001-aspectd.patch" to apply the patch instead.
+
 As flutter_tools doesn't support hooks now, the aspectd.patch is necessary currently. As flutter is evolving, this patch might fail sometimes. However, It would be simple to resolve the conflicts as AspectD only adds two hooks when building dill.  See https://github.com/alibaba-flutter/aspectd/issues/5 for more.
 
 If you want to customize the aspectd_impl package, edit aspectdImplPackageRelPath(aspectd_impl package relative path to the example's pubspec.yaml) and aspectdImplPackageName(aspectd_impl package folder name and main entry file name) defined in path-for-flutter-git-repo/flutter/packages/flutter_tools/lib/src/aspectd.dart. 
