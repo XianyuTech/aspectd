@@ -1,20 +1,20 @@
-From 1a368f95e00bb509fcf52e8e190af49af412f3bd Mon Sep 17 00:00:00 2001
-From: KyleWong <kang.wang1988@gmail.com>
-Date: Fri, 9 Oct 2020 18:07:12 +0800
+From f51208f9f6f7b13624e71d7c02eacbeb9285db45 Mon Sep 17 00:00:00 2001
+From: gentrio <gentriolee@gmail.com>
+Date: Fri, 4 Dec 2020 10:23:48 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 223 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 221 ++++++++++++++++++
  .../lib/src/build_system/targets/dart.dart    |   9 +
- 2 files changed, 232 insertions(+)
+ 2 files changed, 230 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..d658c7edd2
+index 0000000000..13b201c8cc
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,223 @@
+@@ -0,0 +1,221 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -184,8 +184,6 @@ index 0000000000..d658c7edd2
 +        globals.fs.path.join(aspectdDir.path, '.dart_tool', 'flutter_build');
 +
 +    final Map<String, String> defines = environment.defines;
-+    relativeDir = defines[kTargetFile]
-+        .substring(environment.projectDir.absolute.path.length + 1);
 +    defines[kTargetFile] = globals.fs.path
 +        .join(aspectdDir.path, 'lib', aspectdImplPackageName + '.dart');
 +
@@ -273,5 +271,5 @@ index 102f63a871..96b8571665 100644
  }
  
 -- 
-2.24.3 (Apple Git-128)
+2.23.0
 
