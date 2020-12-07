@@ -1,20 +1,20 @@
-From f51208f9f6f7b13624e71d7c02eacbeb9285db45 Mon Sep 17 00:00:00 2001
+From 3f4956b7e02c3ed7b73aa683b76550ff3eae5b5d Mon Sep 17 00:00:00 2001
 From: gentrio <gentriolee@gmail.com>
-Date: Fri, 4 Dec 2020 10:23:48 +0800
+Date: Mon, 7 Dec 2020 19:47:57 +0800
 Subject: [PATCH] aspectd
 
 ---
- packages/flutter_tools/lib/src/aspectd.dart   | 221 ++++++++++++++++++
+ packages/flutter_tools/lib/src/aspectd.dart   | 224 ++++++++++++++++++
  .../lib/src/build_system/targets/dart.dart    |   9 +
- 2 files changed, 230 insertions(+)
+ 2 files changed, 233 insertions(+)
  create mode 100644 packages/flutter_tools/lib/src/aspectd.dart
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..13b201c8cc
+index 0000000000..78d805ff21
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
-@@ -0,0 +1,221 @@
+@@ -0,0 +1,224 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -70,6 +70,9 @@ index 0000000000..13b201c8cc
 +    final Directory currentDirectory = globals.fs.currentDirectory;
 +    final Directory aspectdDirectory =
 +        getAspectdImplDirectory(currentDirectory);
++    if(!aspectdDirectory.existsSync()) {
++      return false;
++    }
 +    final String aspectdImplPackagesPath = globals.fs.path
 +        .join(aspectdDirectory.absolute.path, kPackagesFileName);
 +    final Directory flutterFrontendServerDirectory =
@@ -167,7 +170,7 @@ index 0000000000..13b201c8cc
 +    }
 +    final Directory kernelDir = await getPackagePathFromConfig(
 +        globals.fs.path.join(aspectdDir, kPackagesFileName), 'kernel');
-+    return kernelDir.parent.parent.path;
++    return kernelDir.parent.parent.uri.toString();
 +  }
 +
 +  Future<void> runBuildDillCommand(Environment environment) async {
