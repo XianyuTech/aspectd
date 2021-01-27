@@ -5,8 +5,8 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/kernel"
-      ref: "stable/v1.22.5"
-      resolved-ref: "6cb1e943fbc9543221585abfe11b9d1fbfc6d401"
+      ref: "stable/v1.22.6"
+      resolved-ref: a4acf8a75ae87372dfe0eb531d310573d306ca60
       url: "git@github.com:alibaba-flutter/sdk.git"
     source: git
     version: "0.0.0"

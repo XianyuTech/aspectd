@@ -32,7 +32,7 @@ dependencies:
   aspectd:
     git:
       url: git@github.com:alibaba-flutter/aspectd.git
-      ref: stable/v1.22.5
+      ref: stable/v1.22.6
   example:
     path: ../example
 ```
@@ -262,7 +262,7 @@ Object context; //Aspectd Ignore
 would be discarded to avoid overring the original one.
 
 # Compatibility
-Stable version >= 1.0, currently v1.22.5
+Stable version >= 1.0, currently v1.22.6
 
 
 # Notice

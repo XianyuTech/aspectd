@@ -18,8 +18,8 @@ See [Setting up the Engine development environment](https://github.com/flutter/f
 ```shell
 kylewong@KyleWongs-Work-MBP flutter % pwd
 /Users/kylewong/Codes/Flutter/alibaba-flutter/engine/src/flutter
-kylewong@KyleWongs-Work-MBP flutter % git branch stable/1.23.0-7.0.pre 3a73d073c8 && git checkout stable/1.23.0-7.0.pre
-Switched to branch 'stable/1.23.0-7.0.pre'
+kylewong@KyleWongs-Work-MBP flutter % git branch stable/v1.23.0-7.0.pre 3a73d073c8 && git checkout stable/v1.23.0-7.0.pre
+Switched to branch 'stable/v1.23.0-7.0.pre'
 ```
 ## Fetch dart dependency
 ```shell
@@ -40,8 +40,8 @@ Running hooks: 100% (9/9), done.
 ```shell
 kylewong@KyleWongs-Work-MBP dart % pwd
 /Users/kylewong/Codes/Flutter/alibaba-flutter/engine/src/third_party/dart
-kylewong@KyleWongs-Work-MBP dart % git branch stable/1.23.0-7.0.pre HEAD && git checkout stable/1.23.0-7.0.pre
-Switched to branch 'stable/1.23.0-7.0.pre'
+kylewong@KyleWongs-Work-MBP dart % git branch stable/v1.23.0-7.0.pre HEAD && git checkout stable/v1.23.0-7.0.pre
+Switched to branch 'stable/v1.23.0-7.0.pre'
 ```
 Notice the head commit for dart above, it can be found in flutter_engine_repo/DEPS file as below:
 ```DEPS
@@ -85,7 +85,7 @@ warning: CRLF will be replaced by LF in third_party/pkg/linter/README.md.
 The file will have its original line endings in your working directory
 warning: CRLF will be replaced by LF in third_party/pkg/mustache/lib/src/template.dart.
 The file will have its original line endings in your working directory
-[stable/1.23.0-7.0.pre 9fa5ae49522] Add pkg/pkg_tested under source control.
+[stable/v1.23.0-7.0.pre 9fa5ae49522] Add pkg/pkg_tested under source control.
  4522 files changed, 742202 insertions(+), 3 deletions(-)
  create mode 100644 third_party/pkg/args/.gitignore
 ```
@@ -110,14 +110,14 @@ From github.com:alibaba-flutter/sdk
 Cherry-pick commit at [Support customized transformer for developers.](https://github.com/alibaba-flutter/sdk/commit/6106808f20068c7d180c9b897e0dcaef52a8af63) and resolve the conflicts if occurs.
 ```shell
 kylewong@KyleWongs-Work-MBP dart % git cherry-pick 6106808f20068c7d180c9b897e0dcaef52a8af63
-[stable/1.23.0-7.0.pre 8ea36b47942] Support customized transformer for developers.
+[stable/v1.23.0-7.0.pre 8ea36b47942] Support customized transformer for developers.
  Date: Thu Oct 8 18:19:04 2020 +0800
  1 file changed, 13 insertions(+)
 ```
 
 ### Push it to github
 ```shell
-kylewong@KyleWongs-Work-MBP dart % git push alf_upstream stable/1.23.0-7.0.pre 
+kylewong@KyleWongs-Work-MBP dart % git push alf_upstream stable/v1.23.0-7.0.pre 
 Enumerating objects: 4980, done.
 Counting objects: 100% (4980/4980), done.
 Delta compression using up to 12 threads
@@ -126,11 +126,11 @@ Writing objects: 100% (4971/4971), 11.96 MiB | 1.52 MiB/s, done.
 Total 4971 (delta 795), reused 4255 (delta 753)
 remote: Resolving deltas: 100% (795/795), completed with 8 local objects.
 remote: 
-remote: Create a pull request for 'stable/1.23.0-7.0.pre' on GitHub by visiting:
-remote:      https://github.com/alibaba-flutter/sdk/pull/new/stable/1.23.0-7.0.pre
+remote: Create a pull request for 'stable/v1.23.0-7.0.pre' on GitHub by visiting:
+remote:      https://github.com/alibaba-flutter/sdk/pull/new/stable/v1.23.0-7.0.pre
 remote: 
 To github.com:alibaba-flutter/sdk.git
- * [new branch]              stable/1.23.0-7.0.pre -> stable/1.23.0-7.0.pre
+ * [new branch]              stable/v1.23.0-7.0.pre -> stable/v1.23.0-7.0.pre
 ```
 If you don't have permission, file a pull request.
 # Modify aspectd
@@ -140,7 +140,7 @@ dependency_overrides:
   kernel:
     git:
       url: git@github.com:alibaba-flutter/sdk.git
-      ref: stable/1.23.0-7.0.pre
+      ref: stable/v1.23.0-7.0.pre
       path: pkg/kernel
 ```
 ## Fetch dependency for aspectd
