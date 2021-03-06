@@ -13,8 +13,13 @@ dependency_overrides:
   kernel:
     git:
       url: git@github.com:alibaba-flutter/sdk.git
-      ref: stable/v1.22.6
+      ref: stable/v2.0.0
       path: pkg/kernel
+  meta:
+    git:
+      url: git@github.com:alibaba-flutter/sdk.git
+      ref: stable/v2.0.0
+      path: pkg/meta
 
 
 # For information on the generic Dart part of this file, see the

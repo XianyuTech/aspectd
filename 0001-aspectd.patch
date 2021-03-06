@@ -1,7 +1,7 @@
-From 367905007bd4960c39ff0e58b584f40e68f9bc0e Mon Sep 17 00:00:00 2001
-From: wangziyang <457155134@qq.com>
-Date: Tue, 24 Nov 2020 14:13:36 +0800
-Subject: [PATCH] aspectd patch
+From ccb0d2fbeda22d528a1f3e5a1105fc30065a6cf7 Mon Sep 17 00:00:00 2001
+From: KyleWong <kang.wang1988@gmail.com>
+Date: Sat, 6 Mar 2021 23:58:46 +0800
+Subject: [PATCH] aspectd
 
 ---
  packages/flutter_tools/lib/src/aspectd.dart   | 207 ++++++++++++++++++
@@ -11,7 +11,7 @@ Subject: [PATCH] aspectd patch
 
 diff --git a/packages/flutter_tools/lib/src/aspectd.dart b/packages/flutter_tools/lib/src/aspectd.dart
 new file mode 100644
-index 0000000000..86668d109f
+index 0000000000..f686c66634
 --- /dev/null
 +++ b/packages/flutter_tools/lib/src/aspectd.dart
 @@ -0,0 +1,207 @@
@@ -79,7 +79,7 @@ index 0000000000..86668d109f
 +      return false;
 +    }
 +    final String aspectdImplPackagesPath = globals.fs.path
-+        .join(aspectdDirectory.absolute.path, globalPackagesPath);
++        .join(aspectdDirectory.absolute.path, '.packages');
 +    final Directory flutterFrontendServerDirectory =
 +    await getFlutterFrontendServerDirectory(aspectdImplPackagesPath);
 +    if (!(aspectdDirectory.existsSync() &&
@@ -90,7 +90,7 @@ index 0000000000..86668d109f
 +            .existsSync() &&
 +        globals.fs
 +            .file(
-+            globals.fs.path.join(aspectdDirectory.path, globalPackagesPath))
++            globals.fs.path.join(aspectdDirectory.path, '.packages'))
 +            .existsSync() &&
 +        globals.fs
 +            .file(globals.fs.path.join(
@@ -174,7 +174,7 @@ index 0000000000..86668d109f
 +          'Aspectd unexpected error: ${processResult.stderr.toString()}');
 +    }
 +    final Directory kernelDir = await getPackagePathFromConfig(
-+        globals.fs.path.join(aspectdDir, globalPackagesPath), 'kernel');
++        globals.fs.path.join(aspectdDir, '.packages'), 'kernel');
 +    return kernelDir.parent.parent.uri.toString();
 +  }
 +
@@ -223,24 +223,24 @@ index 0000000000..86668d109f
 +  }
 +}
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/common.dart b/packages/flutter_tools/lib/src/build_system/targets/common.dart
-index c4a8646110..aa71eee603 100644
+index 3105ae0684..0519d38487 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/common.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/common.dart
 @@ -5,6 +5,7 @@
  import 'package:package_config/package_config.dart';
-
+ 
  import '../../artifacts.dart';
 +import '../../aspectd.dart';
  import '../../base/build.dart';
  import '../../base/file_system.dart';
  import '../../build_info.dart';
-@@ -193,6 +194,13 @@ class KernelSnapshot extends Target {
-
+@@ -200,6 +201,13 @@ class KernelSnapshot extends Target {
+ 
    @override
    Future<void> build(Environment environment) async {
 +    await buildImpl(environment);
 +    if (await AspectdHook.isAspectdEnabled()) {
-+      await AspectdHook().runBuildDillCommand(environment);
++        await AspectdHook().runBuildDillCommand(environment);
 +    }
 +  }
 +
@@ -248,14 +248,14 @@ index c4a8646110..aa71eee603 100644
      final KernelCompiler compiler = KernelCompiler(
        fileSystem: environment.fileSystem,
        logger: environment.logger,
-@@ -266,6 +274,7 @@ class KernelSnapshot extends Target {
+@@ -277,6 +285,7 @@ class KernelSnapshot extends Target {
      if (output == null || output.errorCount != 0) {
        throw Exception();
      }
 +    return output;
    }
  }
-
---
-2.26.0.windows.1
+ 
+-- 
+2.24.3 (Apple Git-128)
 
