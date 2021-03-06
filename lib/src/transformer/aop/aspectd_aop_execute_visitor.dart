@@ -82,8 +82,10 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
             node.parent.parent as Library, matchedAopItemInfo, node);
       }
     } else {
-      transformInstanceMethodProcedure(
-          node.parent.parent as Library, matchedAopItemInfo, node);
+      if (node.parent != null) {
+        transformInstanceMethodProcedure(
+            node.parent.parent as Library, matchedAopItemInfo, node);
+      }
     }
   }
 
@@ -112,10 +114,10 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
     final Node parent = originalProcedure.parent;
     String parentIdentifier;
     if (parent is Library) {
-      parent.addMember(originalStubProcedure);
+      parent.procedures.add(originalStubProcedure);
       parentIdentifier = parent.importUri.toString();
     } else if (parent is Class) {
-      parent.addMember(originalStubProcedure);
+      parent.procedures.add(originalStubProcedure);
       parentIdentifier = parent.name;
     }
     functionNode.body = createPointcutCallFromOriginal(
@@ -145,7 +147,7 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
         AopUtils.createProcedureBodyWithExpression(
             staticInvocation, shouldReturn),
         shouldReturn);
-    pointcutClass.addMember(stubProcedureNew);
+    pointcutClass.procedures.add(stubProcedureNew);
     AopUtils.insertProceedBranch(stubProcedureNew, shouldReturn);
   }
 
@@ -175,7 +177,7 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
         originalProcedure,
         body,
         shouldReturn);
-    originalClass.addMember(originalStubProcedure);
+    originalClass.procedures.add(originalStubProcedure);
     functionNode.body = createPointcutCallFromOriginal(
         originalLibrary,
         aopItemInfo,
@@ -204,7 +206,7 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
         AopUtils.createProcedureBodyWithExpression(
             mockedInvocation, shouldReturn),
         shouldReturn);
-    pointcutClass.addMember(stubProcedureNew);
+    pointcutClass.procedures.add(stubProcedureNew);
     AopUtils.insertProceedBranch(stubProcedureNew, shouldReturn);
   }
 

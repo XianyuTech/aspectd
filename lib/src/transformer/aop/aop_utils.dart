@@ -401,9 +401,8 @@ class AopUtils {
       functionNode,
       isStatic: referProcedure.isStatic,
       fileUri: referProcedure.fileUri,
-      forwardingStubSuperTarget: referProcedure.forwardingStubSuperTarget,
-      forwardingStubInterfaceTarget:
-          referProcedure.forwardingStubInterfaceTarget,
+      stubKind : referProcedure.stubKind,
+      stubTarget: referProcedure.stubTarget,
     );
 
     procedure.fileOffset = referProcedure.fileOffset;

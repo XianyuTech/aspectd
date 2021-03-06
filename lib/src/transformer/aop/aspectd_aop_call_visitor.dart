@@ -355,7 +355,7 @@ class AspectdAopCallVisitor extends Transformer {
         AopUtils.pointCutProceedProcedure,
         bodyStatements,
         shouldReturn);
-    pointCutClass.addMember(procedure);
+    pointCutClass.procedures.add(procedure);
     AopUtils.insertProceedBranch(procedure, shouldReturn);
   }
 
