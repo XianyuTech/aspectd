@@ -261,7 +261,12 @@ Object context; //Aspectd Ignore
 ```
 would be discarded to avoid overring the original one.
 
+# Debug
+
+Read DEBUG.md for more.
+
 # Compatibility
+
 Stable version >= 1.0, currently v2.0.0
 
 
