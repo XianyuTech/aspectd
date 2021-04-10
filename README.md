@@ -263,7 +263,7 @@ would be discarded to avoid overring the original one.
 
 # Debug
 
-Read DEBUG.md for more.
+Read [DEBUG.md](https://github.com/XianyuTech/aspectd/blob/master/DEBUG.md) for more.
 
 # Compatibility
 
