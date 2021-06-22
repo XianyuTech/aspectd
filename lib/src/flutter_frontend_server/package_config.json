@@ -23,19 +23,19 @@
       "name": "analysis_server",
       "rootUri": "../../../third_party/dart/pkg/analysis_server",
       "packageUri": "lib",
-      "languageVersion": "2.6"
+      "languageVersion": "2.12"
     },
     {
       "name": "analysis_server_client",
       "rootUri": "../../../third_party/dart/pkg/analysis_server_client",
       "packageUri": "lib",
-      "languageVersion": "2.8"
+      "languageVersion": "2.12"
     },
     {
       "name": "analyzer",
       "rootUri": "../../../third_party/dart/pkg/analyzer",
       "packageUri": "lib",
-      "languageVersion": "2.9"
+      "languageVersion": "2.12"
     },
     {
       "name": "analyzer_cli",
@@ -47,19 +47,19 @@
       "name": "analyzer_plugin",
       "rootUri": "../../../third_party/dart/pkg/analyzer_plugin",
       "packageUri": "lib",
-      "languageVersion": "2.9"
+      "languageVersion": "2.12"
     },
     {
       "name": "analyzer_utilities",
       "rootUri": "../../../third_party/dart/pkg/analyzer_utilities",
       "packageUri": "lib",
-      "languageVersion": "2.1"
+      "languageVersion": "2.12"
     },
     {
       "name": "async_helper",
       "rootUri": "../../../third_party/dart/pkg/async_helper",
       "packageUri": "lib",
-      "languageVersion": "2.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "build_integration",
@@ -89,7 +89,7 @@
       "name": "dart_internal",
       "rootUri": "../../../third_party/dart/pkg/dart_internal",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "dartdev",
@@ -101,7 +101,7 @@
       "name": "dds",
       "rootUri": "../../../third_party/dart/pkg/dds",
       "packageUri": "lib",
-      "languageVersion": "2.6"
+      "languageVersion": "2.12"
     },
     {
       "name": "dev_compiler",
@@ -119,7 +119,7 @@
       "name": "expect",
       "rootUri": "../../../third_party/dart/pkg/expect",
       "packageUri": "lib",
-      "languageVersion": "2.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "front_end",
@@ -173,7 +173,7 @@
       "name": "native_stack_traces",
       "rootUri": "../../../third_party/dart/pkg/native_stack_traces",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "nnbd_migration",
@@ -251,7 +251,7 @@
       "name": "sdk_library_metadata",
       "rootUri": "../../../third_party/dart/sdk/lib/_internal/sdk_library_metadata",
       "packageUri": "lib",
-      "languageVersion": "2.11"
+      "languageVersion": "2.12"
     },
     {
       "name": "args",
@@ -263,7 +263,7 @@
       "name": "async",
       "rootUri": "../../../third_party/dart/third_party/pkg/async",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "bazel_worker",
@@ -293,7 +293,7 @@
       "name": "collection",
       "rootUri": "../../../third_party/dart/third_party/pkg/collection",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "convert",
@@ -323,7 +323,7 @@
       "name": "dartdoc",
       "rootUri": "../../../third_party/dart/third_party/pkg/dartdoc",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.11"
     },
     {
       "name": "ffi",
@@ -347,7 +347,7 @@
       "name": "html",
       "rootUri": "../../../third_party/dart/third_party/pkg/html",
       "packageUri": "lib",
-      "languageVersion": "2.8"
+      "languageVersion": "2.12"
     },
     {
       "name": "http",
@@ -359,7 +359,7 @@
       "name": "http_multi_server",
       "rootUri": "../../../third_party/dart/third_party/pkg/http_multi_server",
       "packageUri": "lib",
-      "languageVersion": "2.1"
+      "languageVersion": "2.12"
     },
     {
       "name": "http_parser",
@@ -371,7 +371,7 @@
       "name": "http_retry",
       "rootUri": "../../../third_party/dart/third_party/pkg/http_retry",
       "packageUri": "lib",
-      "languageVersion": "1.24"
+      "languageVersion": "2.12"
     },
     {
       "name": "http_throttle",
@@ -395,7 +395,7 @@
       "name": "linter",
       "rootUri": "../../../third_party/dart/third_party/pkg/linter",
       "packageUri": "lib",
-      "languageVersion": "2.6"
+      "languageVersion": "2.12"
     },
     {
       "name": "logging",
@@ -407,7 +407,7 @@
       "name": "markdown",
       "rootUri": "../../../third_party/dart/third_party/pkg/markdown",
       "packageUri": "lib",
-      "languageVersion": "2.6"
+      "languageVersion": "2.12"
     },
     {
       "name": "matcher",
@@ -428,22 +428,16 @@
       "languageVersion": "2.0"
     },
     {
-      "name": "mustache",
-      "rootUri": "../../../third_party/dart/third_party/pkg/mustache",
-      "packageUri": "lib",
-      "languageVersion": "2.0"
-    },
-    {
       "name": "oauth2",
       "rootUri": "../../../third_party/dart/third_party/pkg/oauth2",
       "packageUri": "lib",
-      "languageVersion": "2.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "path",
       "rootUri": "../../../third_party/dart/third_party/pkg/path",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "pedantic",
@@ -491,25 +485,25 @@
       "name": "shelf_packages_handler",
       "rootUri": "../../../third_party/dart/third_party/pkg/shelf_packages_handler",
       "packageUri": "lib",
-      "languageVersion": "2.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "shelf_proxy",
       "rootUri": "../../../third_party/dart/third_party/pkg/shelf_proxy",
       "packageUri": "lib",
-      "languageVersion": "2.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "shelf_static",
       "rootUri": "../../../third_party/dart/third_party/pkg/shelf_static",
       "packageUri": "lib",
-      "languageVersion": "2.3"
+      "languageVersion": "2.12"
     },
     {
       "name": "shelf_web_socket",
       "rootUri": "../../../third_party/dart/third_party/pkg/shelf_web_socket",
       "packageUri": "lib",
-      "languageVersion": "2.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "source_map_stack_trace",
@@ -542,12 +536,6 @@
       "languageVersion": "2.12"
     },
     {
-      "name": "stagehand",
-      "rootUri": "../../../third_party/dart/third_party/pkg/stagehand",
-      "packageUri": "lib",
-      "languageVersion": "2.10"
-    },
-    {
       "name": "stream_channel",
       "rootUri": "../../../third_party/dart/third_party/pkg/stream_channel",
       "packageUri": "lib",
@@ -569,19 +557,19 @@
       "name": "test",
       "rootUri": "../../../third_party/dart/third_party/pkg/test/pkgs/test",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "test_api",
       "rootUri": "../../../third_party/dart/third_party/pkg/test/pkgs/test_api",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "test_core",
       "rootUri": "../../../third_party/dart/third_party/pkg/test/pkgs/test_core",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "test_reflective_loader",
@@ -611,7 +599,7 @@
       "name": "web_socket_channel",
       "rootUri": "../../../third_party/dart/third_party/pkg/web_socket_channel",
       "packageUri": "lib",
-      "languageVersion": "2.10"
+      "languageVersion": "2.12"
     },
     {
       "name": "yaml",
@@ -623,7 +611,7 @@
       "name": "dart_style",
       "rootUri": "../../../third_party/dart/third_party/pkg_tested/dart_style",
       "packageUri": "lib",
-      "languageVersion": "2.9"
+      "languageVersion": "2.12"
     },
     {
       "name": "package_config",

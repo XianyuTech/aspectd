@@ -5,19 +5,19 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/kernel"
-      ref: "stable/v2.0.0"
-      resolved-ref: "892056e7eb9bce94734f0ac77dd96bfc60faeb3d"
-      url: "git@github.com:alibaba-flutter/sdk.git"
+      ref: "stable/v2.2.2"
+      resolved-ref: "5dead8ad826719f7c8727d25b205698b1227970c"
+      url: "git@github.com:XianyuTech/sdk.git"
     source: git
     version: "0.0.0"
   meta:
     dependency: "direct overridden"
     description:
       path: "pkg/meta"
-      ref: "stable/v2.0.0"
-      resolved-ref: "892056e7eb9bce94734f0ac77dd96bfc60faeb3d"
-      url: "git@github.com:alibaba-flutter/sdk.git"
+      ref: "stable/v2.2.2"
+      resolved-ref: "5dead8ad826719f7c8727d25b205698b1227970c"
+      url: "git@github.com:XianyuTech/sdk.git"
     source: git
-    version: "1.3.0-nullsafety.6"
+    version: "1.3.0"
 sdks:
   dart: ">=2.3.0-dev.68.0 <3.0.0"

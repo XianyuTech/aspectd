@@ -31,8 +31,8 @@ dependencies:
     sdk: flutter
   aspectd:
     git:
-      url: git@github.com:alibaba-flutter/aspectd.git
-      ref: stable/v2.0.0
+      url: git@github.com:XianyuTech/aspectd.git
+      ref: stable/v2.2.2
   example:
     path: ../example
 ```
@@ -267,7 +267,7 @@ Read [DEBUG.md](https://github.com/XianyuTech/aspectd/blob/master/DEBUG.md) for 
 
 # Compatibility
 
-Stable version >= 1.0, currently v2.0.0
+Stable version >= 1.0, currently v2.2.2
 
 
 # Notice
