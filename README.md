@@ -32,7 +32,7 @@ dependencies:
   aspectd:
     git:
       url: git@github.com:XianyuTech/aspectd.git
-      ref: stable/v2.2.2
+      ref: stable/v2.2.3
   example:
     path: ../example
 ```

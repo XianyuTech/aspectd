@@ -5,8 +5,8 @@ packages:
     dependency: "direct dev"
     description:
       path: "pkg/kernel"
-      ref: "stable/v2.2.2"
-      resolved-ref: "5dead8ad826719f7c8727d25b205698b1227970c"
+      ref: "stable/v2.2.3"
+      resolved-ref: c9f1a5df275bb007ae414abfd1349294e28b0d28
       url: "git@github.com:XianyuTech/sdk.git"
     source: git
     version: "0.0.0"
@@ -14,8 +14,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "pkg/meta"
-      ref: "stable/v2.2.2"
-      resolved-ref: "5dead8ad826719f7c8727d25b205698b1227970c"
+      ref: "stable/v2.2.3"
+      resolved-ref: c9f1a5df275bb007ae414abfd1349294e28b0d28
       url: "git@github.com:XianyuTech/sdk.git"
     source: git
     version: "1.3.0"
