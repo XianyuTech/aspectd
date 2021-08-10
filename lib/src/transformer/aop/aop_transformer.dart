@@ -1,3 +1,4 @@
+// @dart=2.8
 // Transformer/visitor for toString
 // If we add any more of these, they really should go into a separate library.
 
@@ -21,6 +22,7 @@ import 'aop_utils.dart';
 import 'aspectd_aop_call_visitor.dart';
 import 'aspectd_aop_execute_visitor.dart';
 import 'aspectd_aop_inject_visitor.dart';
+import 'track_widget_custom_location.dart';
 
 /// Replaces [Object.toString] overrides with calls to super for the specified
 /// [packageUris].
@@ -35,9 +37,11 @@ class AspectdAopTransformer extends FlutterProgramTransformer {
   final List<AopItemInfo> injectInfoList = <AopItemInfo>[];
   final Map<String, Library> libraryMap = <String, Library>{};
   final Map<Uri, Source> concatUriToSource = <Uri, Source>{};
+  final WidgetCreatorTracker tracker = WidgetCreatorTracker();
 
   @override
   void transform(Component component) {
+    tracker.transform(component, component.libraries,null);
     prepareAopItemInfo(component);
     if (callInfoList.isNotEmpty) {
       component.transformChildren(

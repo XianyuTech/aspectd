@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-
+import 'package:example/custom_page.dart';
+import 'package:example/custom_list.dart';
 Future<void> appInit() async {}
 
 Future<void> appInit2() async {}
@@ -57,6 +58,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      routes: <String, WidgetBuilder> {
+        '/a': (BuildContext context) => CustomPage(title: 'page A'),
+        '/b': (BuildContext context) => CustomList(title: 'page B'),
+      },
     );
   }
 }
@@ -99,6 +104,10 @@ class _MyHomePageState extends State<MyHomePage> {
     print('[KWLM]nextInt:${random.nextInt(100)}');
     print('[KWLM]nextDouble:${random.nextDouble()}');
     print('[KWLM]nextBool:${random.nextBool()}');
+  }
+
+  void push(String route) {
+    Navigator.of(context).pushNamed(route);
   }
 
   void _incrementCounter() {
@@ -165,6 +174,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 const Text('Random Demo', style: TextStyle(fontSize: 30)),
                 onTap: () {
                   onRandomDemo();
+                }),
+            GestureDetector(
+                child:
+                const Text('Present CustomPage', style: TextStyle(fontSize: 30)),
+                onTap: () {
+                  push("/a");
+                }),
+            GestureDetector(
+                child:
+                const Text('Present CustomList', style: TextStyle(fontSize: 30)),
+                onTap: () {
+                  push("/b");
                 })
           ],
         ),
@@ -176,6 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ),
+
     );
   }
 }

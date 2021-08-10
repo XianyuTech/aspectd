@@ -1,5 +1,6 @@
 import 'package:example/main.dart' as app;
-// ignore: unused_import
-import 'aop_impl.dart';
+import 'package:aspectd_impl/aop_impl.dart';
+import 'package:aspectd_impl/growing_aop_impl.dart';
+import 'package:aspectd_impl/growing_impl.dart';
 
-void main() => app.main();
+void main()=> app.main();

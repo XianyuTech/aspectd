@@ -1,3 +1,4 @@
+// @dart=2.8
 import 'package:args/args.dart';
 import 'package:frontend_server/frontend_server.dart' as frontend
     show
