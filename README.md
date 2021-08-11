@@ -8,9 +8,9 @@
 
 # 版本信息
 
-flutter 2.2.2
+flutter > 2.0.0
 
-dart 2.13.3
+dart > 2.12 ，本着实用最新版本的原则，在 AspectD 基础上适配了null-safety
 
 并请在已完成  [flutter-growingio-sdk-autotracker-plugin](https://github.com/growingio/flutter-growingio-sdk-autotracker-plugin.git)  集成步骤的情况下开始。
 
@@ -116,20 +116,6 @@ Untracked files:
   ```
 
   A:将`/Users/xxx/.pub-cache/global_packages/aspectd/.dart_tool` Copy到    `/Users/xxx/.pub-cache/git/aspectd-fb05b5a4e1bbe7d7dc9ba53c8d2ff42e6a5103d9/.dart_tool` ，然后执行 flutter pub get
-
-- Q3: lib/growing_impl.dart:324:13: Error: The parameter 'widget' can't have a value of 'null' because of its type 'Widget'
-
-  A:将项目中的growing_impl.dart等文件，文件开头添加 // @dart=2.8 来禁用null-safety
-
-- Q4: 关于aspectd不支持 null-safety
-
-  ```c
-  [+3399 ms] [+3389 ms] Error: Cannot run with sound null safety, because the following dependencies
-  [        ] [        ] don't support null safety:
-  [        ] [        ]  - package:aspectd
-  ```
-
-  A: 由于 `aspectd` 暂时不支持 `null safety` ，在使用 `null safety` 的项目中执行  `flutter run --no-sound-null-safety` 运行即可
 
 # 感谢
 

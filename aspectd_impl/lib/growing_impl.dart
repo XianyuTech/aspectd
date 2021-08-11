@@ -1,4 +1,3 @@
-// @dart=2.8
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -93,7 +92,7 @@ class GrowingHelper {
   void handlePush(Route route, Route previousRoute) {
     if (route is ModalRoute) {
       if (route == pageList.last.current) {
-        pageList.last.previous = previousRoute;
+        pageList.last.previous = previousRoute as ModalRoute;
       }
     }
   }
@@ -128,7 +127,7 @@ class GrowingHelper {
     var clickEvent =
     new GrowingViewElementEvent(GrowingViewElementType.Change);
     /// create elementPathList data
-    clickEvent.xpath = _getElementXPath(state.context);
+    clickEvent.xpath = _getElementXPath(state.context as Element);
     clickEvent.textValue = value.text;
     /// first object must be local
     clickEvent.index = _getIndex(elementPathList.first);
@@ -143,7 +142,7 @@ class GrowingHelper {
 
   String _getPageTitle(Widget widget, BuildContext context) {
     // RenderObject object = context.findRenderObject();
-    reversedObjc(context);
+    reversedObjc(context as Element);
     return pageTitle;
   }
 
@@ -155,7 +154,7 @@ class GrowingHelper {
       if (element.widget is AppBar ||
           element.widget.runtimeType.toString() == "Appbar") {
         var widget = (element.widget as AppBar).title;
-        pageTitle = getTextFromWidget(widget);
+        pageTitle = getTextFromWidget(widget as Widget);
         GIOLogger.debug("title is " + pageTitle);
       }
       if (pageTitle.length == 0) {
@@ -181,8 +180,8 @@ class GrowingHelper {
   }
   /// page path
   /// eg: MyApp/MaterialApp/MyHomePage
-  String _getPagePath(GrowingPageEntry entry) {
-    if (entry == null) return null;
+  String _getPagePath(GrowingPageEntry? entry) {
+    if (entry == null) return "";
     var list = <Element>[];
     var element = entry.context;
     element.visitAncestorElements((ele) {
@@ -209,7 +208,7 @@ class GrowingHelper {
   /// page path is MyApp/MaterialApp/MyHomePage
   /// element xpath is Page/Scaffold[0]/Center[0]/Column[0]/GestureDetector[2]/Text[0]
   String _getElementXPath(Element element) {
-    if (element == null) return null;
+    if (element == null) return "";
     if (_isLocalElement(element)) {
       elementPathList.add(element);
     }
@@ -256,7 +255,7 @@ class GrowingHelper {
 
   String _getElementContent(Element element) {
     if (element == null) return "";
-    Element finalContainerElement;
+    Element? finalContainerElement;
     element.visitAncestorElements((element) {
       String finalResult;
       dynamic widget = element.widget;
@@ -274,13 +273,14 @@ class GrowingHelper {
     }
 
     if (finalContainerElement != null) {
-      _getElementContentByType(finalContainerElement);
+      _getElementContentByType(finalContainerElement!);
       if (contentList.isNotEmpty) {
         String result = contentList.join("-");
         if (result == null) return "";
         return result;
       }
     }
+    return "";
   }
 
   void _getElementContentByType(Element element) {
@@ -295,7 +295,7 @@ class GrowingHelper {
   }
 
   String getTextFromWidget(Widget widget) {
-    String result;
+    String? result;
     if (widget is Text) {
       result = widget.data;
     } else if (widget is Tab) {
@@ -303,7 +303,7 @@ class GrowingHelper {
     } else if (widget is IconButton) {
       result = widget.tooltip ?? "";
     }
-    return result;
+    return result ?? "";
   }
 }
 
@@ -315,14 +315,14 @@ enum GrowingRouteActionType {
 
 /// flutter three kind Route : PopupRoute, PageRoute and there common super class ModalRoute
 class GrowingPageEntry {
-  ModalRoute previous;
+  ModalRoute? previous;
   ModalRoute current;
   GrowingRouteActionType actionType;
   Widget widget;
   BuildContext context;
   int pageShowTimestamp = 0;
   GrowingPageEntry(this.current, this.previous, this.actionType,
-      {this.widget, this.context})
+      {required this.widget, required this.context})
       : pageShowTimestamp = DateTime.now().microsecondsSinceEpoch;
 
   @override
@@ -369,12 +369,12 @@ abstract class _CustomHasCreationLocation {
 @pragma("vm:entry-point")
 class _CustomLocation {
   const _CustomLocation({
-    this.file,
-    this.rootUrl,
-    this.line,
-    this.column,
-    this.name,
-    this.parameterLocations,
+    required this.file,
+    required this.rootUrl,
+    required this.line,
+    required this.column,
+    required this.name,
+    required this.parameterLocations,
   });
 
   final String rootUrl;

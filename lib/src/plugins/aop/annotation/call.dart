@@ -9,7 +9,7 @@ class Call extends AnnotationInfo {
 
   @pragma('vm:entry-point')
   const Call._(String importUri, String clsName, String methodName,
-      {bool isRegex})
+      {bool isRegex = false})
       : super(
             importUri: importUri,
             clsName: clsName,

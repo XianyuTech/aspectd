@@ -1,4 +1,3 @@
-// @dart=2.8
 import 'package:args/args.dart';
 import 'package:frontend_server/frontend_server.dart' as frontend
     show
@@ -17,18 +16,18 @@ import 'aop_utils.dart';
 
 class AopStatementsInsertInfo {
   AopStatementsInsertInfo(
-      {this.library,
-      this.source,
-      this.constructor,
-      this.procedure,
-      this.node,
-      this.aopItemInfo,
-      this.aopInsertStatements});
+      { required this.library,
+        required this.source,
+         this.constructor,
+         this.procedure,
+        required this.node,
+        required this.aopItemInfo,
+        required this.aopInsertStatements});
 
   final Library library;
   final Source source;
-  final Constructor constructor;
-  final Procedure procedure;
+  final Constructor? constructor;
+  final Procedure? procedure;
   final Node node;
   final AopItemInfo aopItemInfo;
   final List<Statement> aopInsertStatements;
@@ -45,10 +44,10 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   final Map<String, VariableDeclaration> _originalVariableDeclaration =
       <String, VariableDeclaration>{};
   final Set<Member> _manipulatedMemberSet = {};
-  Class _curClass;
-  Node _curMethodNode;
-  Library _curAopLibrary;
-  AopStatementsInsertInfo _curAopStatementsInsertInfo;
+  Class? _curClass;
+  Node? _curMethodNode;
+  Library? _curAopLibrary;
+  AopStatementsInsertInfo? _curAopStatementsInsertInfo;
 
   @override
   void visitLibrary(Library library) {
@@ -86,15 +85,15 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitConstructor(Constructor constructor) {
-    AopItemInfo matchedAopItemInfo;
+    AopItemInfo? matchedAopItemInfo;
     int aopItemInfoListLen = _aopItemInfoList.length;
-    Class cls = constructor.parent;
+    Class cls = constructor.parent as Class;
     for (int i = 0; i < aopItemInfoListLen && matchedAopItemInfo == null; i++) {
       AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if (cls.name +
-                  (constructor.name.name == ''
+                  (constructor.name?.name == ''
                       ? ''
-                      : '.' + constructor.name.name) ==
+                      : '.' + constructor.name!.name) ==
               aopItemInfo.methodName &&
           true == aopItemInfo.isStatic) {
         matchedAopItemInfo = aopItemInfo;
@@ -104,20 +103,20 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
     if (matchedAopItemInfo == null) {
       return;
     }
-    final Library library = constructor.parent.parent;
+    final Library library = constructor.parent?.parent as Library;
     if (_manipulatedMemberSet.contains(constructor)) {
       return;
     }
     _manipulatedMemberSet.add(constructor);
-    transformConstructor(library, _uriToSource[library.fileUri], constructor,
+    transformConstructor(library, _uriToSource[library.fileUri]!, constructor,
         matchedAopItemInfo);
     constructor.visitChildren(this);
   }
 
   @override
   void visitProcedure(Procedure node) {
-    String procedureName = node.name.name;
-    AopItemInfo matchedAopItemInfo;
+    String? procedureName = node.name?.name;
+    AopItemInfo? matchedAopItemInfo;
     int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && matchedAopItemInfo == null; i++) {
       AopItemInfo aopItemInfo = _aopItemInfoList[i];
@@ -133,23 +132,25 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
     }
     Library library;
     if (node.parent is Library) {
-      library = node.parent;
+      library = node.parent as Library;
     } else {
-      library = node.parent.parent;
+      library = node.parent?.parent as Library;
     }
     if (_manipulatedMemberSet.contains(node)) {
       return;
     }
     _manipulatedMemberSet.add(node);
     transformMethodProcedure(
-        library, _uriToSource[library.fileUri], node, matchedAopItemInfo);
+        library, _uriToSource[library.fileUri]!, node, matchedAopItemInfo);
     node.visitChildren(this);
   }
 
   @override
   VariableDeclaration visitVariableDeclaration(VariableDeclaration node) {
     node.visitChildren(this);
-    _originalVariableDeclaration.putIfAbsent(node.name, () => node);
+    if (node.name != null) {
+      _originalVariableDeclaration.putIfAbsent(node.name!, () => node);
+    }
     return node;
   }
 
@@ -158,7 +159,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
     node.visitChildren(this);
     if (_mockedVariableDeclaration.contains(node.variable)) {
       final VariableGet variableGet =
-          VariableGet(_originalVariableDeclaration[node.variable.name]);
+          VariableGet(_originalVariableDeclaration[node.variable.name]!);
       return variableGet;
     }
     return node;
@@ -167,10 +168,10 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   @override
   PropertyGet visitPropertyGet(PropertyGet node) {
     node.visitChildren(this);
-    final Node interfaceTargetNode = node.interfaceTargetReference.node;
+    final Node interfaceTargetNode = node.interfaceTargetReference?.node as Node;
     if (_curAopLibrary != null) {
       if (interfaceTargetNode is Field) {
-        if (interfaceTargetNode.fileUri == _curAopLibrary.fileUri) {
+        if (interfaceTargetNode.fileUri == _curAopLibrary!.fileUri) {
           final List<String> keypaths =
               AopUtils.getPropertyKeyPaths(node.toString());
           final String firstEle = keypaths[0];
@@ -179,17 +180,17 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
                 AopUtils.findClassFromThisWithKeypath(_curClass, keypaths);
             final Field field =
                 AopUtils.findFieldForClassWithName(cls, node.name.name);
-            return PropertyGet(node.receiver, field.name);
+            return PropertyGet(node.receiver, field.name as Name);
           } else {
             final VariableDeclaration variableDeclaration =
-                _originalVariableDeclaration[firstEle];
+                _originalVariableDeclaration[firstEle]!;
             if (variableDeclaration.type is InterfaceType) {
-              final InterfaceType interfaceType = variableDeclaration.type;
+              final InterfaceType interfaceType = variableDeclaration.type as InterfaceType;
               final Class cls = AopUtils.findClassFromThisWithKeypath(
                   interfaceType.classNode, keypaths);
               final Field field =
                   AopUtils.findFieldForClassWithName(cls, node.name.name);
-              return PropertyGet(node.receiver, field.name);
+              return PropertyGet(node.receiver, field.name as Name);
             }
           }
         }
@@ -208,7 +209,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   @override
   FunctionDeclaration visitFunctionDeclaration(FunctionDeclaration node) {
     node.visitChildren(this);
-    checkIfInsertInFunction(node.function);
+    checkIfInsertInFunction(node.function as FunctionNode);
     return node;
   }
 
@@ -223,11 +224,11 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   Block visitBlock(Block node) {
     node.visitChildren(this);
     if (_curAopStatementsInsertInfo != null) {
-      final Library library = _curAopStatementsInsertInfo.library;
-      final Source source = _curAopStatementsInsertInfo.source;
-      final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
+      final Library library = _curAopStatementsInsertInfo!.library;
+      final Source source = _curAopStatementsInsertInfo!.source;
+      final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo!.aopItemInfo;
       final List<Statement> aopInsertStatements =
-          _curAopStatementsInsertInfo.aopInsertStatements;
+          _curAopStatementsInsertInfo!.aopInsertStatements;
       insertStatementsToBody(
           library, source, node, aopItemInfo, aopInsertStatements);
     }
@@ -238,9 +239,9 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
       Procedure procedure, AopItemInfo aopItemInfo) {
     final List<Statement> aopInsertStatements =
         onPrepareTransform(library, procedure, aopItemInfo);
-    if (procedure.function.body is Block) {
+    if (procedure.function?.body is Block) {
       _curMethodNode = procedure;
-      insertStatementsToBody(library, source, procedure.function, aopItemInfo,
+      insertStatementsToBody(library, source, procedure.function as Node, aopItemInfo,
           aopInsertStatements);
     }
     onPostTransform(aopItemInfo);
@@ -251,7 +252,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
     final List<Statement> aopInsertStatements =
         onPrepareTransform(library, constructor, aopItemInfo);
 
-    final Statement body = constructor.function.body;
+    final Statement body = constructor.function?.body as Statement;
     bool canBeInitializers = true;
     for (Statement statement in aopInsertStatements) {
       if (!(statement is AssertStatement)) {
@@ -270,7 +271,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
                 AopUtils.getLineStartNumForInitializer(
                     source, constructor.initializers.last))) {
       _curMethodNode = constructor;
-      insertStatementsToBody(library, source, constructor.function, aopItemInfo,
+      insertStatementsToBody(library, source, constructor.function as Node, aopItemInfo,
           aopInsertStatements);
     }
     //Insert in Initializers
@@ -286,7 +287,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
         int lineEnds = -1;
         if (i == len - 1) {
           lineEnds = AopUtils.getLineNumBySourceAndOffset(
-                  source, constructor.function.fileEndOffset) -
+                  source, constructor.function?.fileEndOffset) -
               1;
         } else {
           lineEnds = AopUtils.getLineStartNumForInitializer(
@@ -323,8 +324,8 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
 
   List<Statement> onPrepareTransform(
       Library library, Node methodNode, AopItemInfo aopItemInfo) {
-    final Block block2Insert = aopItemInfo.aopMember.function.body;
-    final Library aopLibrary = aopItemInfo.aopMember?.parent?.parent;
+    final Block block2Insert = aopItemInfo.aopMember.function?.body as Block;
+    final Library aopLibrary = aopItemInfo.aopMember.parent?.parent as Library;
     final List<Statement> tmpStatements = <Statement>[];
     for (Statement statement in block2Insert.statements) {
       final VariableDeclaration variableDeclaration =
@@ -338,36 +339,36 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
     }
     for (LibraryDependency libraryDependency in aopLibrary.dependencies) {
       AopUtils.insertLibraryDependency(
-          library, libraryDependency.importedLibraryReference.node);
+          library, libraryDependency.importedLibraryReference.node as Library);
     }
     if (methodNode is Procedure) {
       for (VariableDeclaration variableDeclaration
-          in methodNode.function.namedParameters) {
+          in methodNode.function!.namedParameters) {
         _originalVariableDeclaration.putIfAbsent(
-            variableDeclaration.name, () => variableDeclaration);
+            variableDeclaration.name!, () => variableDeclaration);
       }
       for (VariableDeclaration variableDeclaration
-          in methodNode.function.positionalParameters) {
+          in methodNode.function!.positionalParameters) {
         _originalVariableDeclaration.putIfAbsent(
-            variableDeclaration.name, () => variableDeclaration);
+            variableDeclaration.name!, () => variableDeclaration);
       }
     } else if (methodNode is Constructor) {
       for (VariableDeclaration variableDeclaration
-          in methodNode.function.namedParameters) {
+          in methodNode.function!.namedParameters) {
         _originalVariableDeclaration.putIfAbsent(
-            variableDeclaration.name, () => variableDeclaration);
+            variableDeclaration.name!, () => variableDeclaration);
       }
       for (VariableDeclaration variableDeclaration
-          in methodNode.function.positionalParameters) {
+          in methodNode.function!.positionalParameters) {
         _originalVariableDeclaration.putIfAbsent(
-            variableDeclaration.name, () => variableDeclaration);
+            variableDeclaration.name!, () => variableDeclaration);
       }
     }
     return tmpStatements;
   }
 
   void onPostTransform(AopItemInfo aopItemInfo) {
-    final Block block2Insert = aopItemInfo.aopMember.function.body;
+    final Block block2Insert = aopItemInfo.aopMember.function?.body as Block;
     block2Insert.statements.clear();
     _mockedVariableDeclaration.clear();
     _originalVariableDeclaration.clear();
@@ -377,17 +378,17 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   void checkIfInsertInFunction(FunctionNode functionNode) {
     if (_curAopStatementsInsertInfo != null) {
       final int lineFrom = AopUtils.getLineNumBySourceAndOffset(
-          _curAopStatementsInsertInfo.source, functionNode.fileOffset);
+          _curAopStatementsInsertInfo!.source, functionNode.fileOffset);
       final int lineTo = AopUtils.getLineNumBySourceAndOffset(
-          _curAopStatementsInsertInfo.source, functionNode.fileEndOffset);
+          _curAopStatementsInsertInfo!.source, functionNode.fileEndOffset);
       final int expectedLineNum =
-          _curAopStatementsInsertInfo.aopItemInfo.lineNum;
+          _curAopStatementsInsertInfo!.aopItemInfo.lineNum;
       if (expectedLineNum >= lineFrom && expectedLineNum <= lineTo) {
-        final Library library = _curAopStatementsInsertInfo.library;
-        final Source source = _curAopStatementsInsertInfo.source;
-        final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
+        final Library library = _curAopStatementsInsertInfo!.library;
+        final Source source = _curAopStatementsInsertInfo!.source;
+        final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo!.aopItemInfo;
         final List<Statement> aopInsertStatements =
-            _curAopStatementsInsertInfo.aopInsertStatements;
+            _curAopStatementsInsertInfo!.aopInsertStatements;
         _curAopStatementsInsertInfo = null;
         functionNode.body = insertStatementsToBody(
             library, source, functionNode, aopItemInfo, aopInsertStatements);
@@ -397,7 +398,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
 
   Statement insertStatementsToBody(Library library, Source source, Node node,
       AopItemInfo aopItemInfo, List<Statement> aopInsertStatements) {
-    Statement body;
+    late Statement? body;
     if (node is FunctionNode) {
       body = node.body;
       if (body is EmptyStatement) {
@@ -445,17 +446,17 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
               }
             } else if (node is Block) {
               if (_curMethodNode is Procedure) {
-                final Procedure procedure = _curMethodNode;
+                final Procedure procedure = _curMethodNode as Procedure;
                 if (AopUtils.isAsyncFunctionNode(procedure.function) &&
                     procedure ==
-                        body?.parent?.parent?.parent?.parent?.parent?.parent
+                        body.parent?.parent?.parent?.parent?.parent?.parent
                             ?.parent?.parent) {
                   if (lineEnds < 0 && i == len - 1) {
                     lineEnds = lineNum2Insert;
                   }
                 } else {
                   if (node.parent is FunctionNode) {
-                    final FunctionNode functionNode = node.parent;
+                    final FunctionNode functionNode = node.parent as FunctionNode;
                     if (lineStart < 0)
                       lineStart = AopUtils.getLineNumBySourceAndOffset(
                           source, functionNode.fileOffset);
@@ -494,7 +495,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
           if (statement2InsertPos != -1) {
             _curAopStatementsInsertInfo = null;
             statements.insertAll(statement2InsertPos, aopInsertStatements);
-            _curAopLibrary = aopItemInfo.aopMember?.parent?.parent;
+            _curAopLibrary = aopItemInfo.aopMember.parent?.parent as Library;
             visitNode(node);
             break;
           }
@@ -503,7 +504,7 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
     } else {
       assert(false);
     }
-    return body;
+    return body!;
   }
 
   void visitNode(Object node) {

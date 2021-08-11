@@ -1,4 +1,3 @@
-// @dart=2.8
 import 'package:args/args.dart';
 import 'package:frontend_server/frontend_server.dart' as frontend
     show
@@ -59,8 +58,9 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitProcedure(Procedure node) {
-    String procedureName = node.name.name;
-    AopItemInfo matchedAopItemInfo;
+    String? procedureName = node.name?.name;
+    if (procedureName == null) return;
+    late AopItemInfo? matchedAopItemInfo;
     int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && matchedAopItemInfo == null; i++) {
       AopItemInfo aopItemInfo = _aopItemInfoList[i];
@@ -80,12 +80,12 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
             node.parent as Library, matchedAopItemInfo, node);
       } else if (node.parent is Class) {
         transformStaticMethodProcedure(
-            node.parent.parent as Library, matchedAopItemInfo, node);
+            node.parent?.parent as Library, matchedAopItemInfo, node);
       }
     } else {
       if (node.parent != null) {
         transformInstanceMethodProcedure(
-            node.parent.parent as Library, matchedAopItemInfo, node);
+            node.parent?.parent as Library, matchedAopItemInfo, node);
       }
     }
   }
@@ -95,10 +95,10 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
     if (AopUtils.manipulatedProcedureSet.contains(originalProcedure)) {
       return;
     }
-    final FunctionNode functionNode = originalProcedure.function;
-    final Statement body = functionNode.body;
+    final FunctionNode functionNode = originalProcedure.function as FunctionNode ;
+    final Statement body = functionNode.body as Statement;
     final bool shouldReturn =
-        !(originalProcedure.function.returnType is VoidType);
+        !(originalProcedure.function?.returnType is VoidType);
 
     final String stubKey =
         '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
@@ -106,14 +106,14 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
     //目标新建stub函数，方便完成目标->aopstub->目标stub链路
     final Procedure originalStubProcedure = AopUtils.createStubProcedure(
-        Name(originalProcedure.name.name + '_' + stubKey,
-            originalProcedure.name.library),
+        Name(originalProcedure.name!.name + '_' + stubKey,
+            originalProcedure.name?.library),
         aopItemInfo,
         originalProcedure,
         body,
         shouldReturn);
-    final Node parent = originalProcedure.parent;
-    String parentIdentifier;
+    final Node parent = originalProcedure.parent as Node;
+    late String parentIdentifier;
     if (parent is Library) {
       parent.procedures.add(originalStubProcedure);
       parentIdentifier = parent.importUri.toString();
@@ -132,8 +132,8 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
     //Pointcut类中新增stub，并且添加调用
     final Library pointcutLibrary =
-        AopUtils.pointCutProceedProcedure.parent.parent;
-    final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent;
+        AopUtils.pointCutProceedProcedure.parent?.parent as Library ;
+    final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent as Class;
     AopUtils.insertLibraryDependency(pointcutLibrary, originalLibrary);
 
     final StaticInvocation staticInvocation = StaticInvocation(
@@ -142,7 +142,7 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
         isConst: originalStubProcedure.isConst);
 
     final Procedure stubProcedureNew = AopUtils.createStubProcedure(
-        Name(stubKey, AopUtils.pointCutProceedProcedure.name.library),
+        Name(stubKey, AopUtils.pointCutProceedProcedure.name?.library),
         aopItemInfo,
         AopUtils.pointCutProceedProcedure,
         AopUtils.createProcedureBodyWithExpression(
@@ -157,14 +157,14 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
     if (AopUtils.manipulatedProcedureSet.contains(originalProcedure)) {
       return;
     }
-    final FunctionNode functionNode = originalProcedure.function;
-    final Class originalClass = originalProcedure.parent;
-    final Statement body = functionNode.body;
+    final FunctionNode functionNode = originalProcedure.function as FunctionNode;
+    final Class originalClass = originalProcedure.parent as Class;
+    final Statement body = functionNode.body as Statement;
     if (body == null) {
       return;
     }
     final bool shouldReturn =
-        !(originalProcedure.function.returnType is VoidType);
+        !(originalProcedure.function?.returnType is VoidType);
 
     final String stubKey =
         '${AopUtils.kAopStubMethodPrefix}${AopUtils.kPrimaryKeyAopMethod}';
@@ -172,8 +172,8 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
     //目标新建stub函数，方便完成目标->aopstub->目标stub链路
     final Procedure originalStubProcedure = AopUtils.createStubProcedure(
-        Name(originalProcedure.name.name + '_' + stubKey,
-            originalProcedure.name.library),
+        Name(originalProcedure.name!.name + '_' + stubKey,
+            originalProcedure.name?.library),
         aopItemInfo,
         originalProcedure,
         body,
@@ -190,18 +190,18 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
     //Pointcut类中新增stub，并且添加调用
     final Library pointcutLibrary =
-        AopUtils.pointCutProceedProcedure.parent.parent;
-    final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent;
+        AopUtils.pointCutProceedProcedure.parent?.parent as Library;
+    final Class pointcutClass = AopUtils.pointCutProceedProcedure.parent as Class;
     AopUtils.insertLibraryDependency(pointcutLibrary, originalLibrary);
 
     final MethodInvocation mockedInvocation = MethodInvocation(
         AsExpression(PropertyGet(ThisExpression(), Name('target')),
             InterfaceType(originalClass, Nullability.legacy)),
-        originalStubProcedure.name,
+        originalStubProcedure.name as Name,
         AopUtils.concatArguments4PointcutStubCall(originalProcedure));
 
     final Procedure stubProcedureNew = AopUtils.createStubProcedure(
-        Name(stubKey, AopUtils.pointCutProceedProcedure.name.library),
+        Name(stubKey, AopUtils.pointCutProceedProcedure.name?.library),
         aopItemInfo,
         AopUtils.pointCutProceedProcedure,
         AopUtils.createProcedureBodyWithExpression(
@@ -220,24 +220,24 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
       Arguments arguments,
       bool shouldReturn) {
     AopUtils.insertLibraryDependency(
-        library, aopItemInfo.aopMember.parent.parent);
+        library, aopItemInfo.aopMember.parent?.parent as Library);
     final Arguments redirectArguments = Arguments.empty();
     AopUtils.concatArgumentsForAopMethod(
         null, redirectArguments, stubKey, targetExpression, member, arguments);
-    Expression callExpression;
+    late Expression callExpression;
     if (aopItemInfo.aopMember is Procedure) {
-      final Procedure procedure = aopItemInfo.aopMember;
+      final Procedure procedure = aopItemInfo.aopMember as Procedure;
       if (procedure.isStatic) {
         callExpression =
-            StaticInvocation(aopItemInfo.aopMember, redirectArguments);
+            StaticInvocation(aopItemInfo.aopMember as Procedure, redirectArguments);
       } else {
-        final Class aopItemMemberCls = aopItemInfo.aopMember.parent;
+        final Class aopItemMemberCls = aopItemInfo.aopMember.parent as Class;
         final ConstructorInvocation redirectConstructorInvocation =
             ConstructorInvocation.byReference(
                 aopItemMemberCls.constructors.first.reference,
                 Arguments(<Expression>[]));
         callExpression = MethodInvocation(redirectConstructorInvocation,
-            aopItemInfo.aopMember.name, redirectArguments);
+            aopItemInfo.aopMember.name as Name, redirectArguments);
       }
     }
     return AopUtils.createProcedureBodyWithExpression(

@@ -10,7 +10,7 @@ class Inject extends AnnotationInfo {
 
   @pragma('vm:entry-point')
   const Inject._(String importUri, String clsName, String methodName,
-      {int lineNum, bool isRegex})
+      {int lineNum = 0, bool isRegex = false})
       : super(
             importUri: importUri,
             clsName: clsName,

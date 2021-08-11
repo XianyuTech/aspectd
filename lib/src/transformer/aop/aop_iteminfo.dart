@@ -5,14 +5,14 @@ import 'aop_utils.dart';
 
 class AopItemInfo {
   AopItemInfo(
-      {  this.mode,
-         this.importUri,
-         this.clsName,
-         this.methodName,
-         this.isStatic,
-         this.aopMember,
-         this.isRegex,
-         this.lineNum});
+      { required this.mode,
+        required this.importUri,
+        required this.clsName,
+        required this.methodName,
+        required this.isStatic,
+        required this.aopMember,
+        required this.isRegex,
+        required this.lineNum});
 
   final AopMode mode;
   final String importUri;
@@ -24,7 +24,7 @@ class AopItemInfo {
   final int lineNum;
   static String uniqueKeyForMethod(
       String importUri, String clsName, String methodName, bool isStatic,
-      { int lineNum}) {
+      { required int lineNum}) {
     return (importUri ?? '') +
         AopUtils.kAopUniqueKeySeperator +
         (clsName ?? '') +

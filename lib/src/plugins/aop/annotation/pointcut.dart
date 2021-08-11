@@ -30,7 +30,7 @@ class PointCut {
   /// the method body is generated dynamically when being transformed in
   /// compile time.
   @pragma('vm:entry-point')
-  Object proceed() {
+  Object? proceed() {
     return null;
   }
 }

@@ -1,4 +1,3 @@
-// @dart=2.8
 enum GrowingViewElementType {
   Click,
   Change,
@@ -9,11 +8,11 @@ class GrowingViewElementEvent {
   /// VIEW_CLICK VIEW_CHANGE
   GrowingViewElementType eventType;
   /// 对应原生sdk中的字段
-  String path;
-  int pageShowTimestamp;
-  String textValue;
-  String xpath;
-  int index;
+  String? path;
+  int? pageShowTimestamp;
+  String? textValue;
+  String? xpath;
+  int? index;
 
   GrowingViewElementEvent(this.eventType,{this.path,this.pageShowTimestamp,this.textValue,this.xpath,this.index});
 
@@ -41,7 +40,7 @@ class GrowingViewElementEvent {
 /// page event : push a page will track
 class GrowingPageEvent {
   /// flutter route name eg: /abc
-  String routeName;
+  String? routeName;
   /// native about
   String path;
   String title;

@@ -1,4 +1,3 @@
-// @dart=2.8
 import 'package:flutter/src/gestures/events.dart';
 import 'package:flutter/src/gestures/hit_test.dart';
 import 'package:flutter/src/rendering/object.dart';
@@ -65,7 +64,7 @@ class GrowingAopClass {
     Element element = pointCut.target as Element;
     if (kReleaseMode || kProfileMode) {
       //release和profile模式创建这个属性
-      element.renderObject.debugCreator = DebugCreator(element);
+      element.renderObject?.debugCreator = DebugCreator(element);
     }
   }
   /// DebugCreator add
@@ -78,7 +77,7 @@ class GrowingAopClass {
     Element element = pointCut.target as Element;
     if (kReleaseMode || kProfileMode) {
       //release和profile模式创建这个属性
-      element.renderObject.debugCreator = DebugCreator(element);
+      element.renderObject?.debugCreator = DebugCreator(element);
     }
   }
   /// Page Push - get only RouteEntry
@@ -118,10 +117,10 @@ class GrowingAopClass {
       "MaterialRouteTransitionMixin", "-buildPage")
   @pragma("vm:entry-point")
   dynamic hookMaterialRouteTransitionMixinBuildPage(PointCut pointCut) {
-    Route target = pointCut.target;
-    Semantics widgetResult = pointCut.proceed();
+    Route target = pointCut.target as Route;
+    Semantics? widgetResult = pointCut.proceed() as Semantics;
     GrowingHelper.getInstance().handleBuildPage(
-        target,widgetResult.child, pointCut.positionalParams[0]);
+        target,widgetResult.child!, pointCut.positionalParams[0]);
     return widgetResult;
   }
   /// Page Build
@@ -130,10 +129,10 @@ class GrowingAopClass {
       "CupertinoRouteTransitionMixin", "-buildPage")
   @pragma("vm:entry-point")
   dynamic hookCupertinoRouteTransitionMixinBuildPage(PointCut pointCut) {
-    Route target = pointCut.target;
-    Semantics widgetResult = pointCut.proceed();
+    Route target = pointCut.target as Route;
+    Semantics widgetResult = pointCut.proceed() as Semantics;
     GrowingHelper.getInstance().handleBuildPage(
-        target,widgetResult.child, pointCut.positionalParams[0]);
+        target,widgetResult.child!, pointCut.positionalParams[0]);
     return widgetResult;
   }
   /// Draw Frame - 每次变动刷新
@@ -152,7 +151,7 @@ class GrowingAopClass {
   @pragma("vm:entry-point")
   void hookEditableTextStateUpdateEditingValue(PointCut pointCut) {
     pointCut.proceed();
-    GrowingHelper.getInstance().handleTextChanged(pointCut.target, pointCut.positionalParams[0]);
+    GrowingHelper.getInstance().handleTextChanged(pointCut.target as EditableTextState, pointCut.positionalParams[0]);
   }
 }
 

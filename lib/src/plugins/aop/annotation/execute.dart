@@ -11,7 +11,7 @@ class Execute extends AnnotationInfo {
 
   @pragma('vm:entry-point')
   const Execute._(String importUri, String clsName, String methodName,
-      {bool isRegex})
+      {bool isRegex = false})
       : super(
             importUri: importUri,
             clsName: clsName,

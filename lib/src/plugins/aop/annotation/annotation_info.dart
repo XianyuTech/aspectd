@@ -4,11 +4,11 @@ class AnnotationInfo {
   /// AnnotationInfo default constructor.
   @pragma('vm:entry-point')
   const AnnotationInfo(
-      {this.importUri,
-      this.clsName,
-      this.methodName,
-      this.lineNum,
-      this.isRegex = false});
+      { required this.importUri,
+        required this.clsName,
+        required this.methodName,
+        this.lineNum,
+        this.isRegex = false});
 
   /// Indicating which dart file to operate on.
   final String importUri;
@@ -25,5 +25,5 @@ class AnnotationInfo {
 
   /// Indicating which line to operate on.
   /// This is only meaningful for inject grammar.
-  final int lineNum; //Line Number to insert at(Before), 1 based.
+  final int? lineNum; //Line Number to insert at(Before), 1 based.
 }
