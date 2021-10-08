@@ -8,9 +8,15 @@
 
 # 版本信息
 
-flutter > 2.0.0
-
-dart > 2.12 ，本着实用最新版本的原则，在 AspectD 基础上适配了null-safety
+```c
+    • Flutter version 2.2.2 at /Users/sheng/GrowIO/flutter
+    • Framework revision d79295af24 (4 months ago), 2021-06-11 08:56:01 -0700
+    • Engine revision 91c9fc8fe0
+    • Dart version 2.13.3
+    • Pub download mirror https://pub.flutter-io.cn
+    • Flutter download mirror https://storage.flutter-io.cn
+```
+在 AspectD 基础上适配了null-safety
 
 并请在已完成  [flutter-growingio-sdk-autotracker-plugin](https://github.com/growingio/flutter-growingio-sdk-autotracker-plugin.git)  集成步骤的情况下开始。
 
