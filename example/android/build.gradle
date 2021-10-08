@@ -1,22 +1,27 @@
 buildscript {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         jcenter()
         maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath "com.growingio.android:autotracker-gradle-plugin:latest.release"
     }
 }
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         jcenter()
         maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
     }
 }
 

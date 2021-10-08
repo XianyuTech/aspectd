@@ -23,7 +23,11 @@ if (flutterVersionName == null) {
 
 apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+def withAutotrack = true
 
+if (withAutotrack) {
+    apply plugin: 'com.growingio.android.autotracker'
+}
 android {
     compileSdkVersion 28
 
@@ -57,6 +61,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    //请使用3.2.1之后正式版本，这里仅为了跳过3.2.0版本而使用了快照版
-    implementation 'com.growingio.android:autotracker:3.2.1-06292-SNAPSHOT'
+    implementation 'com.growingio.android:autotracker:latest.release'
 }
