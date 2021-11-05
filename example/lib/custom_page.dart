@@ -86,6 +86,7 @@ class _CustomPageState extends State<CustomPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: (){
           debugPrint('click button');
+          Navigator.of(context).pushNamed("/a");
         },
         tooltip: 'Increment',
         child: Icon(Icons.add),

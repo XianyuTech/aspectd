@@ -1,4 +1,7 @@
+
+
 buildscript {
+
     repositories {
         mavenLocal()
         google()
@@ -10,7 +13,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.1'
-        classpath "com.growingio.android:autotracker-gradle-plugin:latest.release"
+        classpath "com.growingio.android:autotracker-gradle-plugin:3.3.1-11051-SNAPSHOT"
     }
 }
 

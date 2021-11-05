@@ -1,5 +1,5 @@
 import 'package:flutter/src/gestures/events.dart';
-import 'package:flutter/src/gestures/hit_test.dart';
+// import 'package:flutter/src/gestures/hit_test.dart';
 import 'package:flutter/src/rendering/object.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:aspectd/aspectd.dart';
@@ -136,6 +136,7 @@ class GrowingAopClass {
     return widgetResult;
   }
   /// Draw Frame - 每次变动刷新
+  /// SchedulerBinding：support window.onBeginFrame/window.onDrawFrame call back
   @Execute("package:flutter/src/scheduler/binding.dart", "SchedulerBinding",
       "-handleDrawFrame")
   @pragma("vm:entry-point")

@@ -29,8 +29,8 @@ class CustomList extends StatefulWidget {
 class _CustomListState extends State<CustomList> {
   @override
   Widget build(BuildContext context) {
-    Widget divider1=Divider(color: Colors.blue,);
-    Widget divider2=Divider(color: Colors.green);
+    Widget divider1 = Divider(color: Colors.blue,);
+    Widget divider2 = Divider(color: Colors.green);
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -50,7 +50,7 @@ class _CustomListState extends State<CustomList> {
             },
             //分割器构造器
             separatorBuilder: (BuildContext context, int index) {
-              return index%2==0?divider1:divider2;
+              return index%2 == 0?divider1:divider2;
             },
       )
     ),

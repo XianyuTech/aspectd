@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 enum GrowingViewElementType {
   Click,
   Change,
@@ -53,6 +55,48 @@ class GrowingPageEvent {
     jsonMap["path"] = this.path;
     jsonMap["timestamp"] = this.timestamp;
     jsonMap["title"] = this.title;
+    return jsonMap;
+  }
+
+  @override
+  String toString() {
+    return this.toMap().toString();
+  }
+}
+
+/// GrowingIO flutter web circle element
+class GrowingCircleElement {
+  /// element rect eg: {0,0,100,50}
+  Rect? rect;
+  /// element z position
+  int zLevel = 0;
+  String? content;
+  String? xpath;
+  String? nodeType;
+  String? parentXPath;
+  bool isContainer = false;
+  int index = -1;
+  String? page;
+  bool isIgnored = false;
+  GrowingCircleElement();
+
+  Map<String,dynamic> toMap() {
+    var jsonMap = Map<String,dynamic>();
+    /// transform rect to left top width height
+    jsonMap["left"] = this.rect!.left;
+    jsonMap["top"] = this.rect!.top;
+    jsonMap["width"] = this.rect!.width;
+    jsonMap["height"] = this.rect!.height;
+    /// key value
+    jsonMap["zLevel"] = this.zLevel;
+    jsonMap["content"] = this.content;
+    jsonMap["xpath"] = this.xpath;
+    jsonMap["nodeType"] = this.nodeType;
+    jsonMap["parentXPath"] = this.parentXPath;
+    jsonMap["isContainer"] = this.isContainer;
+    jsonMap["index"] = this.index;
+    jsonMap["page"] = this.page;
+    jsonMap["isIgnored"] = this.isIgnored;
     return jsonMap;
   }
 

@@ -2,39 +2,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:example/custom_page.dart';
 import 'package:example/custom_list.dart';
-Future<void> appInit() async {}
-
-Future<void> appInit2() async {}
-
-class Observer {
-  void onChanged(){
-
-  }
-}
-
-void injectDemo(List<Observer> observers) {
-  int a = 10;
-  if (a > 5) {
-    print('[KWLM]:if1');
-  }
-  print('[KWLM]:a');
-  for (Observer o in observers) {
-    print('[KWLM]:Observer1');
-    o.onChanged();
-    print('[KWLM]:Observer2');
-  }
-  print('[KWLM]:b');
-  for (int i = 0; i < 10; i++) {
-    print('[KWLM]:for i $i');
-    print('[KWLM]:for i $i');
-  }
-  print('[KWLM]:c');
-}
+import 'package:flutter/services.dart';
+import 'package:growingio_sdk_autotracker_plugin/growingio_sdk_autotracker_plugin.dart';
+// import 'package:example/webview_page.dart';
+import 'dart:ui' as ui show window;
 
 void main() {
-  appInit();
-  appInit2();
-  injectDemo([]);
   C()..fa();
   runApp(MyApp());
 }
@@ -61,6 +34,7 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder> {
         '/a': (BuildContext context) => CustomPage(title: 'page A'),
         '/b': (BuildContext context) => CustomList(title: 'page B'),
+        // '/web': (BuildContext context) => WebViewExample(),
       },
     );
   }
@@ -85,9 +59,6 @@ class MyHomePage extends StatefulWidget {
 
   @override
   _MyHomePageState createState() {
-    print('[KWLM]:${getTag()}');
-    print('[KWLM]:${getTag2()}');
-    print('[KWLM]:${getTag3()}');
     return _MyHomePageState();
   }
 }
@@ -95,16 +66,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void onPluginDemo() {
-    print('[KWLM]:onPluginDemo111 Called!');
-  }
-
-  void onRandomDemo() {
-    final Random random = Random();
-    print('[KWLM]nextInt:${random.nextInt(100)}');
-    print('[KWLM]nextDouble:${random.nextDouble()}');
-    print('[KWLM]nextBool:${random.nextBool()}');
-  }
+  // void onRandomDemo() {
+  //   final Random random = Random();
+  //   print('[KWLM]nextInt:${random.nextInt(100)}');
+  //   print('[KWLM]nextDouble:${random.nextDouble()}');
+  //   print('[KWLM]nextBool:${random.nextBool()}');
+  // }
 
   void push(String route) {
     Navigator.of(context).pushNamed(route);
@@ -121,39 +88,25 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
+  static const platform = const MethodChannel('samples.flutter.dev/goToNativePage');
+
+  Future<void> _goToNativePage() async {
+    try {
+      return await platform
+          .invokeMethod('goToNativePage', {'test': 'from flutter'});
+    } on PlatformException catch (e) {
+      return;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
@@ -165,27 +118,36 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             GestureDetector(
                 child:
-                const Text('onPluginDemo', style: TextStyle(fontSize: 30)),
+                const Text('Push Native VC', style: TextStyle(fontSize: 20)),
                 onTap: () {
-                  onPluginDemo();
+                  _goToNativePage();
                 }),
             GestureDetector(
                 child:
-                const Text('Random Demo', style: TextStyle(fontSize: 30)),
+                const Text('Push Flutter/Native', style: TextStyle(fontSize: 20)),
                 onTap: () {
-                  onRandomDemo();
+                  push("/a");
+                  // onRandomDemo();
                 }),
             GestureDetector(
                 child:
-                const Text('Present CustomPage', style: TextStyle(fontSize: 30)),
+                const Text('CustomPage /a', style: TextStyle(fontSize: 20)),
                 onTap: () {
                   push("/a");
                 }),
             GestureDetector(
                 child:
-                const Text('Present CustomList', style: TextStyle(fontSize: 30)),
+                const Text('CustomList /b', style: TextStyle(fontSize: 20)),
                 onTap: () {
                   push("/b");
+                }),
+            GestureDetector(
+                child:
+                const Text('Start WebCircle Data', style: TextStyle(fontSize: 20)),
+                onTap: () {
+                  GrowingAutotracker.getInstance().webCircleRunning = true;
+                  // MediaQueryData mediaQuery = MediaQueryData.fromWindow(ui.window);
+                  // print("mediaQuery.devicePixelRatio is ${mediaQuery.devicePixelRatio}");
                 })
           ],
         ),
