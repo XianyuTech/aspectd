@@ -24,13 +24,6 @@ if (flutterVersionName == null) {
 apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 def withAutotrack = true
-<<<<<<< HEAD
-=======
-
-if (withAutotrack) {
-    apply plugin: 'com.growingio.android.autotracker'
-}
->>>>>>> fix: android 部分适配
 
 if (withAutotrack) {
     apply plugin: 'com.growingio.android.autotracker'
@@ -46,7 +39,7 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.aspectd.example"
         minSdkVersion 19
-        targetSdkVersion 27
+        targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -75,5 +68,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
     //请使用3.2.1之后正式版本，这里仅为了跳过3.2.0版本而使用了快照版
 //    implementation 'com.growingio.android:autotracker-core:latest.release'
-    implementation 'com.growingio.android:autotracker-cdp:3.3.1-11051-SNAPSHOT'
+    implementation 'com.growingio.android:autotracker-cdp:3.3.2-11051-SNAPSHOT'
 }

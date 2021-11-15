@@ -12,8 +12,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
-        classpath "com.growingio.android:autotracker-gradle-plugin:3.3.1-11051-SNAPSHOT"
+        classpath 'com.android.tools.build:gradle:3.5.0'
+        classpath "com.growingio.android:autotracker-gradle-plugin:3.3.2-11051-SNAPSHOT"
     }
 }
 
