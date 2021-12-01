@@ -123,6 +123,26 @@ class GrowingAopClass {
         target,widgetResult.child!, pointCut.positionalParams[0]);
     return widgetResult;
   }
+  @Execute("package:flutter/src/widgets/framework.dart",
+      "Element", "-deactivateChild")
+  @pragma("vm:entry-point")
+  dynamic hookElementDeactivateChild(PointCut pointCut) {
+    Element target = pointCut.target as Element;
+    GrowingHelper.getInstance().handleDeactivate(target,pointCut.positionalParams[0]);
+    pointCut.proceed();
+    return;
+  }
+
+  // @Execute("package:flutter/src/widgets/framework.dart",
+  //     "RenderObjectElement", "-deactivate")
+  // @pragma("vm:entry-point")
+  // dynamic hookRenderObjectElementDeactivate(PointCut pointCut) {
+  //   Element target = pointCut.target as Element;
+  //   GrowingHelper.getInstance().handleDeactivate(target);
+  //   pointCut.proceed();
+  //   return;
+  // }
+
   /// Page Build
   /// can get context and widget
   @Execute("package:flutter/src/cupertino/route.dart",

@@ -69,17 +69,17 @@ class GrowingHelper {
           Element element = creator.element;
           var clickEvent =
               new GrowingViewElementEvent(GrowingViewElementType.Click);
-          var parser = GrowingElementParser(element, currentPage());
+          var parser = GrowingElementParser(element);
           /// create elementPathList data
           clickEvent.xpath = parser.xpath;
           clickEvent.textValue = parser.content;
 
           /// first object must be local
           clickEvent.index = parser.index;
-
+          var page = parser.parentPage ?? currentPage();
           /// page about
-          clickEvent.path = _getPagePath(currentPage());
-          clickEvent.pageShowTimestamp = currentPage().pageShowTimestamp;
+          clickEvent.path = _getPagePath(page);
+          clickEvent.pageShowTimestamp = page.pageShowTimestamp;
           GIOLogger.debug('handleClickEvent ' + clickEvent.toMap().toString());
           GrowingAutotracker.getInstance()
               .flutterClickEvent(clickEvent.toMap());
@@ -99,12 +99,67 @@ class GrowingHelper {
     }
   }
 
+  void handlePop(Route route, Route previousRoute) {
+    if (route is ModalRoute) {
+      pageList.removeWhere((element) => (element.current == route));
+      pageCache.removeWhere((element) => (element.current == route));
+    }
+  }
+  /// 从pagelist中删除相关的元素
+  void _removeLinkedElement(Widget child) {
+    var rmElement = null;
+    pageList.forEach((element) {
+      if (rmElement != null) return;
+      if (element.widget == child) {
+        rmElement = element;
+      }
+    });
+    if (rmElement == null) return;
+    pageList.remove(rmElement);
+    GIOLogger.debug("remove Element" + rmElement.toString());
+    if (rmElement.container != null)  {
+      pageList.remove(rmElement.container);
+      GIOLogger.debug("remove Element" + rmElement.container.toString());
+    }
+  }
+
+  void handleDeactivate(Element parent,Element child) {
+    this._removeLinkedElement(child.widget);
+  }
+
   void handleBuildPage(Route route, Widget widget, BuildContext context) {
     if (route is ModalRoute) {
-      var page = GrowingPageEntry(route, null, GrowingRouteActionType.Push,
-          widget: widget, context: context);
-      pageList.add(page);
-      pageCache.add(page);
+      /// MyPage 可能被 Scaffold 包裹，需要获取其真实的代表，MyPage
+      var realwidget = GrowingUtil.getRealWidget(widget);
+
+      if (realwidget is MultiChildRenderObjectWidget) {
+        GIOLogger.debug("Ignored MultiChildRenderObjectWidget" + realwidget.runtimeType.toString());
+        return;
+      }
+      if (realwidget is StatefulWidget || realwidget is StatelessWidget) {
+        var container = null;
+        if (realwidget != widget) {
+          this._removeLinkedElement(widget);
+          /// add Scaffold
+          container = GrowingPageEntry(route, GrowingRouteActionType.Push,
+              widget: widget, context: context);
+          pageList.add(container);
+          /// page cache 存储page实体，drawFrame时，发出page事件后清空，仅需要add，无需删除
+          pageCache.add(container);
+          GIOLogger.debug("add Element" + container.toString());
+        }
+
+        this._removeLinkedElement(realwidget);
+        var element = GrowingPageEntry(route, GrowingRouteActionType.Push,
+            widget: realwidget, context: context, container: container);
+        pageList.add(element);
+        /// page cache 存储page实体，drawFrame时，发出page事件后清空，仅需要add，无需删除
+        pageCache.add(element);
+        GIOLogger.debug("add Element" + element.toString());
+
+
+      }
+
     }
     GIOLogger.debug(pageList.toString());
   }
@@ -121,8 +176,8 @@ class GrowingHelper {
 
       pageCache.forEach((element) {
         /// 仅获取title
-        
-        var title = element.titile;
+
+        var title = element.title;
         var page = GrowingPageEvent(
             _getPagePath(element), element.pageShowTimestamp, title,
             routeName: element.current.settings.name);
@@ -176,7 +231,7 @@ class GrowingHelper {
         page["height"] = size.height;
       }
       page["path"] = _getPagePath(entry);
-      page["title"] = entry.titile;
+      page["title"] = entry.title;
       page["isIgnored"] = false;
 
       /// pages
@@ -225,13 +280,13 @@ class GrowingHelper {
         }else {
           circle.rect = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
         }
-        var parser = GrowingElementParser(element, currentPage());
-        var parentParser = GrowingElementParser(parent, currentPage());
+        var parser = GrowingElementParser(element);
+        var parentParser = GrowingElementParser(parent);
         circle.xpath = parser.xpath;
         circle.parentXPath = parentParser.xpath;
         circle.content = parser.content;
         circle.index = parser.index;
-        circle.page = _getPagePath(currentPage());
+        circle.page = _getPagePath(parser.parentPage ?? currentPage());
         circle.zLevel = z;
         circle.isContainer = false;
         circle.isIgnored = isIgnored;
@@ -252,25 +307,19 @@ class GrowingHelper {
 
   void handleTextChanged(EditableTextState state, TextEditingValue value) {
     var clickEvent = new GrowingViewElementEvent(GrowingViewElementType.Change);
-    var parser = GrowingElementParser(state.context as Element,currentPage());
+    var parser = GrowingElementParser(state.context as Element);
     /// create elementPathList data
     clickEvent.xpath = parser.xpath;
     clickEvent.textValue = value.text;
 
     /// first object must be local
     clickEvent.index = parser.index;
-
+    var page = parser.parentPage ?? currentPage();
     /// page about
-    clickEvent.path = _getPagePath(currentPage());
-    clickEvent.pageShowTimestamp = currentPage().pageShowTimestamp;
+    clickEvent.path = _getPagePath(page);
+    clickEvent.pageShowTimestamp = page.pageShowTimestamp;
     GIOLogger.debug('handleTextChanged ' + clickEvent.toMap().toString());
     GrowingAutotracker.getInstance().flutterViewChangeEvent(clickEvent.toMap());
-  }
-
-  void handlePop(Route route, Route previousRoute) {
-    if (route is ModalRoute) {
-      pageList.removeWhere((element) => (element.current == route));
-    }
   }
 
   /// page path
@@ -281,7 +330,9 @@ class GrowingHelper {
     String finalResult = "";
     var list = pageList.sublist(0,pageList.indexOf(entry)+1);
     list.forEach((ele) {
-      finalResult += "/${ele.widget.runtimeType.toString()}";
+      var widget = ele.widget;
+      String name = widget.runtimeType.toString();
+      finalResult += "/${name}";
     });
     if (finalResult.startsWith('/')) {
       finalResult = finalResult.replaceFirst('/', '');
@@ -319,13 +370,14 @@ class GrowingHelper {
 
 class GrowingElementParser {
   late Element element;
-  GrowingPageEntry currentPage;
+  GrowingPageEntry? parentPage;
   List<Element> elementComponents = <Element>[];
 
-  GrowingElementParser(this.element,this.currentPage);
+  GrowingElementParser(this.element);
   /// private
   String? _xpath;
   int? _index;
+
 
   String get content {
     return _getElementContent(element);
@@ -368,23 +420,36 @@ class GrowingElementParser {
     if (_isLocalElement(element)) {
       elementComponents.add(element);
     }
-
     element.visitAncestorElements((ele) {
+      if (parentPage != null) return true;
       if (_isLocalElement(ele)) {
+        if (ele.widget is StatelessWidget || ele.widget is StatefulWidget) {
+          GIOLogger.debug("visit " + ele.toString());
+          var tempList = GrowingHelper.getInstance().pageList.where((element) => element.widget == ele.widget);
+          if (tempList.isNotEmpty) {
+            parentPage = tempList.first;
+            return true;
+          }
+        }
         elementComponents.add(ele);
       }
       return true;
     });
 
+
     /// growingio logic : page element can`t contained in click xpath
     /// page element contain in page path
-    var listResult = elementComponents.reversed.skipWhile((value) =>
-    value.widget.runtimeType.toString() !=
-        currentPage.widget.runtimeType.toString());
+    var listResult = elementComponents.reversed;
+    // elementComponents.reversed.forEach((element) {
+    //   var widget = GrowingUtil.getInstance().getRealWidget(element.widget);
+    //   if (widget == currentPage.widget) {
+    //
+    //   }
+    // });
     String finalResult = "Page";
 
     /// remove MyHomePage
-    listResult = listResult.skip(1);
+    // listResult = listResult.skip(1);
     listResult.forEach((ele) {
       finalResult += "/${ele.widget.runtimeType.toString()}";
       if (ele == listResult.last) {
@@ -433,24 +498,62 @@ enum GrowingRouteActionType {
   Pop,
 }
 
+class GrowingUtil {
+  /// find real widget that reflect real use class
+  static Widget getRealWidget(Widget widget) {
+    if (widget is Scaffold) {
+      if (widget.body != null) widget = widget.body!;
+    }
+    bool isNext = true;
+    while (isNext) {
+      if (widget is Container) {
+        if (widget.child != null) {
+          widget = widget.child!;
+          continue;
+        }
+      }
+      if (widget is SingleChildScrollView) {
+        if (widget.child != null) {
+          widget = widget.child!;
+          continue;
+        }
+      }
+      if (widget is SingleChildRenderObjectWidget) {
+        if (widget.child != null) {
+          widget = widget.child!;
+          continue;
+        }
+      }
+      isNext = false;
+    }
+
+    return widget;
+  }
+}
+
 /// flutter three kind Route : PopupRoute, PageRoute and there common super class ModalRoute
 class GrowingPageEntry {
   ModalRoute? previous;
   ModalRoute current;
   GrowingRouteActionType actionType;
+  GrowingPageEntry? container;
   Widget widget;
+  String? alias;
   BuildContext context;
   int pageShowTimestamp = 0;
-  GrowingPageEntry(this.current, this.previous, this.actionType,
-      {required this.widget, required this.context})
+  // GrowingPageEntry(this.current, this.previous, this.actionType,
+  //     {required this.widget, required this.context})
+  //     : pageShowTimestamp = DateTime.now().microsecondsSinceEpoch;
+  GrowingPageEntry(this.current,this.actionType,
+      {required this.widget, required this.context,this.previous,this.container,this.alias})
       : pageShowTimestamp = DateTime.now().microsecondsSinceEpoch;
-
   @override
   String toString() {
     return 'GrowingPageEntry{previous: $previous, current: $current, actionType: $actionType, widget: $widget, context: $context}';
   }
+
   String? _pageTitle;
-  String get titile {
+  String get title {
     if (_pageTitle != null) return _pageTitle!;
     return _getPageTitle(widget, context);
   }
@@ -458,6 +561,7 @@ class GrowingPageEntry {
   String _getPageTitle(Widget widget, BuildContext context) {
     // RenderObject object = context.findRenderObject();
     reversedObjc(context as Element);
+    if (_pageTitle == null) return "";
     return _pageTitle!;
   }
 
