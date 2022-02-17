@@ -106,16 +106,16 @@ import 'package:aspectd/aspectd.dart';
 // }
 
 @Aspect()
-@pragma("vm:entry-point")
+@pragma('vm:entry-point')
 class InjectDemo{
- @Inject("package:example/main.dart","","+injectDemo", lineNum:27)
- @pragma("vm:entry-point")
+ @Inject('package:example/main.dart','','+injectDemo', lineNum:27)
+ @pragma('vm:entry-point')
  static void onInjectDemoHook1() {
    print('Aspectd:KWLM51');
  }
 
- @Inject("package:example/main.dart","C","+C", lineNum:195)
- @pragma("vm:entry-point")
+ @Inject('package:example/main.dart','C','+C', lineNum:195)
+ @pragma('vm:entry-point')
  static void onInjectDemoHook3() {
    print('Aspectd:KWLM52');
  }

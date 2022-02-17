@@ -207,7 +207,7 @@ class AopUtils {
     //重定向到AOP的函数体中去
     final Arguments pointCutConstructorArguments = Arguments.empty();
     final List<MapEntry> sourceInfos = <MapEntry>[];
-    sourceInfo?.forEach((String key, String value) {
+    sourceInfo.forEach((String key, String value) {
       sourceInfos.add(MapEntry(StringLiteral(key), StringLiteral(value)));
     });
     pointCutConstructorArguments.positional.add(MapLiteral(sourceInfos));

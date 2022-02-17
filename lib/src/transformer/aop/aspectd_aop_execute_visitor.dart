@@ -20,11 +20,11 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitLibrary(Library library) {
-    String importUri = library.importUri.toString();
+    final String importUri = library.importUri.toString();
     bool matches = false;
-    int aopItemInfoListLen = _aopItemInfoList.length;
+    final int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
-      AopItemInfo aopItemInfo = _aopItemInfoList[i];
+      final AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if ((aopItemInfo.isRegex &&
               RegExp(aopItemInfo.importUri).hasMatch(importUri)) ||
           (!aopItemInfo.isRegex && importUri == aopItemInfo.importUri)) {
@@ -39,11 +39,11 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitClass(Class cls) {
-    String clsName = cls.name;
+    final String clsName = cls.name;
     bool matches = false;
-    int aopItemInfoListLen = _aopItemInfoList.length;
+    final int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
-      AopItemInfo aopItemInfo = _aopItemInfoList[i];
+      final AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if ((aopItemInfo.isRegex &&
               RegExp(aopItemInfo.clsName).hasMatch(clsName)) ||
           (!aopItemInfo.isRegex && clsName == aopItemInfo.clsName)) {
@@ -58,11 +58,11 @@ class AspectdAopExecuteVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitProcedure(Procedure node) {
-    String procedureName = node.name.name;
+    final String procedureName = node.name.name;
     AopItemInfo matchedAopItemInfo;
-    int aopItemInfoListLen = _aopItemInfoList.length;
+    final int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && matchedAopItemInfo == null; i++) {
-      AopItemInfo aopItemInfo = _aopItemInfoList[i];
+      final AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if ((aopItemInfo.isRegex &&
               RegExp(aopItemInfo.methodName).hasMatch(procedureName)) ||
           (!aopItemInfo.isRegex && procedureName == aopItemInfo.methodName)) {

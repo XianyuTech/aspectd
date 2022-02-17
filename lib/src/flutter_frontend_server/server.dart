@@ -44,7 +44,7 @@ class _FlutterFrontendCompiler implements frontend.CompilerInterface {
   @override
   Future<bool> compile(String filename, ArgResults options,
       {IncrementalCompiler generator}) async {
-    List<FlutterProgramTransformer> transformers =
+    final List<FlutterProgramTransformer> transformers =
         FlutterTarget.flutterProgramTransformers;
     if (!transformers.contains(aspectdAopTransformer)) {
       transformers.add(aspectdAopTransformer);

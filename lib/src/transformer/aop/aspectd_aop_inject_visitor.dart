@@ -51,11 +51,11 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitLibrary(Library library) {
-    String importUri = library.importUri.toString();
+    final String importUri = library.importUri.toString();
     bool matches = false;
-    int aopItemInfoListLen = _aopItemInfoList.length;
+    final int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
-      AopItemInfo aopItemInfo = _aopItemInfoList[i];
+      final AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if (!aopItemInfo.isRegex && importUri == aopItemInfo.importUri) {
         matches = true;
         break;
@@ -68,11 +68,11 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitClass(Class cls) {
-    String clsName = cls.name;
+    final String clsName = cls.name;
     bool matches = false;
-    int aopItemInfoListLen = _aopItemInfoList.length;
+    final int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
-      AopItemInfo aopItemInfo = _aopItemInfoList[i];
+      final AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if (!aopItemInfo.isRegex && clsName == aopItemInfo.clsName) {
         matches = true;
         break;
@@ -86,10 +86,10 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   @override
   void visitConstructor(Constructor constructor) {
     AopItemInfo matchedAopItemInfo;
-    int aopItemInfoListLen = _aopItemInfoList.length;
-    Class cls = constructor.parent;
+    final int aopItemInfoListLen = _aopItemInfoList.length;
+    final Class cls = constructor.parent;
     for (int i = 0; i < aopItemInfoListLen && matchedAopItemInfo == null; i++) {
-      AopItemInfo aopItemInfo = _aopItemInfoList[i];
+      final AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if (cls.name +
                   (constructor.name.name == ''
                       ? ''
@@ -115,11 +115,11 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitProcedure(Procedure node) {
-    String procedureName = node.name.name;
+    final String procedureName = node.name.name;
     AopItemInfo matchedAopItemInfo;
-    int aopItemInfoListLen = _aopItemInfoList.length;
+    final int aopItemInfoListLen = _aopItemInfoList.length;
     for (int i = 0; i < aopItemInfoListLen && matchedAopItemInfo == null; i++) {
-      AopItemInfo aopItemInfo = _aopItemInfoList[i];
+      final AopItemInfo aopItemInfo = _aopItemInfoList[i];
       if (!aopItemInfo.isRegex &&
           procedureName == aopItemInfo.methodName &&
           aopItemInfo.isStatic == node.isStatic) {
@@ -221,15 +221,13 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   @override
   Block visitBlock(Block node) {
     node.visitChildren(this);
-    if (_curAopStatementsInsertInfo != null) {
-      final Library library = _curAopStatementsInsertInfo.library;
-      final Source source = _curAopStatementsInsertInfo.source;
-      final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
-      final List<Statement> aopInsertStatements =
-          _curAopStatementsInsertInfo.aopInsertStatements;
-      insertStatementsToBody(
-          library, source, node, aopItemInfo, aopInsertStatements);
-    }
+    final Library library = _curAopStatementsInsertInfo.library;
+    final Source source = _curAopStatementsInsertInfo.source;
+    final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
+    final List<Statement> aopInsertStatements =
+        _curAopStatementsInsertInfo.aopInsertStatements;
+    insertStatementsToBody(
+        library, source, node, aopItemInfo, aopInsertStatements);
     return node;
   }
 
@@ -374,23 +372,21 @@ class AspectdAopInjectVisitor extends RecursiveVisitor<void> {
   }
 
   void checkIfInsertInFunction(FunctionNode functionNode) {
-    if (_curAopStatementsInsertInfo != null) {
-      final int lineFrom = AopUtils.getLineNumBySourceAndOffset(
-          _curAopStatementsInsertInfo.source, functionNode.fileOffset);
-      final int lineTo = AopUtils.getLineNumBySourceAndOffset(
-          _curAopStatementsInsertInfo.source, functionNode.fileEndOffset);
-      final int expectedLineNum =
-          _curAopStatementsInsertInfo.aopItemInfo.lineNum;
-      if (expectedLineNum >= lineFrom && expectedLineNum <= lineTo) {
-        final Library library = _curAopStatementsInsertInfo.library;
-        final Source source = _curAopStatementsInsertInfo.source;
-        final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
-        final List<Statement> aopInsertStatements =
-            _curAopStatementsInsertInfo.aopInsertStatements;
-        _curAopStatementsInsertInfo = null;
-        functionNode.body = insertStatementsToBody(
-            library, source, functionNode, aopItemInfo, aopInsertStatements);
-      }
+    final int lineFrom = AopUtils.getLineNumBySourceAndOffset(
+        _curAopStatementsInsertInfo.source, functionNode.fileOffset);
+    final int lineTo = AopUtils.getLineNumBySourceAndOffset(
+        _curAopStatementsInsertInfo.source, functionNode.fileEndOffset);
+    final int expectedLineNum =
+        _curAopStatementsInsertInfo.aopItemInfo.lineNum;
+    if (expectedLineNum >= lineFrom && expectedLineNum <= lineTo) {
+      final Library library = _curAopStatementsInsertInfo.library;
+      final Source source = _curAopStatementsInsertInfo.source;
+      final AopItemInfo aopItemInfo = _curAopStatementsInsertInfo.aopItemInfo;
+      final List<Statement> aopInsertStatements =
+          _curAopStatementsInsertInfo.aopInsertStatements;
+      _curAopStatementsInsertInfo = null;
+      functionNode.body = insertStatementsToBody(
+          library, source, functionNode, aopItemInfo, aopInsertStatements);
     }
   }
 

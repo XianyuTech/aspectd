@@ -12,7 +12,7 @@ class Observer {
 }
 
 void injectDemo(List<Observer> observers) {
-  int a = 10;
+  const int a = 10;
   if (a > 5) {
     print('[KWLM]:if1');
   }
@@ -191,9 +191,7 @@ class B {
 }
 
 class C with A,B {
-  C(){
-
-  }
+  C();
   void fc() {
 
   }
