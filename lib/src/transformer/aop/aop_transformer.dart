@@ -161,9 +161,7 @@ class AspectdAopTransformer extends FlutterProgramTransformer {
             continue;
           }
           final AopItemInfo aopItemInfo = _processAopMember(member);
-          if (aopItemInfo != null) {
-            aopItemInfoList.add(aopItemInfo);
-          }
+          aopItemInfoList.add(aopItemInfo);
         }
       }
     }

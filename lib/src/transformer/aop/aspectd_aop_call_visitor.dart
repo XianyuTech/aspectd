@@ -49,7 +49,7 @@ class AspectdAopCallVisitor extends Transformer {
       }
       final AopItemInfo aopItemInfo = _filterAopItemInfo(
           _aopItemInfoList, procedureImportUri, cls.name, functionName, true);
-      if (aopItemInfo?.mode == AopMode.Call &&
+      if (aopItemInfo.mode == AopMode.Call &&
           AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
         return transformConstructorInvocation(
             constructorInvocation, aopItemInfo);
@@ -74,8 +74,7 @@ class AspectdAopCallVisitor extends Transformer {
             ?.targetReference?.canonicalName?.parent?.parent?.parent?.name;
       }
       //Library Static
-      if ((procedureName?.length ?? 0) > 0 &&
-          tempName != null &&
+      if ((procedureName.length ?? 0) > 0 &&
           tempName.isNotEmpty &&
           _libraryMap[tempName] != null) {
         final Library originalLibrary = _libraryMap[tempName];
@@ -109,7 +108,7 @@ class AspectdAopCallVisitor extends Transformer {
         final String libraryImportUri = library.importUri.toString();
         final AopItemInfo aopItemInfo = _filterAopItemInfo(
             _aopItemInfoList, libraryImportUri, '', procedure.name.name, true);
-        if (aopItemInfo?.mode == AopMode.Call &&
+        if (aopItemInfo.mode == AopMode.Call &&
             AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
           return transformLibraryStaticMethodInvocation(
               staticInvocation, procedure, aopItemInfo);
@@ -120,7 +119,7 @@ class AspectdAopCallVisitor extends Transformer {
             (cls.parent as Library).importUri.toString();
         final AopItemInfo aopItemInfo = _filterAopItemInfo(_aopItemInfoList,
             procedureImportUri, cls.name, procedure.name.name, true);
-        if (aopItemInfo?.mode == AopMode.Call &&
+        if (aopItemInfo.mode == AopMode.Call &&
             AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
           return transformClassStaticMethodInvocation(
               staticInvocation, aopItemInfo);
@@ -154,7 +153,7 @@ class AspectdAopCallVisitor extends Transformer {
       }
       final AopItemInfo aopItemInfo = _filterAopItemInfo(
           _aopItemInfoList, importUri, clsName, methodName, false);
-      if (aopItemInfo?.mode == AopMode.Call &&
+      if (aopItemInfo.mode == AopMode.Call &&
           AopUtils.checkIfSkipAOP(aopItemInfo, _curLibrary) == false) {
         return transformInstanceMethodInvocation(methodInvocation, aopItemInfo);
       }
@@ -194,7 +193,6 @@ class AspectdAopCallVisitor extends Transformer {
   //Class Constructor Invocation
   StaticInvocation transformConstructorInvocation(
       ConstructorInvocation constructorInvocation, AopItemInfo aopItemInfo) {
-    assert(aopItemInfo.mode != null);
 
     if (_invocationExpressionMapping[constructorInvocation] != null) {
       return _invocationExpressionMapping[constructorInvocation];
@@ -236,7 +234,6 @@ class AspectdAopCallVisitor extends Transformer {
   //Instance Method Invocation
   MethodInvocation transformInstanceMethodInvocation(
       MethodInvocation methodInvocation, AopItemInfo aopItemInfo) {
-    assert(aopItemInfo.mode != null);
 
     if (_invocationExpressionMapping[methodInvocation] != null) {
       return _invocationExpressionMapping[methodInvocation];
@@ -362,7 +359,6 @@ class AspectdAopCallVisitor extends Transformer {
   //Class Static Method Invocation
   StaticInvocation transformClassStaticMethodInvocation(
       StaticInvocation staticInvocation, AopItemInfo aopItemInfo) {
-    assert(aopItemInfo.mode != null);
 
     if (_invocationExpressionMapping[staticInvocation] != null) {
       return _invocationExpressionMapping[staticInvocation];
@@ -430,7 +426,6 @@ class AspectdAopCallVisitor extends Transformer {
       StaticInvocation staticInvocation,
       Procedure procedure,
       AopItemInfo aopItemInfo) {
-    assert(aopItemInfo.mode != null);
 
     if (_invocationExpressionMapping[staticInvocation] != null) {
       return _invocationExpressionMapping[staticInvocation];
